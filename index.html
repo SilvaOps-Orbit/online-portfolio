@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net https://cdn.cloudflare.steamstatic.com https://cdn.akamai.steamstatic.com https://shared.cloudflare.steamstatic.com https://media.steampowered.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net https://cdn.cloudflare.steamstatic.com https://cdn.akamai.steamstatic.com https://shared.cloudflare.steamstatic.com https://media.steampowered.com https://i.scdn.co https://mosaic.scdn.co; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
     >
     <meta name="referrer" content="no-referrer">
     <meta name="description" content="Interactive personal portfolio for Alvis Leslie Gordon.">
@@ -23,6 +23,7 @@
         <a href="#about">About</a>
         <a href="#projects">Projects</a>
         <a href="#steam">Steam</a>
+        <a href="#spotify">Spotify</a>
         <a href="#github">GitHub</a>
         <a href="#security">For Nerds</a>
         <a href="#contact">Contact</a>
@@ -115,6 +116,7 @@
           <p class="kicker">Steam</p>
           <h2>Gaming, achievement hunting, and the worlds I keep coming back to.</h2>
           <p class="section-summary" id="steam-summary"></p>
+          <p class="data-status" id="steam-status"></p>
         </div>
         <div class="steam-layout">
           <article class="steam-feature reveal">
@@ -147,7 +149,33 @@
               <h3>Achievements</h3>
               <ul class="game-list" id="steam-achievements"></ul>
             </article>
+            <article class="steam-card reveal">
+              <h3>100% Games</h3>
+              <ul class="game-list" id="steam-completed"></ul>
+            </article>
           </div>
+        </div>
+      </section>
+
+      <section class="section band music-section" id="spotify">
+        <div class="section-heading reveal">
+          <p class="kicker">Spotify</p>
+          <h2>Playlists, focus music, and what is playing right now.</h2>
+          <p class="section-summary" id="spotify-summary"></p>
+          <p class="data-status" id="spotify-status"></p>
+        </div>
+        <div class="spotify-layout">
+          <article class="spotify-feature reveal">
+            <span class="spotify-label">Now Playing</span>
+            <div id="spotify-now"></div>
+            <div class="spotify-actions">
+              <a class="button ghost" id="spotify-profile-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Spotify Profile</a>
+            </div>
+          </article>
+          <article class="spotify-card reveal">
+            <h3>Public Playlists</h3>
+            <ul class="game-list" id="spotify-playlists"></ul>
+          </article>
         </div>
       </section>
 

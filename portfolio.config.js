@@ -11,7 +11,7 @@ window.PORTFOLIO_CONFIG = {
       "a Discord bot developer",
       "a web developer",
       "a cyber security learner",
-      "an automation builder"
+      "an automation builder",
       "gamer"
     ],
     kicker: "Interactive Portfolio",
@@ -42,7 +42,7 @@ window.PORTFOLIO_CONFIG = {
   ],
   skills: [
     { name: "Website Development", level: 89 },
-    { name: "Cyber Security Basics", level: 11 },
+    { name: "Cyber Security Basics", level: 74 },
     { name: "AI Automation", level: 20 },
     { name: "JavaScript Programming", level: 78 }
   ],
@@ -79,6 +79,8 @@ window.PORTFOLIO_CONFIG = {
     steamDbWishlistUrl: "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012",
     accountValue: {
       value: "Account Value A$ 910.00",
+      note: "Manual value. Update this in portfolio.config.js whenever you want it changed.",
+      manual: true
     },
     summary:
       "Gaming is part downtime, part challenge, and part systems thinking. This section can refresh from the Steam Web API during deployment without exposing API keys in the browser.",
@@ -91,6 +93,11 @@ window.PORTFOLIO_CONFIG = {
         title: "Side rotation",
         note: "Add the game you jump into when you want a change of pace."
       }
+    ],
+    stats: [
+      { label: "Owned Games", value: "Connect API" },
+      { label: "Total Playtime", value: "Connect API" },
+      { label: "Steam Level", value: "Connect API" }
     ],
     wishlist: [
       {
@@ -124,6 +131,30 @@ window.PORTFOLIO_CONFIG = {
         title: "Next achievement goal",
         meta: "In progress",
         note: "Add the achievement you are currently chasing."
+      }
+    ],
+    completedGames: [
+      {
+        title: "100% games pending",
+        meta: "Steam API",
+        note: "This fills from achievement data when the Steam API refresh succeeds."
+      }
+    ]
+  },
+  spotify: {
+    summary:
+      "Music gives the build energy. This section can publish public playlists and the latest listening state from Spotify without exposing API secrets in the browser.",
+    profileUrl: "",
+    current: {
+      title: "Spotify not connected yet",
+      meta: "Live listening needs Spotify API secrets",
+      note: "The browser reads generated data/spotify.json only."
+    },
+    playlists: [
+      {
+        title: "Public playlists pending",
+        meta: "Spotify API",
+        note: "Add Spotify secrets in GitHub Actions to publish playlist data."
       }
     ]
   },

@@ -1,8 +1,10 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const steamId = process.env.STEAM_ID || "76561199192411740";
 const apiKey = process.env.STEAM_API_KEY || "";
-const accountValue = process.env.STEAMDB_ACCOUNT_VALUE || process.env.STEAM_ACCOUNT_VALUE || "";
+const accountValue = process.env.STEAM_ACCOUNT_VALUE || process.env.STEAMDB_ACCOUNT_VALUE || "";
+const achievementScanLimit = Number(process.env.STEAM_ACHIEVEMENT_SCAN_LIMIT || 0);
+const achievementOutputLimit = Number(process.env.STEAM_ACHIEVEMENT_OUTPUT_LIMIT || 0);
 const steamDbUrl = `https://steamdb.info/calculator/${steamId}/`;
 const steamDbWishlistUrl = "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012";
 const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
@@ -27,6 +29,14 @@ function formatHours(minutes) {
 function formatDate(timestamp) {
   if (!timestamp) return "";
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric" }).format(new Date(timestamp * 1000));
+}
+
+async function readExistingData() {
+  try {
+    return JSON.parse(await readFile(outputPath, "utf8"));
+  } catch (error) {
+    return {};
+  }
 }
 
 async function fetchJson(url) {
@@ -69,6 +79,52 @@ function toGame(item, note) {
   };
 }
 
+function withLastValues(output, previous) {
+  const result = { ...output };
+  const arrayKeys = ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "completedGames"];
+
+  arrayKeys.forEach((key) => {
+    if ((!Array.isArray(result[key]) || !result[key].length) && Array.isArray(previous[key]) && previous[key].length) {
+      result[key] = previous[key];
+      result.stale = true;
+    }
+  });
+
+  ["profile", "accountValue"].forEach((key) => {
+    if (!result[key] && previous[key]) {
+      result[key] = previous[key];
+      result.stale = true;
+    }
+  });
+
+  if ((!Array.isArray(result.stats) || !result.stats.length) && Array.isArray(previous.stats) && previous.stats.length) {
+    result.stats = previous.stats;
+    result.stale = true;
+  }
+
+  if (result.source === "steam-web-api") {
+    result.lastGoodAt = result.generatedAt;
+    result.stale = false;
+  } else if (previous.lastGoodAt || previous.generatedAt) {
+    result.lastGoodAt = previous.lastGoodAt || previous.generatedAt;
+    result.stale = true;
+  }
+
+  if (result.stale) {
+    result.status = result.lastGoodAt
+      ? `Showing last saved Steam values from ${result.lastGoodAt}.`
+      : "Steam could not refresh right now, so saved values are being shown.";
+  } else if (result.source === "steam-web-api") {
+    result.status = "Steam data refreshed successfully.";
+  } else if (result.source === "steam-wishlist") {
+    result.status = "Wishlist data refreshed. Add STEAM_API_KEY for owned games, achievements, and 100% games.";
+  } else if (!result.status) {
+    result.status = apiKey ? "Steam could not refresh right now." : "Add STEAM_API_KEY to publish owned games, achievements, and 100% games.";
+  }
+
+  return result;
+}
+
 async function loadWishlist() {
   const wishlist = new Map();
 
@@ -102,53 +158,102 @@ async function loadWishlist() {
         break;
       }
     }
-
-    return Array.from(wishlist.values());
   } catch (error) {
     return Array.from(wishlist.values());
   }
+
+  return Array.from(wishlist.values());
 }
 
-async function loadAchievementHighlights(games) {
-  const highlights = [];
+function achievementKey(achievement) {
+  return achievement.apiname || achievement.name || "";
+}
 
-  for (const game of games.slice(0, 6)) {
+function achievementUnlocked(achievement) {
+  return Number(achievement.achieved || 0) > 0;
+}
+
+async function loadAchievementCollections(ownedGames) {
+  const scanSource = [...ownedGames]
+    .filter((game) => game.appid)
+    .sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0));
+  const gamesToScan = achievementScanLimit > 0 ? scanSource.slice(0, achievementScanLimit) : scanSource;
+  const achievements = [];
+  const completedGames = [];
+  let achievementGameCount = 0;
+  let totalAchievements = 0;
+  let unlockedAchievements = 0;
+
+  for (const game of gamesToScan) {
     try {
       const [player, schema] = await Promise.all([
         steamApi("ISteamUserStats/GetPlayerAchievements/v0001/", {
           steamid: steamId,
-          appid: game.appid
+          appid: game.appid,
+          l: "english"
         }),
         steamApi("ISteamUserStats/GetSchemaForGame/v2/", {
-          appid: game.appid
-        })
+          appid: game.appid,
+          l: "english"
+        }).catch(() => null)
       ]);
 
-      const schemaByName = new Map((schema?.game?.availableGameStats?.achievements || []).map((achievement) => [achievement.name, achievement]));
-      const unlocked = (player?.playerstats?.achievements || [])
-        .filter((achievement) => achievement.achieved && achievement.unlocktime)
-        .sort((a, b) => b.unlocktime - a.unlocktime);
+      const playerAchievements = player?.playerstats?.achievements || [];
+      const schemaAchievements = schema?.game?.availableGameStats?.achievements || [];
+      const schemaByName = new Map(schemaAchievements.map((achievement) => [achievement.name, achievement]));
+      const achievementTotal = schemaAchievements.length || playerAchievements.length;
+      const unlocked = playerAchievements.filter(achievementUnlocked);
 
-      unlocked.slice(0, 2).forEach((achievement) => {
-        const details = schemaByName.get(achievement.apiname) || {};
-        highlights.push({
-          title: details.displayName || achievement.apiname || "Unlocked achievement",
-          meta: game.name || game.title || "Steam achievement",
-          note: `Unlocked ${formatDate(achievement.unlocktime)}`,
-          image: details.icon || headerImage(game.appid),
+      if (!achievementTotal) {
+        continue;
+      }
+
+      achievementGameCount += 1;
+      totalAchievements += achievementTotal;
+      unlockedAchievements += unlocked.length;
+
+      if (unlocked.length >= achievementTotal) {
+        completedGames.push({
+          appid: game.appid,
+          title: game.name || "100% game",
+          meta: `${unlocked.length}/${achievementTotal} achievements`,
+          note: `${formatHours(game.playtime_forever)} played`,
+          image: headerImage(game.appid),
           url: gameUrl(game.appid)
+        });
+      }
+
+      unlocked.forEach((achievement) => {
+        const key = achievementKey(achievement);
+        const details = schemaByName.get(key) || {};
+        const unlocktime = Number(achievement.unlocktime || 0);
+        achievements.push({
+          appid: game.appid,
+          title: details.displayName || achievement.name || key || "Unlocked achievement",
+          meta: game.name || "Steam achievement",
+          note: unlocktime ? `Unlocked ${formatDate(unlocktime)}` : "Unlocked",
+          image: details.icon || headerImage(game.appid),
+          url: gameUrl(game.appid),
+          unlocktime
         });
       });
     } catch (error) {
       continue;
     }
-
-    if (highlights.length >= 6) {
-      break;
-    }
   }
 
-  return highlights.slice(0, 6);
+  const sortedAchievements = achievements.sort((a, b) => Number(b.unlocktime || 0) - Number(a.unlocktime || 0));
+  const visibleAchievements = achievementOutputLimit > 0 ? sortedAchievements.slice(0, achievementOutputLimit) : sortedAchievements;
+
+  return {
+    achievements: visibleAchievements.map(({ unlocktime, ...achievement }) => achievement),
+    completedGames: completedGames.sort((a, b) => Number.parseInt(b.meta, 10) - Number.parseInt(a.meta, 10)),
+    stats: [
+      { label: "Achievement Games", value: new Intl.NumberFormat("en-US").format(achievementGameCount), note: "Visible achievement data" },
+      { label: "Achievements", value: `${new Intl.NumberFormat("en-US").format(unlockedAchievements)}/${new Intl.NumberFormat("en-US").format(totalAchievements)}` },
+      { label: "100% Games", value: new Intl.NumberFormat("en-US").format(completedGames.length) }
+    ]
+  };
 }
 
 function fallbackData(reason) {
@@ -162,7 +267,7 @@ function fallbackData(reason) {
     accountValue: accountValue
       ? {
           value: accountValue,
-          note: "Manual SteamDB value from GitHub repository variable."
+          note: "Manual account value from GitHub repository variable."
         }
       : undefined,
     stats: [
@@ -173,6 +278,7 @@ function fallbackData(reason) {
 }
 
 async function main() {
+  const previous = await readExistingData();
   let output = fallbackData("fallback");
   const wishlist = await loadWishlist();
 
@@ -194,7 +300,7 @@ async function main() {
     const totalMinutes = ownedGames.reduce((sum, game) => sum + Number(game.playtime_forever || 0), 0);
     const recentMinutes = recentGames.reduce((sum, game) => sum + Number(game.playtime_2weeks || 0), 0);
     const mostPlayed = [...ownedGames].sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0)).slice(0, 6);
-    const achievementHighlights = await loadAchievementHighlights(mostPlayed);
+    const achievementData = await loadAchievementCollections(ownedGames);
 
     output = {
       generatedAt: new Date().toISOString(),
@@ -213,17 +319,15 @@ async function main() {
       accountValue: accountValue
         ? {
             value: accountValue,
-            note: "Manual SteamDB value from GitHub repository variable."
+            note: "Manual account value from GitHub repository variable."
           }
-        : {
-            value: "See SteamDB",
-            note: "SteamDB has no official account-value API; open the calculator link for the live estimate."
-          },
+        : undefined,
       stats: [
         { label: "Owned Games", value: new Intl.NumberFormat("en-US").format(ownedGames.length) },
         { label: "Total Playtime", value: formatHours(totalMinutes) },
         { label: "Recent Playtime", value: formatHours(recentMinutes), note: "Last 2 weeks" },
-        { label: "Steam Level", value: levelResponse?.response?.player_level ? String(levelResponse.response.player_level) : "Private" }
+        { label: "Steam Level", value: levelResponse?.response?.player_level ? String(levelResponse.response.player_level) : "Private" },
+        ...achievementData.stats
       ],
       currentlyPlaying: recentGames.length
         ? recentGames.slice(0, 4).map((game) => ({
@@ -233,7 +337,8 @@ async function main() {
         : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),
       wishlist,
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
-      achievements: achievementHighlights
+      achievements: achievementData.achievements,
+      completedGames: achievementData.completedGames
     };
   } else if (wishlist.length) {
     output = {
@@ -243,6 +348,7 @@ async function main() {
     };
   }
 
+  output = withLastValues(output, previous);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
   console.log(`Wrote Steam data for ${steamId} to ${outputPath.pathname}`);
@@ -250,6 +356,8 @@ async function main() {
 
 main().catch(async (error) => {
   console.error(error);
+  const previous = await readExistingData();
+  const output = withLastValues(fallbackData("steam-api-error"), previous);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(fallbackData("steam-api-error"), null, 2)}\n`, "utf8");
+  await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 });

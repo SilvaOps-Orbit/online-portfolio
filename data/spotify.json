@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-07-08T00:00:00.000Z",
+  "source": "fallback",
+  "status": "Spotify is ready for API secrets. Add Spotify GitHub secrets to publish live listening and playlists.",
+  "profile": {
+    "displayName": "Spotify",
+    "url": ""
+  },
+  "current": {
+    "title": "Spotify not connected yet",
+    "meta": "Live listening needs Spotify API secrets",
+    "note": "The browser will only read generated data/spotify.json.",
+    "image": "",
+    "url": ""
+  },
+  "playlists": [
+    {
+      "title": "Public playlists pending",
+      "meta": "Spotify API",
+      "note": "Add SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, and SPOTIFY_REFRESH_TOKEN in GitHub Actions secrets.",
+      "image": "",
+      "url": ""
+    }
+  ]
+}

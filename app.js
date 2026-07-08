@@ -4,7 +4,7 @@
   const config = window.PORTFOLIO_CONFIG || {};
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const root = document.documentElement;
-  let wishlistCycleTimer = 0;
+  const cycleTimers = new Map();
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -235,7 +235,11 @@
     result.profile = { ...((fallback || {}).profile || {}), ...((live || {}).profile || {}) };
     result.accountValue = { ...((fallback || {}).accountValue || {}), ...((live || {}).accountValue || {}) };
 
-    ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "stats"].forEach((key) => {
+    if ((fallback || {}).accountValue?.manual) {
+      result.accountValue = (fallback || {}).accountValue;
+    }
+
+    ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "completedGames", "stats"].forEach((key) => {
       if (Array.isArray((live || {})[key]) && live[key].length) {
         result[key] = live[key];
       } else if (Array.isArray((fallback || {})[key])) {
@@ -303,46 +307,53 @@
   function renderGameList(id, items) {
     const list = document.getElementById(id);
     if (!list) return;
-    list.classList.remove("wishlist-carousel", "is-cycling", "is-swapping");
+    clearCycle(id);
+    list.classList.remove("cycle-list", "is-cycling", "is-swapping");
     list.replaceChildren();
 
     (items || []).forEach((item) => appendGameItem(list, item));
   }
 
-  function renderWishlistCarousel(id, items) {
+  function clearCycle(id) {
+    if (cycleTimers.has(id)) {
+      window.clearInterval(cycleTimers.get(id));
+      cycleTimers.delete(id);
+    }
+  }
+
+  function renderCycleList(id, items, label, pageSizeValue = 6) {
     const list = document.getElementById(id);
     if (!list) return;
 
-    window.clearInterval(wishlistCycleTimer);
-    wishlistCycleTimer = 0;
-    list.classList.add("wishlist-carousel");
+    clearCycle(id);
+    list.classList.add("cycle-list");
     list.classList.remove("is-swapping");
     list.replaceChildren();
 
     const games = (Array.isArray(items) ? items : []).filter(Boolean);
-    const heading = list.closest(".steam-card")?.querySelector("h3");
+    const heading = list.closest(".steam-card, .spotify-card")?.querySelector("h3");
 
     if (!games.length) {
       list.classList.remove("is-cycling");
       if (heading) {
-        heading.textContent = "Wishlist";
+        heading.textContent = label;
       }
       return;
     }
 
-    const pageSize = Math.min(6, games.length);
+    const pageSize = Math.min(pageSizeValue, games.length);
     let startIndex = 0;
     list.classList.toggle("is-cycling", games.length > pageSize);
 
     function updateHeading() {
       if (!heading) return;
       if (games.length <= pageSize) {
-        heading.textContent = `Wishlist (${games.length})`;
+        heading.textContent = `${label} (${games.length})`;
         return;
       }
 
       const endIndex = Math.min(startIndex + pageSize, games.length);
-      heading.textContent = `Wishlist (${startIndex + 1}-${endIndex} of ${games.length})`;
+      heading.textContent = `${label} (${startIndex + 1}-${endIndex} of ${games.length})`;
     }
 
     function visibleGames() {
@@ -366,13 +377,14 @@
       return;
     }
 
-    wishlistCycleTimer = window.setInterval(() => {
+    const timer = window.setInterval(() => {
       list.classList.add("is-swapping");
       window.setTimeout(() => {
         startIndex = (startIndex + pageSize) % games.length;
         renderWindow();
       }, 260);
     }, 4800);
+    cycleTimers.set(id, timer);
   }
 
   function setImageElement(element, src, alt) {
@@ -396,6 +408,7 @@
   function renderSteam(steamData) {
     const steam = steamData || config.steam || {};
     setText("steam-summary", steam.summary || "");
+    renderStatus("steam-status", steam);
 
     const profile = steam.profile || {};
     const profileCard = document.getElementById("steam-profile-card");
@@ -437,9 +450,10 @@
     renderStats(stats);
 
     renderGameList("steam-current", steam.currentlyPlaying);
-    renderWishlistCarousel("steam-wishlist", steam.wishlist);
+    renderCycleList("steam-wishlist", steam.wishlist, "Wishlist");
     renderGameList("steam-most-played", steam.mostPlayed);
-    renderGameList("steam-achievements", steam.achievements);
+    renderCycleList("steam-achievements", steam.achievements, "Achievements");
+    renderCycleList("steam-completed", steam.completedGames, "100% Games");
     observeReveals();
   }
 
@@ -459,6 +473,96 @@
 
       const live = await response.json();
       renderSteam(mergeSteamData(fallback, live));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function mergeSpotifyData(fallback, live) {
+    const result = { ...(fallback || {}), ...(live || {}) };
+    result.profile = { ...((fallback || {}).profile || {}), ...((live || {}).profile || {}) };
+
+    if ((live || {}).current?.title) {
+      result.current = live.current;
+    } else if ((live || {}).lastTrack?.title) {
+      result.current = live.lastTrack;
+    } else if ((fallback || {}).current?.title) {
+      result.current = fallback.current;
+    }
+
+    ["playlists"].forEach((key) => {
+      if (Array.isArray((live || {})[key]) && live[key].length) {
+        result[key] = live[key];
+      } else if (Array.isArray((fallback || {})[key])) {
+        result[key] = fallback[key];
+      }
+    });
+
+    return result;
+  }
+
+  function renderStatus(id, data) {
+    const status = document.getElementById(id);
+    if (!status) return;
+
+    const timestamp = data?.lastGoodAt || data?.generatedAt;
+    if (data?.status) {
+      status.textContent = data.status;
+      return;
+    }
+
+    if (timestamp) {
+      status.textContent = `${data?.stale ? "Showing last saved values from" : "Updated"} ${formatDateTime(timestamp)}.`;
+      return;
+    }
+
+    status.textContent = "";
+  }
+
+  function renderFeatureItem(id, item) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.replaceChildren();
+
+    const list = createElement("ul", "game-list feature-list");
+    appendGameItem(list, item || { title: "No live data yet", note: "Connect the API to fill this section." });
+    target.append(list);
+  }
+
+  function renderSpotify(spotifyData) {
+    const spotify = spotifyData || config.spotify || {};
+    setText("spotify-summary", spotify.summary || "");
+    renderStatus("spotify-status", spotify);
+
+    const profile = spotify.profile || {};
+    const profileLink = document.getElementById("spotify-profile-link");
+    if (profileLink && (profile.url || spotify.profileUrl)) {
+      profileLink.href = safeUrl(profile.url || spotify.profileUrl);
+      profileLink.hidden = false;
+    }
+
+    const current = spotify.current || spotify.lastTrack;
+    renderFeatureItem("spotify-now", current);
+    renderCycleList("spotify-playlists", spotify.playlists, "Public Playlists", 4);
+    observeReveals();
+  }
+
+  async function loadSpotifyData() {
+    const fallback = config.spotify || {};
+    renderSpotify(fallback);
+
+    try {
+      const response = await fetch("data/spotify.json", {
+        cache: "no-cache",
+        referrerPolicy: "no-referrer"
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const live = await response.json();
+      renderSpotify(mergeSpotifyData(fallback, live));
     } catch (error) {
       return;
     }
@@ -494,6 +598,20 @@
       return new Intl.DateTimeFormat(undefined, { month: "short", year: "numeric" }).format(new Date(value));
     } catch (error) {
       return "Recent";
+    }
+  }
+
+  function formatDateTime(value) {
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      }).format(new Date(value));
+    } catch (error) {
+      return "recently";
     }
   }
 
@@ -834,6 +952,7 @@
     renderProjectFilters(config.projects || []);
     renderProjects();
     loadSteamData();
+    loadSpotifyData();
     renderSecurity();
     renderContact();
     bindNavigation();

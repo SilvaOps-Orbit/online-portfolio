@@ -1,11 +1,8 @@
-name: Deploy Portfolio to GitHub Pages
+name: Refresh Spotify Data
 
 on:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: "37 17 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -30,13 +27,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Generate Steam data
-        run: node scripts/update-steam-data.mjs
+      - name: Preserve deployed Steam data
+        run: node scripts/preserve-deployed-data.mjs
         env:
-          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
-          STEAM_ID: "76561199192411740"
-          STEAM_ACCOUNT_VALUE: ${{ vars.STEAM_ACCOUNT_VALUE }}
-          STEAMDB_ACCOUNT_VALUE: ${{ vars.STEAMDB_ACCOUNT_VALUE }}
+          PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
+          PRESERVE_DATA_FILES: "steam.json"
 
       - name: Generate Spotify data
         run: node scripts/update-spotify-data.mjs
