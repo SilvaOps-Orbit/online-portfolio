@@ -43,10 +43,10 @@ window.PORTFOLIO_CONFIG = {
   ],
   projects: [
     {
-      title: "Secure Portfolio Website",
+      title: "This Portfolio Website!!",
       summary:
         "A fast static portfolio with animated sections, project filtering, a GitHub integration, and strict client-side security defaults.",
-      tags: ["Frontend", "Security", "GitHub"],
+      tags: ["Frontend", "Security", "GitHub"," Portfolio","websites"],
       github: "#",
       demo: "#"
     },
