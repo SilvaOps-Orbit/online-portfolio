@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
+    >
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="Interactive personal portfolio for Alvis Leslie Gordon.">
+    <meta name="color-scheme" content="dark light">
+    <title>Alvis Leslie Gordon | Portfolio</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <canvas id="signal-canvas" aria-hidden="true"></canvas>
+
+    <header class="site-header" data-elevated="false">
+      <a class="brand" href="#top" id="brand-name">Portfolio</a>
+      <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
+        <a href="#about">About</a>
+        <a href="#projects">Projects</a>
+        <a href="#github">GitHub</a>
+        <a href="#security">For Nerds</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Turn off dark mode" title="Toggle dark mode">
+          <span class="theme-toggle-text" id="theme-toggle-text">Dark</span>
+          <span class="theme-toggle-track" aria-hidden="true"><span></span></span>
+        </button>
+        <button class="icon-button nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open menu">
+          <span aria-hidden="true">☰</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero section" id="top">
+        <div class="hero-copy reveal">
+          <p class="kicker" id="hero-kicker">Interactive Portfolio</p>
+          <h1>
+            <span id="hero-name">Alvis Leslie Gordon</span>
+            <span class="alias-line" id="hero-alias">aka Alias TBC</span>
+            <span class="accent-line">
+              <span id="role-prefix">I am</span>
+              <span id="typewriter-role">a creative developer</span><span class="type-cursor" aria-hidden="true"></span>
+            </span>
+          </h1>
+          <p class="hero-summary" id="hero-summary">
+            I build useful digital experiences with thoughtful interaction, clean code, and secure foundations.
+          </p>
+          <div class="hero-actions" aria-label="Featured links">
+            <a class="button primary" href="#projects">View Projects</a>
+            <a class="button" id="github-profile-link" href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a class="button ghost" id="email-link" href="mailto:you@example.com">Contact</a>
+          </div>
+          <ul class="highlight-grid" id="highlight-grid" aria-label="Portfolio highlights"></ul>
+        </div>
+
+        <aside class="profile-panel reveal" aria-label="Profile summary">
+          <div class="status-line">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="availability">Open to opportunities</span>
+          </div>
+          <div class="portrait-mark" id="portrait-mark" aria-hidden="true">YN</div>
+          <dl class="quick-facts">
+            <div>
+              <dt>Location</dt>
+              <dd id="location">Sydney, Australia</dd>
+            </div>
+            <div>
+              <dt>Focus</dt>
+              <dd id="focus">Frontend, cyber security, automation</dd>
+            </div>
+            <div>
+              <dt>Current</dt>
+              <dd id="current">Building secure web experiences</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section class="section band" id="about">
+        <div class="section-heading reveal">
+          <p class="kicker">About</p>
+          <h2>A portfolio that feels alive without getting in your way.</h2>
+        </div>
+        <div class="about-layout">
+          <div class="copy-block reveal" id="about-copy"></div>
+          <div class="skills-panel reveal">
+            <h3>Skill Stack</h3>
+            <div class="skill-list" id="skill-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="projects">
+        <div class="section-heading reveal">
+          <p class="kicker">Projects</p>
+          <h2>Selected work with practical outcomes.</h2>
+        </div>
+        <div class="filter-bar reveal" id="project-filters" aria-label="Project filters"></div>
+        <div class="project-grid" id="project-grid"></div>
+      </section>
+
+      <section class="section band" id="github">
+        <div class="section-heading reveal">
+          <p class="kicker">GitHub</p>
+          <h2>Live public repositories, pulled without exposing tokens.</h2>
+        </div>
+        <div class="github-panel reveal">
+          <div>
+            <p class="github-status" id="github-status">Add your GitHub username in portfolio.config.js to load repositories.</p>
+          </div>
+          <div class="repo-grid" id="repo-grid" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="section" id="security">
+        <div class="section-heading reveal">
+          <p class="kicker">For the Nerds</p>
+          <h2>The cyber security measures built into this site.</h2>
+        </div>
+        <div class="security-grid" id="security-grid"></div>
+      </section>
+
+      <section class="section band contact-section" id="contact">
+        <div class="section-heading reveal">
+          <p class="kicker">Contact</p>
+          <h2>Ready for the next build.</h2>
+        </div>
+        <div class="contact-actions reveal" id="contact-actions"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span id="footer-name">Your Name</span>
+      <span>Secure static portfolio</span>
+    </footer>
+
+    <script src="portfolio.config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Referrer-Policy: no-referrer
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
