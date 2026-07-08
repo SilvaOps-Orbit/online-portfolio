@@ -38,23 +38,42 @@ Spotify data is generated into `data/spotify.json` by GitHub Actions so API cred
 
 1. Create a Spotify app in the Spotify Developer Dashboard.
 2. Add `http://127.0.0.1:3000` as a redirect URI in the Spotify app settings.
-3. Create the authorization URL:
+3. Run the local authorization helper:
    ```powershell
-   $env:SPOTIFY_CLIENT_ID="your-client-id"
-   node scripts/spotify-auth-url.mjs
-   ```
-4. Open the printed URL, approve the app, then copy the `code` value from the redirected URL.
-5. Exchange that code for a refresh token:
-   ```powershell
+   cd "C:\Users\Alvis ICT\Desktop\resume website github"
    $env:SPOTIFY_CLIENT_ID="your-client-id"
    $env:SPOTIFY_CLIENT_SECRET="your-client-secret"
-   $env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
-   node scripts/spotify-refresh-token.mjs
+   .\scripts\spotify-local-auth.ps1
    ```
-6. Add repository secrets:
+4. Approve Spotify in the browser. The helper catches the redirect locally and prints `SPOTIFY_REFRESH_TOKEN`.
+5. Add repository secrets:
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
    - `SPOTIFY_REFRESH_TOKEN`
+
+If you prefer the manual setup, create the authorization URL:
+
+   ```powershell
+   cd "C:\Users\Alvis ICT\Desktop\resume website github"
+   $env:SPOTIFY_CLIENT_ID="your-client-id"
+   .\scripts\spotify-auth-url.ps1
+   ```
+After approving, the browser may show `127.0.0.1 refused to connect`; that is okay. Copy the `code` value from the address bar and exchange it:
+
+   ```powershell
+   cd "C:\Users\Alvis ICT\Desktop\resume website github"
+   $env:SPOTIFY_CLIENT_ID="your-client-id"
+   $env:SPOTIFY_CLIENT_SECRET="your-client-secret"
+   $env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
+   .\scripts\spotify-refresh-token.ps1
+   ```
+
+If PowerShell blocks the helper scripts, run them with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\spotify-local-auth.ps1
+powershell -ExecutionPolicy Bypass -File .\scripts\spotify-refresh-token.ps1
+```
 
 The requested scopes are `user-read-currently-playing playlist-read-private`. Spotify currently documents refresh tokens as lasting 6 months, so if the workflow starts reporting `invalid_grant`, repeat the authorization steps and replace `SPOTIFY_REFRESH_TOKEN`.
 
