@@ -37,7 +37,7 @@ window.PORTFOLIO_CONFIG = {
   ],
   skills: [
     { name: "Website Development", level: 89 },
-    { name: "Cyber Security Basics", level: 74 },
+    { name: "Cyber Security Basics", level: 10 },
     { name: "AI Automation", level: 20 },
     { name: "JavaScript Programming", level: 78 }
   ],
