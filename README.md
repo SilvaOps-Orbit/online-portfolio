@@ -13,6 +13,17 @@ Edit `portfolio.config.js`:
 - Add your Steam profile, current games, wishlist, most played games, and achievements under `steam`.
 - Add `linkedinUrl` and `resumeUrl` when you have them.
 
+## Steam stats
+
+The Steam section can refresh during GitHub Pages deployment without exposing your Steam API key.
+
+1. Create a Steam Web API key.
+2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
+3. Add repository secret `STEAM_API_KEY`.
+4. Optionally add repository variable `STEAMDB_ACCOUNT_VALUE` for the account value shown beside the SteamDB link.
+
+Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` on push, manual dispatch, and a daily schedule. SteamDB account value is not scraped because SteamDB does not provide a stable public API for that calculator value.
+
 ## GitHub Pages
 
 This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:

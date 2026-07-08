@@ -57,6 +57,26 @@
     }
   }
 
+  function setImage(id, src, alt) {
+    const element = document.getElementById(id);
+    if (!element || typeof src !== "string" || !src.trim()) {
+      return;
+    }
+
+    try {
+      const parsed = new URL(src);
+      if (parsed.protocol !== "https:") {
+        return;
+      }
+      element.src = parsed.href;
+      if (alt) {
+        element.alt = alt;
+      }
+    } catch (error) {
+      return;
+    }
+  }
+
   function githubProfileUrl(username) {
     if (!username || username === "your-github-username") {
       return "https://github.com/";
@@ -209,6 +229,38 @@
     });
   }
 
+  function mergeSteamData(fallback, live) {
+    const result = { ...(fallback || {}), ...(live || {}) };
+    result.profile = { ...((fallback || {}).profile || {}), ...((live || {}).profile || {}) };
+    result.accountValue = { ...((fallback || {}).accountValue || {}), ...((live || {}).accountValue || {}) };
+
+    ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "stats"].forEach((key) => {
+      if (Array.isArray((live || {})[key]) && live[key].length) {
+        result[key] = live[key];
+      } else if (Array.isArray((fallback || {})[key])) {
+        result[key] = fallback[key];
+      }
+    });
+
+    return result;
+  }
+
+  function renderStats(stats) {
+    const grid = document.getElementById("steam-stats");
+    if (!grid) return;
+    grid.replaceChildren();
+
+    (stats || []).forEach((item) => {
+      const stat = createElement("div", "steam-stat");
+      stat.append(createElement("span", "steam-stat-value", String(item.value || "TBC")));
+      stat.append(createElement("span", "steam-stat-label", String(item.label || "Steam stat")));
+      if (item.note) {
+        stat.append(createElement("span", "steam-stat-note", String(item.note)));
+      }
+      grid.append(stat);
+    });
+  }
+
   function renderGameList(id, items) {
     const list = document.getElementById(id);
     if (!list) return;
@@ -217,23 +269,68 @@
     (items || []).forEach((item) => {
       const game = typeof item === "string" ? { title: item } : item;
       const li = createElement("li");
-      li.append(createElement("span", "game-title", game.title || "Untitled game"));
+      li.className = game.image ? "game-item has-art" : "game-item";
+      const body = createElement("div", "game-body");
+      const title = game.url ? createElement("a", "game-title", game.title || "Untitled game") : createElement("span", "game-title", game.title || "Untitled game");
+
+      if (game.url) {
+        title.href = safeUrl(game.url);
+        title.target = "_blank";
+        title.rel = "noopener noreferrer";
+      }
+
+      if (game.image) {
+        const image = createElement("img", "game-art");
+        setImageElement(image, game.image, `${game.title || "Steam game"} artwork`);
+        li.append(image);
+      }
+
+      body.append(title);
 
       if (game.meta) {
-        li.append(createElement("span", "game-meta", game.meta));
+        body.append(createElement("span", "game-meta", game.meta));
       }
 
       if (game.note) {
-        li.append(createElement("span", "game-note", game.note));
+        body.append(createElement("span", "game-note", game.note));
       }
 
+      li.append(body);
       list.append(li);
     });
   }
 
-  function renderSteam() {
-    const steam = config.steam || {};
+  function setImageElement(element, src, alt) {
+    if (!element || typeof src !== "string" || !src.trim()) {
+      return;
+    }
+
+    try {
+      const parsed = new URL(src);
+      if (parsed.protocol !== "https:") {
+        return;
+      }
+      element.src = parsed.href;
+      element.alt = alt || "";
+      element.loading = "lazy";
+    } catch (error) {
+      return;
+    }
+  }
+
+  function renderSteam(steamData) {
+    const steam = steamData || config.steam || {};
     setText("steam-summary", steam.summary || "");
+
+    const profile = steam.profile || {};
+    const profileCard = document.getElementById("steam-profile-card");
+    if (profileCard && (profile.personaName || profile.avatarFull)) {
+      profileCard.hidden = false;
+    }
+
+    setText("steam-persona", profile.personaName || "Steam Profile");
+    setText("steam-updated", steam.generatedAt ? `Updated ${formatDate(steam.generatedAt)}` : "");
+    setImage("steam-avatar", profile.avatarFull, `${profile.personaName || "Steam"} avatar`);
 
     const profileLink = document.getElementById("steam-profile-link");
     if (profileLink && steam.profileUrl) {
@@ -242,10 +339,48 @@
       profileLink.classList.add("steam-profile-link");
     }
 
+    const steamDbLink = document.getElementById("steamdb-link");
+    if (steamDbLink && steam.steamDbUrl) {
+      steamDbLink.href = safeUrl(steam.steamDbUrl);
+      steamDbLink.hidden = false;
+    }
+
+    const stats = Array.isArray(steam.stats) ? [...steam.stats] : [];
+    if (steam.accountValue?.value) {
+      stats.push({
+        label: "SteamDB Value",
+        value: steam.accountValue.value,
+        note: steam.accountValue.note
+      });
+    }
+    renderStats(stats);
+
     renderGameList("steam-current", steam.currentlyPlaying);
     renderGameList("steam-wishlist", steam.wishlist);
     renderGameList("steam-most-played", steam.mostPlayed);
     renderGameList("steam-achievements", steam.achievements);
+    observeReveals();
+  }
+
+  async function loadSteamData() {
+    const fallback = config.steam || {};
+    renderSteam(fallback);
+
+    try {
+      const response = await fetch("data/steam.json", {
+        cache: "no-cache",
+        referrerPolicy: "no-referrer"
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const live = await response.json();
+      renderSteam(mergeSteamData(fallback, live));
+    } catch (error) {
+      return;
+    }
   }
 
   function renderContact() {
@@ -617,7 +752,7 @@
     renderAbout();
     renderProjectFilters(config.projects || []);
     renderProjects();
-    renderSteam();
+    loadSteamData();
     renderSecurity();
     renderContact();
     bindNavigation();

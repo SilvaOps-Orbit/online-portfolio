@@ -770,7 +770,7 @@ h3 {
 .steam-label {
   display: inline-flex;
   width: fit-content;
-  margin-bottom: 18px;
+  margin: 18px 0;
   padding: 6px 9px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -778,6 +778,81 @@ h3 {
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.steam-profile-card {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.steam-avatar {
+  width: 64px;
+  height: 64px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  object-fit: cover;
+}
+
+.steam-persona,
+.steam-updated {
+  display: block;
+}
+
+.steam-persona {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.steam-updated {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.steam-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.steam-stat {
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg) 34%, transparent);
+}
+
+.steam-stat-value,
+.steam-stat-label,
+.steam-stat-note {
+  display: block;
+}
+
+.steam-stat-value {
+  color: var(--accent-2);
+  font-size: 1.25rem;
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.steam-stat-label {
+  margin-top: 6px;
+  color: var(--text);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.steam-stat-note {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.76rem;
 }
 
 .game-list {
@@ -789,8 +864,29 @@ h3 {
 }
 
 .game-list li {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  align-items: center;
   padding-top: 12px;
   border-top: 1px solid var(--line);
+}
+
+.game-list li.has-art {
+  grid-template-columns: 86px minmax(0, 1fr);
+}
+
+.game-art {
+  width: 86px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--panel-strong);
+}
+
+.game-body {
+  min-width: 0;
 }
 
 .game-title {
@@ -816,6 +912,13 @@ h3 {
 
 .steam-profile-link {
   margin-top: 22px;
+}
+
+.steam-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 #github {
@@ -924,6 +1027,18 @@ h3 {
   .quick-facts div {
     grid-template-columns: 1fr;
     gap: 2px;
+  }
+
+  .steam-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-list li.has-art {
+    grid-template-columns: 76px minmax(0, 1fr);
+  }
+
+  .game-art {
+    width: 76px;
   }
 }
 

@@ -8,6 +8,7 @@ The current `main` branch is the supported version of this portfolio.
 
 - Do not put passwords, API keys, access tokens, private links, or secrets in `portfolio.config.js`.
 - Keep GitHub integration public-only unless you move API access behind a server you control.
+- Keep `STEAM_API_KEY` in GitHub Actions secrets only. Never paste it into `portfolio.config.js`, `app.js`, or any file served by GitHub Pages.
 - Review external project links before publishing.
 - Use HTTPS hosting.
 - Keep GitHub Actions permissions minimal.

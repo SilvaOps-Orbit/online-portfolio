@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net https://cdn.cloudflare.steamstatic.com https://cdn.akamai.steamstatic.com https://shared.cloudflare.steamstatic.com https://media.steampowered.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
     >
     <meta name="referrer" content="no-referrer">
     <meta name="description" content="Interactive personal portfolio for Alvis Leslie Gordon.">
@@ -118,9 +118,20 @@
         </div>
         <div class="steam-layout">
           <article class="steam-feature reveal">
+            <div class="steam-profile-card" id="steam-profile-card" hidden>
+              <img class="steam-avatar" id="steam-avatar" alt="Steam profile avatar" loading="lazy">
+              <div>
+                <span class="steam-persona" id="steam-persona">Steam Profile</span>
+                <span class="steam-updated" id="steam-updated"></span>
+              </div>
+            </div>
+            <div class="steam-stat-grid" id="steam-stats"></div>
             <span class="steam-label">Currently Playing</span>
             <ul class="game-list current-games" id="steam-current"></ul>
-            <a class="button ghost" id="steam-profile-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Steam Profile</a>
+            <div class="steam-actions">
+              <a class="button ghost" id="steam-profile-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Steam Profile</a>
+              <a class="button" id="steamdb-link" href="#" target="_blank" rel="noopener noreferrer" hidden>SteamDB</a>
+            </div>
           </article>
           <div class="steam-grid">
             <article class="steam-card reveal">

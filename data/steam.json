@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-07-08T00:00:00.000Z",
+  "source": "fallback",
+  "steamId": "76561199192411740",
+  "profileUrl": "https://steamcommunity.com/profiles/76561199192411740",
+  "steamDbUrl": "https://steamdb.info/calculator/76561199192411740/",
+  "accountValue": {
+    "value": "See SteamDB",
+    "note": "SteamDB has no official account-value API; open the calculator link for the live estimate."
+  },
+  "stats": [
+    {
+      "label": "Steam ID",
+      "value": "76561199192411740"
+    },
+    {
+      "label": "Live Steam API",
+      "value": "Needs key",
+      "note": "Add STEAM_API_KEY as a GitHub secret."
+    }
+  ]
+}

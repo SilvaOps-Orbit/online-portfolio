@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "37 17 * * *"
   workflow_dispatch:
 
 permissions:
@@ -27,6 +29,13 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
+      - name: Generate Steam data
+        run: node scripts/update-steam-data.mjs
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
+          STEAMDB_ACCOUNT_VALUE: ${{ vars.STEAMDB_ACCOUNT_VALUE }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
