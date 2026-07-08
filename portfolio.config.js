@@ -76,8 +76,7 @@ window.PORTFOLIO_CONFIG = {
     profileUrl: "https://steamcommunity.com/profiles/76561199192411740",
     steamDbUrl: "https://steamdb.info/calculator/76561199192411740/",
     accountValue: {
-      value: "Set in GitHub variable",
-      note: "SteamDB account value does not have an official public API, so this is kept as a manual/variable-backed display."
+      value: "Account Value A$ 910.00",
     },
     summary:
       "Gaming is part downtime, part challenge, and part systems thinking. This section can refresh from the Steam Web API during deployment without exposing API keys in the browser.",
