@@ -222,6 +222,17 @@ window.PORTFOLIO_CONFIG = {
       ]
     },
     {
+      title: "Plain-Text API Sanitization",
+      body:
+        "Steam and Spotify API text is normalized into plain text before it is published to data files, removing tag-like markup, avoiding repeated entity decoding, and keeping generated content safe to display.",
+      docs: [
+        {
+          label: "OWASP Output Encoding",
+          url: "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+        }
+      ]
+    },
+    {
       title: "Small Supply Chain",
       body:
         "The front end avoids third-party packages. Fewer dependencies means fewer packages to audit and fewer supply-chain updates that can break trust."

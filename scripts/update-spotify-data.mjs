@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { cleanText } from "./text-sanitizer.mjs";
 
 const clientId = process.env.SPOTIFY_CLIENT_ID || "";
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || "";
@@ -148,7 +149,7 @@ function toPlaylist(playlist) {
     id: playlist.id,
     title: playlist.name || "Spotify playlist",
     meta: `${playlist.items?.total || playlist.tracks?.total || 0} tracks`,
-    note: playlist.description ? playlist.description.replace(/<[^>]+>/g, "") : "Public playlist",
+    note: playlist.description ? cleanText(playlist.description) : "Public playlist",
     image: imageFrom(playlist.images),
     url: externalUrl(playlist)
   };

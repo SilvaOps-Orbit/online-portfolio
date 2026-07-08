@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { stripPriceText } from "./text-sanitizer.mjs";
 
 const steamId = process.env.STEAM_ID || "76561199192411740";
 const apiKey = process.env.STEAM_API_KEY || "";
@@ -81,27 +82,6 @@ function normalizeSteamImageUrl(value) {
   }
 
   return value.trim().replace(/^http:\/\//i, "https://");
-}
-
-function stripText(value) {
-  return String(value || "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function stripPriceText(value) {
-  return stripText(value)
-    .replace(/(?:\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b\s*)?(?:A\$|AU\$|NZ\$|US\$|CA\$|\$|€|£)\s*\d[\d,.]*(?:\.\d{2})?(?:\s*\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b)?/gi, " ")
-    .replace(/\bPrice\s*TBA\b/gi, " ")
-    .replace(/\s*[-–—:|]\s*$/g, " ")
-    .replace(/^\s*[-–—:|]\s*/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function editionLabel(sub, group) {
