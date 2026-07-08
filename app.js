@@ -240,7 +240,7 @@
       result.accountValue = (fallback || {}).accountValue;
     }
 
-    ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "stats"].forEach((key) => {
+    ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "stats"].forEach((key) => {
       if (Array.isArray((live || {})[key]) && live[key].length) {
         result[key] = live[key];
       } else if (Array.isArray((fallback || {})[key])) {
@@ -264,6 +264,47 @@
         stat.append(createElement("span", "steam-stat-note", String(item.note)));
       }
       grid.append(stat);
+    });
+  }
+
+  function renderStoreTicker(id, items) {
+    const track = document.getElementById(id);
+    if (!track) return;
+    track.replaceChildren();
+
+    const highlights = (Array.isArray(items) ? items : []).filter((item) => item && item.title);
+    if (!highlights.length) {
+      const empty = createElement("span", "store-deal muted", "Steam store feed pending");
+      track.append(empty);
+      return;
+    }
+
+    const repeats = Math.max(1, Math.ceil(6 / highlights.length));
+    const sequence = Array.from({ length: repeats }, () => highlights).flat();
+    const tickerItems = [...sequence, ...sequence];
+    tickerItems.forEach((item, index) => {
+      const isDuplicate = index >= sequence.length;
+      const deal = createElement(item.url ? "a" : "span", "store-deal");
+      if (item.url) {
+        deal.href = safeUrl(item.url);
+        deal.target = "_blank";
+        deal.rel = "noopener noreferrer";
+      }
+
+      if (isDuplicate) {
+        deal.setAttribute("aria-hidden", "true");
+        deal.tabIndex = -1;
+      }
+
+      deal.append(createElement("span", "store-deal-tag", item.tag || item.category || "Steam"));
+      deal.append(createElement("span", "store-deal-title", item.title || "Steam game"));
+      deal.append(createElement("span", "store-deal-price", item.price || "Price TBA"));
+
+      if (item.discount) {
+        deal.append(createElement("span", "store-deal-discount", `${item.discount}% off`));
+      }
+
+      track.append(deal);
     });
   }
 
@@ -447,6 +488,7 @@
     renderGameList("steam-most-played", steam.mostPlayed);
     renderCycleList("steam-achievements", steam.achievements, "Achievements");
     renderCycleList("steam-completed", steam.completedGames, "100% Games");
+    renderStoreTicker("steam-store-ticker", steam.storeHighlights);
     observeReveals();
   }
 

@@ -127,13 +127,13 @@
                 <span class="steam-updated" id="steam-updated"></span>
               </div>
             </div>
-            <div class="steam-stat-grid" id="steam-stats"></div>
-            <span class="steam-label">Currently Playing</span>
-            <ul class="game-list current-games" id="steam-current"></ul>
             <div class="steam-actions">
               <a class="button ghost" id="steam-profile-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Steam Profile</a>
               <a class="button" id="steamdb-link" href="#" target="_blank" rel="noopener noreferrer" hidden>SteamDB</a>
             </div>
+            <div class="steam-stat-grid" id="steam-stats"></div>
+            <span class="steam-label">Currently Playing</span>
+            <ul class="game-list current-games" id="steam-current"></ul>
           </article>
           <div class="steam-grid">
             <article class="steam-card steam-card-large reveal">
@@ -148,6 +148,12 @@
               <h3>100% Games</h3>
               <ul class="game-list" id="steam-completed"></ul>
             </article>
+          </div>
+        </div>
+        <div class="steam-store-strip reveal">
+          <span class="steam-label">Steam Store Radar</span>
+          <div class="store-marquee" aria-label="Steam games currently on sale, popular, new, or coming soon">
+            <div class="store-marquee-track" id="steam-store-ticker"></div>
           </div>
         </div>
       </section>

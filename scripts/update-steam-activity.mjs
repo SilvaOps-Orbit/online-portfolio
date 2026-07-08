@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const steamId = process.env.STEAM_ID || "76561199192411740";
 const apiKey = process.env.STEAM_API_KEY || "";
+const storeCountry = process.env.STEAM_STORE_COUNTRY || "AU";
 const outputPath = new URL("../data/steam.json", import.meta.url);
 
 function gameUrl(appid) {
@@ -10,6 +11,10 @@ function gameUrl(appid) {
 
 function headerImage(appid) {
   return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
+}
+
+function storeItemUrl(appid) {
+  return `https://store.steampowered.com/app/${appid}/`;
 }
 
 function formatHours(minutes) {
@@ -40,6 +45,26 @@ function formatDuration(ms) {
   return "just started";
 }
 
+function formatPrice(value, currency) {
+  if (value === undefined || value === null || value === "") {
+    return "Price TBA";
+  }
+
+  const numericValue = Number(value);
+  if (!numericValue) {
+    return "Free";
+  }
+
+  try {
+    return new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: currency || "AUD"
+    }).format(numericValue / 100);
+  } catch (error) {
+    return `${currency || "AUD"} ${(numericValue / 100).toFixed(2)}`;
+  }
+}
+
 function toRecentGame(game) {
   return {
     appid: game.appid,
@@ -47,8 +72,54 @@ function toRecentGame(game) {
     meta: "Recently played",
     note: game.playtime_2weeks ? `${formatHours(game.playtime_2weeks)} in the last 2 weeks` : `${formatHours(game.playtime_forever)} total`,
     image: game.appid ? headerImage(game.appid) : "",
-    url: game.appid ? gameUrl(game.appid) : ""
+    url: game.appid ? gameUrl(game.appid) : "",
+    playtimeForeverMinutes: Number(game.playtime_forever || 0)
   };
+}
+
+function toStoreHighlight(item, category) {
+  const discount = Number(item.discount_percent || 0);
+
+  return {
+    appid: item.id,
+    title: item.name || "Steam game",
+    category,
+    price: formatPrice(item.final_price, item.currency),
+    originalPrice: discount ? formatPrice(item.original_price, item.currency) : "",
+    discount,
+    tag: category,
+    image: item.header_image || item.small_capsule_image || "",
+    url: storeItemUrl(item.id)
+  };
+}
+
+async function loadStoreHighlights() {
+  try {
+    const data = await fetchJson(`https://store.steampowered.com/api/featuredcategories?cc=${encodeURIComponent(storeCountry)}&l=en`);
+    const sources = [
+      ["Special", data.specials?.items || []],
+      ["Coming Soon", data.coming_soon?.items || []],
+      ["Top Seller", data.top_sellers?.items || []],
+      ["New Release", data.new_releases?.items || []]
+    ];
+    const seen = new Set();
+    const items = [];
+
+    sources.forEach(([category, list]) => {
+      list.forEach((item) => {
+        if (!item?.id || seen.has(item.id) || items.length >= 24) {
+          return;
+        }
+
+        seen.add(item.id);
+        items.push(toStoreHighlight(item, category));
+      });
+    });
+
+    return items;
+  } catch (error) {
+    return [];
+  }
 }
 
 async function readExistingData() {
@@ -88,7 +159,34 @@ async function steamApi(path, params) {
   return fetchJson(url);
 }
 
-function activeSteamGame(profile, previous, generatedAt) {
+function findPreviousGame(previous, appid) {
+  return [
+    ...((previous || {}).currentlyPlaying || []),
+    ...((previous || {}).mostPlayed || [])
+  ].find((game) => String(game.appid || "") === String(appid || ""));
+}
+
+function activeStartedAtFromSteam(activeAppId, currentPlaytime, previous, generatedAt) {
+  const previousGame = findPreviousGame(previous, activeAppId);
+
+  if (previousGame?.activeStartedAt && previousGame?.meta === "Playing now") {
+    return previousGame.activeStartedAt;
+  }
+
+  const previousPlaytime = Number(previousGame?.playtimeForeverMinutes);
+  const observedAt = Date.parse(previousGame?.lastObservedAt || previous?.generatedAt || previous?.lastGoodAt || generatedAt);
+  const now = Date.parse(generatedAt);
+
+  if (Number.isFinite(currentPlaytime) && Number.isFinite(previousPlaytime) && currentPlaytime > previousPlaytime) {
+    const deltaMs = (currentPlaytime - previousPlaytime) * 60000;
+    const elapsedMs = Number.isFinite(observedAt) ? Math.max(0, now - observedAt) : deltaMs;
+    return new Date(now - Math.min(deltaMs, elapsedMs || deltaMs)).toISOString();
+  }
+
+  return generatedAt;
+}
+
+function activeSteamGame(profile, gameData, previous, generatedAt) {
   const activeAppId = profile?.gameid ? String(profile.gameid) : "";
 
   if (!activeAppId) {
@@ -99,20 +197,21 @@ function activeSteamGame(profile, previous, generatedAt) {
     };
   }
 
-  const previousActive = Array.isArray(previous.currentlyPlaying) ? previous.currentlyPlaying[0] : {};
-  const activeStartedAt = String(previousActive?.appid || "") === activeAppId && previousActive?.activeStartedAt
-    ? previousActive.activeStartedAt
-    : generatedAt;
+  const currentPlaytime = Number(gameData?.playtime_forever || 0);
+  const activeStartedAt = activeStartedAtFromSteam(activeAppId, currentPlaytime, previous, generatedAt);
   const activeFor = formatDuration(Date.parse(generatedAt) - Date.parse(activeStartedAt));
+  const totalText = currentPlaytime ? ` - Steam total ${formatHours(currentPlaytime)}` : "";
 
   return {
     appid: activeAppId,
-    title: profile.gameextrainfo || "Steam game",
+    title: profile.gameextrainfo || gameData?.name || "Steam game",
     meta: "Playing now",
-    note: `Active for ${activeFor}`,
+    note: `Active for ${activeFor}${totalText}`,
     image: headerImage(activeAppId),
     url: gameUrl(activeAppId),
-    activeStartedAt
+    activeStartedAt,
+    playtimeForeverMinutes: currentPlaytime,
+    lastObservedAt: generatedAt
   };
 }
 
@@ -124,21 +223,24 @@ async function main() {
   }
 
   const generatedAt = new Date().toISOString();
-  const [profileResponse, recentResponse] = await Promise.all([
+  const [profileResponse, recentResponse, storeHighlights] = await Promise.all([
     steamApi("ISteamUser/GetPlayerSummaries/v0002/", { steamids: steamId }),
-    steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } }))
+    steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } })),
+    loadStoreHighlights()
   ]);
   const profile = profileResponse?.response?.players?.[0] || {};
   const recentGames = recentResponse?.response?.games || [];
-  const activeGame = activeSteamGame(profile, previous, generatedAt);
+  const activeAppId = profile?.gameid ? String(profile.gameid) : "";
+  const activeGameData = recentGames.find((game) => String(game.appid) === activeAppId) || {};
+  const activeGame = activeSteamGame(profile, activeGameData, previous, generatedAt);
   const recentGameList = recentGames
     .filter((game) => String(game.appid) !== String(activeGame.appid || ""))
     .slice(0, 3)
-    .map(toRecentGame);
+    .map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }));
   const currentGames = activeGame.appid
     ? [activeGame, ...recentGameList]
     : recentGames.length
-      ? recentGames.map(toRecentGame)
+      ? recentGames.map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }))
       : [activeGame];
   const output = {
     ...previous,
@@ -154,6 +256,7 @@ async function main() {
     },
     profileUrl: profile.profileurl || previous.profileUrl || `https://steamcommunity.com/profiles/${steamId}`,
     currentlyPlaying: currentGames,
+    storeHighlights: storeHighlights.length ? storeHighlights : previous.storeHighlights,
     status: activeGame.appid
       ? "Steam activity refreshed. Active game is shown from Steam profile status."
       : "Steam activity refreshed. No active game detected, so recently played games are shown.",

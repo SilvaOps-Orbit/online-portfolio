@@ -5,6 +5,7 @@ const apiKey = process.env.STEAM_API_KEY || "";
 const accountValue = process.env.STEAM_ACCOUNT_VALUE || process.env.STEAMDB_ACCOUNT_VALUE || "";
 const achievementScanLimit = Number(process.env.STEAM_ACHIEVEMENT_SCAN_LIMIT || 0);
 const achievementOutputLimit = Number(process.env.STEAM_ACHIEVEMENT_OUTPUT_LIMIT || 0);
+const storeCountry = process.env.STEAM_STORE_COUNTRY || "AU";
 const steamDbUrl = `https://steamdb.info/calculator/${steamId}/`;
 const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
 const outputPath = new URL("../data/steam.json", import.meta.url);
@@ -15,6 +16,10 @@ function gameUrl(appid) {
 
 function headerImage(appid) {
   return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
+}
+
+function storeItemUrl(appid) {
+  return `https://store.steampowered.com/app/${appid}/`;
 }
 
 function formatHours(minutes) {
@@ -48,6 +53,26 @@ function formatDuration(ms) {
   }
 
   return "just started";
+}
+
+function formatPrice(value, currency) {
+  if (value === undefined || value === null || value === "") {
+    return "Price TBA";
+  }
+
+  const numericValue = Number(value);
+  if (!numericValue) {
+    return "Free";
+  }
+
+  try {
+    return new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: currency || "AUD"
+    }).format(numericValue / 100);
+  } catch (error) {
+    return `${currency || "AUD"} ${(numericValue / 100).toFixed(2)}`;
+  }
 }
 
 async function readExistingData() {
@@ -102,13 +127,60 @@ function toRecentGame(game) {
   return {
     ...toGame(game, `${formatHours(game.playtime_forever)} total`),
     meta: "Recently played",
-    note: game.playtime_2weeks ? `${formatHours(game.playtime_2weeks)} in the last 2 weeks` : `${formatHours(game.playtime_forever)} total`
+    note: game.playtime_2weeks ? `${formatHours(game.playtime_2weeks)} in the last 2 weeks` : `${formatHours(game.playtime_forever)} total`,
+    playtimeForeverMinutes: Number(game.playtime_forever || 0)
   };
+}
+
+function toStoreHighlight(item, category) {
+  const price = formatPrice(item.final_price, item.currency);
+  const discount = Number(item.discount_percent || 0);
+
+  return {
+    appid: item.id,
+    title: item.name || "Steam game",
+    category,
+    price,
+    originalPrice: discount ? formatPrice(item.original_price, item.currency) : "",
+    discount,
+    tag: category,
+    image: item.header_image || item.small_capsule_image || "",
+    url: storeItemUrl(item.id)
+  };
+}
+
+async function loadStoreHighlights() {
+  try {
+    const data = await fetchJson(`https://store.steampowered.com/api/featuredcategories?cc=${encodeURIComponent(storeCountry)}&l=en`);
+    const sources = [
+      ["Special", data.specials?.items || []],
+      ["Coming Soon", data.coming_soon?.items || []],
+      ["Top Seller", data.top_sellers?.items || []],
+      ["New Release", data.new_releases?.items || []]
+    ];
+    const seen = new Set();
+    const items = [];
+
+    sources.forEach(([category, list]) => {
+      list.forEach((item) => {
+        if (!item?.id || seen.has(item.id) || items.length >= 24) {
+          return;
+        }
+
+        seen.add(item.id);
+        items.push(toStoreHighlight(item, category));
+      });
+    });
+
+    return items;
+  } catch (error) {
+    return [];
+  }
 }
 
 function withLastValues(output, previous) {
   const result = { ...output };
-  const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames"];
+  const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights"];
 
   arrayKeys.forEach((key) => {
     if ((!Array.isArray(result[key]) || !result[key].length) && Array.isArray(previous[key]) && previous[key].length) {
@@ -158,7 +230,34 @@ function achievementUnlocked(achievement) {
   return Number(achievement.achieved || 0) > 0;
 }
 
-function activeSteamGame(profile, ownedGames, previous, generatedAt) {
+function findPreviousGame(previous, appid) {
+  return [
+    ...((previous || {}).currentlyPlaying || []),
+    ...((previous || {}).mostPlayed || [])
+  ].find((game) => String(game.appid || "") === String(appid || ""));
+}
+
+function activeStartedAtFromSteam(activeAppId, currentPlaytime, previous, generatedAt) {
+  const previousGame = findPreviousGame(previous, activeAppId);
+
+  if (previousGame?.activeStartedAt && previousGame?.meta === "Playing now") {
+    return previousGame.activeStartedAt;
+  }
+
+  const previousPlaytime = Number(previousGame?.playtimeForeverMinutes);
+  const observedAt = Date.parse(previousGame?.lastObservedAt || previous?.generatedAt || previous?.lastGoodAt || generatedAt);
+  const now = Date.parse(generatedAt);
+
+  if (Number.isFinite(currentPlaytime) && Number.isFinite(previousPlaytime) && currentPlaytime > previousPlaytime) {
+    const deltaMs = (currentPlaytime - previousPlaytime) * 60000;
+    const elapsedMs = Number.isFinite(observedAt) ? Math.max(0, now - observedAt) : deltaMs;
+    return new Date(now - Math.min(deltaMs, elapsedMs || deltaMs)).toISOString();
+  }
+
+  return generatedAt;
+}
+
+function activeSteamGame(profile, gameData, previous, generatedAt) {
   const activeAppId = profile?.gameid ? String(profile.gameid) : "";
 
   if (!activeAppId) {
@@ -169,21 +268,21 @@ function activeSteamGame(profile, ownedGames, previous, generatedAt) {
     };
   }
 
-  const ownedGame = ownedGames.find((game) => String(game.appid) === activeAppId) || {};
-  const previousActive = Array.isArray(previous.currentlyPlaying) ? previous.currentlyPlaying[0] : {};
-  const activeStartedAt = String(previousActive?.appid || "") === activeAppId && previousActive?.activeStartedAt
-    ? previousActive.activeStartedAt
-    : generatedAt;
+  const currentPlaytime = Number(gameData?.playtime_forever || 0);
+  const activeStartedAt = activeStartedAtFromSteam(activeAppId, currentPlaytime, previous, generatedAt);
   const activeFor = formatDuration(Date.parse(generatedAt) - Date.parse(activeStartedAt));
+  const totalText = currentPlaytime ? ` - Steam total ${formatHours(currentPlaytime)}` : "";
 
   return {
     appid: activeAppId,
-    title: profile.gameextrainfo || ownedGame.name || "Steam game",
+    title: profile.gameextrainfo || gameData?.name || "Steam game",
     meta: "Playing now",
-    note: `Active for ${activeFor}`,
+    note: `Active for ${activeFor}${totalText}`,
     image: headerImage(activeAppId),
     url: gameUrl(activeAppId),
-    activeStartedAt
+    activeStartedAt,
+    playtimeForeverMinutes: currentPlaytime,
+    lastObservedAt: generatedAt
   };
 }
 
@@ -293,6 +392,7 @@ function fallbackData(reason) {
 async function main() {
   const previous = await readExistingData();
   let output = fallbackData("fallback");
+  const storeHighlights = await loadStoreHighlights();
 
   if (apiKey) {
     const [profileResponse, ownedResponse, recentResponse, levelResponse] = await Promise.all([
@@ -315,11 +415,13 @@ async function main() {
     const achievementData = await loadAchievementCollections(ownedGames);
 
     const generatedAt = new Date().toISOString();
-    const activeGame = activeSteamGame(profile, ownedGames, previous, generatedAt);
+    const activeAppId = profile?.gameid ? String(profile.gameid) : "";
+    const activeGameData = recentGames.find((game) => String(game.appid) === activeAppId) || ownedGames.find((game) => String(game.appid) === activeAppId) || {};
+    const activeGame = activeSteamGame(profile, activeGameData, previous, generatedAt);
     const recentGameList = recentGames
       .filter((game) => String(game.appid) !== String(activeGame.appid || ""))
       .slice(0, 3)
-      .map(toRecentGame);
+      .map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }));
 
     output = {
       generatedAt,
@@ -350,11 +452,18 @@ async function main() {
       currentlyPlaying: activeGame.appid
         ? [activeGame, ...recentGameList]
         : recentGames.length
-          ? recentGames.slice(0, 4).map(toRecentGame)
+          ? recentGames.slice(0, 4).map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }))
           : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
-      completedGames: achievementData.completedGames
+      completedGames: achievementData.completedGames,
+      storeHighlights
+    };
+  } else if (storeHighlights.length) {
+    output = {
+      ...output,
+      source: "steam-store",
+      storeHighlights
     };
   }
 

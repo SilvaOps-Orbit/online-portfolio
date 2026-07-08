@@ -128,6 +128,15 @@ window.PORTFOLIO_CONFIG = {
         meta: "Steam API",
         note: "This fills from achievement data when the Steam API refresh succeeds."
       }
+    ],
+    storeHighlights: [
+      {
+        title: "Steam Store feed pending",
+        category: "Steam",
+        tag: "Store",
+        price: "API refresh",
+        note: "The deployment workflow fills this with sales, popular games, new releases, and coming soon titles."
+      }
     ]
   },
   spotify: {

@@ -28,6 +28,8 @@ Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` 
 
 The deploy script now keeps the last successful Steam values when a refresh fails. SteamDB is linked as a reference, but it is not scraped.
 
+The Steam Store Radar uses Steam's public featured categories feed to show sales, top sellers, new releases, and coming soon games in a single animated ticker. The faster Steam activity workflow also refreshes/preserves that ticker data.
+
 ## Spotify stats
 
 Spotify data is generated into `data/spotify.json` by GitHub Actions so API credentials never run in the browser.
