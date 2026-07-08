@@ -817,13 +817,16 @@ h3 {
 
 .steam-layout {
   display: grid;
-  grid-template-columns: minmax(260px, 0.68fr) minmax(0, 1.32fr);
-  gap: 16px;
+  grid-template-columns: minmax(300px, 0.86fr) minmax(0, 1.14fr);
+  gap: clamp(16px, 3vw, 24px);
+  align-items: stretch;
 }
 
 .steam-feature {
+  display: flex;
+  flex-direction: column;
   min-height: 100%;
-  padding: 22px;
+  padding: clamp(20px, 3vw, 28px);
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--accent-3) 18%, transparent), transparent 58%),
     color-mix(in srgb, var(--panel) 88%, transparent);
@@ -881,10 +884,11 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  margin-bottom: 10px;
 }
 
 .steam-stat {
-  min-height: 82px;
+  min-height: 88px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1005,8 +1009,37 @@ h3 {
 
 .steam-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+
+.steam-actions .button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  text-align: center;
+}
+
+.steam-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.steam-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.steam-card-large {
+  grid-column: 1 / -1;
+}
+
+.steam-card-large .cycle-list.is-cycling {
+  min-height: 340px;
+}
+
+.current-games {
   margin-top: 20px;
 }
 
@@ -1138,7 +1171,8 @@ h3 {
 
 @media (max-width: 420px) {
   .hero-actions,
-  .contact-actions {
+  .contact-actions,
+  .steam-actions {
     align-items: stretch;
     flex-direction: column;
   }

@@ -76,7 +76,6 @@ window.PORTFOLIO_CONFIG = {
     steamId: "76561199192411740",
     profileUrl: "https://steamcommunity.com/profiles/76561199192411740",
     steamDbUrl: "https://steamdb.info/calculator/76561199192411740/",
-    steamDbWishlistUrl: "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012",
     accountValue: {
       value: "Account Value A$ 910.00",
       note: "Manual value. Update this in portfolio.config.js whenever you want it changed.",
@@ -98,16 +97,6 @@ window.PORTFOLIO_CONFIG = {
       { label: "Owned Games", value: "Connect API" },
       { label: "Total Playtime", value: "Connect API" },
       { label: "Steam Level", value: "Connect API" }
-    ],
-    wishlist: [
-      {
-        title: "Wishlist game",
-        note: "Add the next game you want to pick up."
-      },
-      {
-        title: "Long-term wishlist",
-        note: "Add a bigger title you are waiting for."
-      }
     ],
     mostPlayed: [
       {

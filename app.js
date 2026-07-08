@@ -239,7 +239,7 @@
       result.accountValue = (fallback || {}).accountValue;
     }
 
-    ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "completedGames", "stats"].forEach((key) => {
+    ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "stats"].forEach((key) => {
       if (Array.isArray((live || {})[key]) && live[key].length) {
         result[key] = live[key];
       } else if (Array.isArray((fallback || {})[key])) {
@@ -433,12 +433,6 @@
       steamDbLink.hidden = false;
     }
 
-    const steamDbWishlistLink = document.getElementById("steamdb-wishlist-link");
-    if (steamDbWishlistLink && steam.steamDbWishlistUrl) {
-      steamDbWishlistLink.href = safeUrl(steam.steamDbWishlistUrl);
-      steamDbWishlistLink.hidden = false;
-    }
-
     const stats = Array.isArray(steam.stats) ? [...steam.stats] : [];
     if (steam.accountValue?.value) {
       stats.push({
@@ -450,7 +444,6 @@
     renderStats(stats);
 
     renderGameList("steam-current", steam.currentlyPlaying);
-    renderCycleList("steam-wishlist", steam.wishlist, "Wishlist");
     renderGameList("steam-most-played", steam.mostPlayed);
     renderCycleList("steam-achievements", steam.achievements, "Achievements");
     renderCycleList("steam-completed", steam.completedGames, "100% Games");

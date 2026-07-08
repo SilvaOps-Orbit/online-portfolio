@@ -6,7 +6,6 @@ const accountValue = process.env.STEAM_ACCOUNT_VALUE || process.env.STEAMDB_ACCO
 const achievementScanLimit = Number(process.env.STEAM_ACHIEVEMENT_SCAN_LIMIT || 0);
 const achievementOutputLimit = Number(process.env.STEAM_ACHIEVEMENT_OUTPUT_LIMIT || 0);
 const steamDbUrl = `https://steamdb.info/calculator/${steamId}/`;
-const steamDbWishlistUrl = "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012";
 const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
 const outputPath = new URL("../data/steam.json", import.meta.url);
 
@@ -81,7 +80,7 @@ function toGame(item, note) {
 
 function withLastValues(output, previous) {
   const result = { ...output };
-  const arrayKeys = ["currentlyPlaying", "wishlist", "mostPlayed", "achievements", "completedGames"];
+  const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames"];
 
   arrayKeys.forEach((key) => {
     if ((!Array.isArray(result[key]) || !result[key].length) && Array.isArray(previous[key]) && previous[key].length) {
@@ -116,53 +115,11 @@ function withLastValues(output, previous) {
       : "Steam could not refresh right now, so saved values are being shown.";
   } else if (result.source === "steam-web-api") {
     result.status = "Steam data refreshed successfully.";
-  } else if (result.source === "steam-wishlist") {
-    result.status = "Wishlist data refreshed. Add STEAM_API_KEY for owned games, achievements, and 100% games.";
   } else if (!result.status) {
     result.status = apiKey ? "Steam could not refresh right now." : "Add STEAM_API_KEY to publish owned games, achievements, and 100% games.";
   }
 
   return result;
-}
-
-async function loadWishlist() {
-  const wishlist = new Map();
-
-  try {
-    for (let page = 0; page < 80; page += 1) {
-      const data = await fetchJson(`https://store.steampowered.com/wishlist/profiles/${steamId}/wishlistdata/?p=${page}`);
-      const entries = Object.entries(data || {});
-
-      if (!entries.length) {
-        break;
-      }
-
-      let newItems = 0;
-      entries.forEach(([appid, item]) => {
-        if (wishlist.has(appid)) {
-          return;
-        }
-
-        wishlist.set(appid, {
-          appid,
-          title: item.name || "Wishlist game",
-          meta: item.release_string || item.subs?.[0]?.price || "",
-          note: item.review_desc || "On wishlist",
-          image: headerImage(appid),
-          url: gameUrl(appid)
-        });
-        newItems += 1;
-      });
-
-      if (!newItems) {
-        break;
-      }
-    }
-  } catch (error) {
-    return Array.from(wishlist.values());
-  }
-
-  return Array.from(wishlist.values());
 }
 
 function achievementKey(achievement) {
@@ -263,7 +220,6 @@ function fallbackData(reason) {
     steamId,
     profileUrl,
     steamDbUrl,
-    steamDbWishlistUrl,
     accountValue: accountValue
       ? {
           value: accountValue,
@@ -280,7 +236,6 @@ function fallbackData(reason) {
 async function main() {
   const previous = await readExistingData();
   let output = fallbackData("fallback");
-  const wishlist = await loadWishlist();
 
   if (apiKey) {
     const [profileResponse, ownedResponse, recentResponse, levelResponse] = await Promise.all([
@@ -308,7 +263,6 @@ async function main() {
       steamId,
       profileUrl: profile.profileurl || profileUrl,
       steamDbUrl,
-      steamDbWishlistUrl,
       profile: {
         personaName: profile.personaname || "Steam Profile",
         avatarFull: profile.avatarfull || "",
@@ -335,16 +289,9 @@ async function main() {
             meta: `${formatHours(game.playtime_2weeks)} last 2 weeks`
           }))
         : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),
-      wishlist,
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
       completedGames: achievementData.completedGames
-    };
-  } else if (wishlist.length) {
-    output = {
-      ...output,
-      source: "steam-wishlist",
-      wishlist
     };
   }
 

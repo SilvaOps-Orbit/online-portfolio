@@ -10,7 +10,7 @@ Edit `portfolio.config.js`:
 - Set `githubUsername` to your GitHub username to show live public repositories.
 - Set `discordUrl` to a public Discord profile or server link.
 - Add real project links under `projects`.
-- Add your Steam profile, current games, wishlist, most played games, and achievements under `steam`.
+- Add your Steam profile, current games, most played games, achievements, and 100% games under `steam`.
 - Set `steam.accountValue.value` to the manual account value you want displayed.
 - Add Spotify fallback text under `spotify`.
 - Add `linkedinUrl` and `resumeUrl` when you have them.
@@ -26,7 +26,7 @@ The Steam section can refresh during GitHub Pages deployment without exposing yo
 
 Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` on push, manual dispatch, and a daily schedule. The site prefers the manual value in `portfolio.config.js`, so you can edit it directly without depending on SteamDB.
 
-The deploy script now keeps the last successful Steam values when a refresh fails. Wishlist data can only load if Steam's public wishlist endpoint allows access to your profile wishlist; SteamDB is linked as a reference, but it is not scraped.
+The deploy script now keeps the last successful Steam values when a refresh fails. SteamDB is linked as a reference, but it is not scraped.
 
 ## Spotify stats
 
