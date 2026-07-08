@@ -319,6 +319,33 @@
     return shuffled;
   }
 
+  function stripPriceText(value) {
+    return String(value || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&quot;/g, "\"")
+      .replace(/&#39;/g, "'")
+      .replace(/(?:\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b\s*)?(?:A\$|AU\$|NZ\$|US\$|CA\$|\$|€|£)\s*\d[\d,.]*(?:\.\d{2})?(?:\s*\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b)?/gi, " ")
+      .replace(/\bPrice\s*TBA\b/gi, " ")
+      .replace(/\s*[-–—:|]\s*$/g, " ")
+      .replace(/^\s*[-–—:|]\s*/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function editionChipText(edition) {
+    const rawLabel = typeof edition === "string" ? edition : edition?.label || edition?.name || "";
+    const price = typeof edition === "string" ? "" : edition?.price || "";
+    const label = stripPriceText(rawLabel).replace(/^(buy|purchase)\s+/i, "").trim();
+
+    if (price) {
+      return `${label || "Edition"}: ${price}`;
+    }
+
+    return label || rawLabel || "Edition";
+  }
+
   function appendGameItem(list, item, index) {
     const game = typeof item === "string" ? { title: item } : item || {};
     const li = createElement("li");
@@ -370,9 +397,7 @@
     if (Array.isArray(game.editions) && game.editions.length) {
       const editions = createElement("span", "game-editions");
       game.editions.slice(0, 3).forEach((edition) => {
-        const label = typeof edition === "string" ? edition : edition.label || edition.name || "Edition";
-        const price = typeof edition === "string" ? "" : edition.price || "";
-        editions.append(createElement("span", "edition-chip", price ? `${label}: ${price}` : label));
+        editions.append(createElement("span", "edition-chip", editionChipText(edition)));
       });
       body.append(editions);
     }

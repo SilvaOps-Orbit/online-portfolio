@@ -84,6 +84,22 @@ function stripText(value) {
     .trim();
 }
 
+function stripPriceText(value) {
+  return stripText(value)
+    .replace(/(?:\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b\s*)?(?:A\$|AU\$|NZ\$|US\$|CA\$|\$|€|£)\s*\d[\d,.]*(?:\.\d{2})?(?:\s*\b(?:AUD|USD|CAD|NZD|EUR|GBP)\b)?/gi, " ")
+    .replace(/\bPrice\s*TBA\b/gi, " ")
+    .replace(/\s*[-–—:|]\s*$/g, " ")
+    .replace(/^\s*[-–—:|]\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function editionLabel(sub, group) {
+  const primary = stripPriceText(sub.name || sub.option_text || "");
+  const fallback = stripPriceText(group.title || "");
+  return (primary || fallback || "Edition").replace(/^(buy|purchase)\s+/i, "").trim() || "Edition";
+}
+
 function shuffleItems(items) {
   const shuffled = [...items];
   for (let index = shuffled.length - 1; index > 0; index -= 1) {
@@ -146,19 +162,21 @@ function extractEditions(details) {
 
   (details?.package_groups || []).forEach((group) => {
     (group.subs || []).forEach((sub) => {
-      const label = stripText(sub.name || sub.option_text || group.title || "Edition");
-      if (!label || seen.has(label)) {
+      const label = editionLabel(sub, group);
+      const price = sub.price_in_cents_with_discount !== undefined
+        ? formatPrice(sub.price_in_cents_with_discount, currency)
+        : sub.is_free_license
+          ? "Free"
+          : "";
+      const key = `${label.toLowerCase()}|${price}`;
+      if (!label || seen.has(key)) {
         return;
       }
 
-      seen.add(label);
+      seen.add(key);
       editions.push({
         label,
-        price: sub.price_in_cents_with_discount !== undefined
-          ? formatPrice(sub.price_in_cents_with_discount, currency)
-          : sub.is_free_license
-            ? "Free"
-            : ""
+        price
       });
     });
   });
