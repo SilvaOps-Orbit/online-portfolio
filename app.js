@@ -104,9 +104,11 @@
     const copy = document.getElementById("about-copy");
     if (copy) {
       copy.replaceChildren();
+      const story = createElement("article", "story-body reveal");
       (config.about || []).forEach((paragraph) => {
-        copy.append(createElement("p", "", paragraph));
+        story.append(createElement("p", "", paragraph));
       });
+      copy.append(story);
     }
 
     const skillList = document.getElementById("skill-list");
@@ -205,6 +207,45 @@
       card.append(createElement("h3", "", item.title || "Security Control"), createElement("p", "", item.body || ""));
       grid.append(card);
     });
+  }
+
+  function renderGameList(id, items) {
+    const list = document.getElementById(id);
+    if (!list) return;
+    list.replaceChildren();
+
+    (items || []).forEach((item) => {
+      const game = typeof item === "string" ? { title: item } : item;
+      const li = createElement("li");
+      li.append(createElement("span", "game-title", game.title || "Untitled game"));
+
+      if (game.meta) {
+        li.append(createElement("span", "game-meta", game.meta));
+      }
+
+      if (game.note) {
+        li.append(createElement("span", "game-note", game.note));
+      }
+
+      list.append(li);
+    });
+  }
+
+  function renderSteam() {
+    const steam = config.steam || {};
+    setText("steam-summary", steam.summary || "");
+
+    const profileLink = document.getElementById("steam-profile-link");
+    if (profileLink && steam.profileUrl) {
+      profileLink.href = safeUrl(steam.profileUrl);
+      profileLink.hidden = false;
+      profileLink.classList.add("steam-profile-link");
+    }
+
+    renderGameList("steam-current", steam.currentlyPlaying);
+    renderGameList("steam-wishlist", steam.wishlist);
+    renderGameList("steam-most-played", steam.mostPlayed);
+    renderGameList("steam-achievements", steam.achievements);
   }
 
   function renderContact() {
@@ -576,6 +617,7 @@
     renderAbout();
     renderProjectFilters(config.projects || []);
     renderProjects();
+    renderSteam();
     renderSecurity();
     renderContact();
     bindNavigation();

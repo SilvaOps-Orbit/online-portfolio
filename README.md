@@ -10,6 +10,7 @@ Edit `portfolio.config.js`:
 - Set `githubUsername` to your GitHub username to show live public repositories.
 - Set `discordUrl` to a public Discord profile or server link.
 - Add real project links under `projects`.
+- Add your Steam profile, current games, wishlist, most played games, and achievements under `steam`.
 - Add `linkedinUrl` and `resumeUrl` when you have them.
 
 ## GitHub Pages
