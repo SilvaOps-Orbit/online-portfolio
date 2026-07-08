@@ -37,11 +37,26 @@ The Pre-Order / Top 20 Games Watch card uses the same Steam Store feed. It rando
 Spotify data is generated into `data/spotify.json` by GitHub Actions so API credentials never run in the browser.
 
 1. Create a Spotify app in the Spotify Developer Dashboard.
-2. Authorize your account with scopes `user-read-currently-playing playlist-read-private`.
-3. Add repository secrets:
+2. Add `http://127.0.0.1:3000` as a redirect URI in the Spotify app settings.
+3. Create the authorization URL:
+   ```powershell
+   $env:SPOTIFY_CLIENT_ID="your-client-id"
+   node scripts/spotify-auth-url.mjs
+   ```
+4. Open the printed URL, approve the app, then copy the `code` value from the redirected URL.
+5. Exchange that code for a refresh token:
+   ```powershell
+   $env:SPOTIFY_CLIENT_ID="your-client-id"
+   $env:SPOTIFY_CLIENT_SECRET="your-client-secret"
+   $env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
+   node scripts/spotify-refresh-token.mjs
+   ```
+6. Add repository secrets:
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
    - `SPOTIFY_REFRESH_TOKEN`
+
+The requested scopes are `user-read-currently-playing playlist-read-private`. Spotify currently documents refresh tokens as lasting 6 months, so if the workflow starts reporting `invalid_grant`, repeat the authorization steps and replace `SPOTIFY_REFRESH_TOKEN`.
 
 The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live.
 

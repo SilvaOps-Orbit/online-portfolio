@@ -86,7 +86,10 @@ async function getAccessToken() {
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error(`Spotify token refresh failed: ${data.error || response.status}`);
+    const hint = data.error === "invalid_grant"
+      ? " Refresh token expired or was revoked; generate a new SPOTIFY_REFRESH_TOKEN."
+      : "";
+    throw new Error(`Spotify token refresh failed: ${data.error || response.status}.${hint}`);
   }
 
   return data.access_token;

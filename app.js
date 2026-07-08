@@ -105,6 +105,7 @@
     setText("focus", profile.focus);
     setText("current", profile.current);
     setText("footer-name", profile.name);
+    setText("footer-year", String(new Date().getFullYear()));
 
     setLink("github-profile-link", githubProfileUrl(username));
     setLink("email-link", `mailto:${profile.email || ""}`);
