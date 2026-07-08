@@ -5,6 +5,7 @@
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const root = document.documentElement;
   const cycleTimers = new Map();
+  const dataRefreshMs = 60000;
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -449,12 +450,18 @@
     observeReveals();
   }
 
-  async function loadSteamData() {
+  function dataUrl(path) {
+    return `${path}?v=${Date.now()}`;
+  }
+
+  async function loadSteamData(options = {}) {
     const fallback = config.steam || {};
-    renderSteam(fallback);
+    if (options.renderFallback !== false) {
+      renderSteam(fallback);
+    }
 
     try {
-      const response = await fetch("data/steam.json", {
+      const response = await fetch(dataUrl("data/steam.json"), {
         cache: "no-cache",
         referrerPolicy: "no-referrer"
       });
@@ -539,12 +546,14 @@
     observeReveals();
   }
 
-  async function loadSpotifyData() {
+  async function loadSpotifyData(options = {}) {
     const fallback = config.spotify || {};
-    renderSpotify(fallback);
+    if (options.renderFallback !== false) {
+      renderSpotify(fallback);
+    }
 
     try {
-      const response = await fetch("data/spotify.json", {
+      const response = await fetch(dataUrl("data/spotify.json"), {
         cache: "no-cache",
         referrerPolicy: "no-referrer"
       });
@@ -955,6 +964,8 @@
     bindTiltCards();
     startSignalCanvas();
     loadGitHubRepos();
+    window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
+    window.setInterval(() => loadSpotifyData({ renderFallback: false }), dataRefreshMs);
   }
 
   init();

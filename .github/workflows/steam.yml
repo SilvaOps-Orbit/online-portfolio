@@ -1,4 +1,4 @@
-name: Refresh Spotify Data
+name: Refresh Steam Activity
 
 on:
   schedule:
@@ -27,18 +27,23 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Preserve deployed Spotify data
+        run: node scripts/preserve-deployed-data.mjs
+        env:
+          PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
+          PRESERVE_DATA_FILES: "spotify.json"
+
       - name: Preserve deployed Steam data
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
           PRESERVE_DATA_FILES: "steam.json"
 
-      - name: Generate Spotify data
-        run: node scripts/update-spotify-data.mjs
+      - name: Refresh Steam activity
+        run: node scripts/update-steam-activity.mjs
         env:
-          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
