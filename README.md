@@ -30,6 +30,8 @@ The deploy script now keeps the last successful Steam values when a refresh fail
 
 The Steam Store Radar uses Steam's public featured categories feed to show sales, top sellers, new releases, and coming soon games in a single animated ticker. The faster Steam activity workflow also refreshes/preserves that ticker data.
 
+The Pre-Order Watch card uses the same Steam Store feed. It cycles one coming-soon/pre-order style game at a time and links directly to the Steam store page. If Steam returns no upcoming entries, it falls back to a current top seller/popular game.
+
 ## Spotify stats
 
 Spotify data is generated into `data/spotify.json` by GitHub Actions so API credentials never run in the browser.
@@ -44,6 +46,8 @@ Spotify data is generated into `data/spotify.json` by GitHub Actions so API cred
 The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live.
 
 Steam activity has its own `.github/workflows/steam.yml` workflow that runs every 5 minutes. It preserves the heavier Steam stats from the last full deploy and only refreshes the active/recently played game card.
+
+On page startup, the browser preloads `data/steam.json` and `data/spotify.json` before revealing the site. If either generated data file is missing or slow, the page falls back to `portfolio.config.js` so it still opens without exposing API secrets.
 
 ## GitHub Pages
 

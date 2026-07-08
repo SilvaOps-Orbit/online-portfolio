@@ -13,9 +13,35 @@
     <title>Alvis Leslie Gordon | Portfolio</title>
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body class="is-booting">
     <a class="skip-link" href="#main">Skip to content</a>
     <canvas id="signal-canvas" aria-hidden="true"></canvas>
+    <div class="boot-screen" id="boot-screen" role="status" aria-live="polite">
+      <div class="boot-card">
+        <div class="boot-mark-wrap" aria-hidden="true">
+          <span class="boot-mark">AG</span>
+          <span class="boot-frame"></span>
+        </div>
+        <p class="boot-kicker">Secure Entry Sequence</p>
+        <p class="boot-title">Unlocking Site</p>
+        <p class="boot-quote" id="boot-quote">Teaching the APIs how to behave.</p>
+        <div class="boot-chips" aria-hidden="true">
+          <span>Identity Check</span>
+          <span>Live Data</span>
+          <span>Access Ready</span>
+        </div>
+        <div class="boot-bars" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
 
     <header class="site-header" data-elevated="false">
       <a class="brand" href="#top" id="brand-name">Portfolio</a>
@@ -134,6 +160,10 @@
             <div class="steam-stat-grid" id="steam-stats"></div>
             <span class="steam-label">Currently Playing</span>
             <ul class="game-list current-games" id="steam-current"></ul>
+            <div class="steam-watch">
+              <span class="steam-label">Pre-Order Watch</span>
+              <ul class="game-list watch-list" id="steam-preorder-watch" aria-live="polite"></ul>
+            </div>
           </article>
           <div class="steam-grid">
             <article class="steam-card steam-card-large reveal">

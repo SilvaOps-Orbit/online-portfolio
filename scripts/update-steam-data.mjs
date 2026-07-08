@@ -149,7 +149,17 @@ function toStoreHighlight(item, category) {
   };
 }
 
-async function loadStoreHighlights() {
+function toStoreWatchItem(item, category, note) {
+  const highlight = toStoreHighlight(item, category);
+
+  return {
+    ...highlight,
+    meta: category,
+    note: note || `${highlight.price} on Steam`
+  };
+}
+
+async function loadStoreCollections() {
   try {
     const data = await fetchJson(`https://store.steampowered.com/api/featuredcategories?cc=${encodeURIComponent(storeCountry)}&l=en`);
     const sources = [
@@ -172,15 +182,39 @@ async function loadStoreHighlights() {
       });
     });
 
-    return items;
+    const preorderWatch = [];
+    const preorderSeen = new Set();
+    (data.coming_soon?.items || []).forEach((item) => {
+      if (!item?.id || preorderSeen.has(item.id) || preorderWatch.length >= 18) {
+        return;
+      }
+
+      preorderSeen.add(item.id);
+      preorderWatch.push(toStoreWatchItem(item, "Pre-order", "Upcoming on Steam. Open the store page for release/pre-order details."));
+    });
+
+    if (!preorderWatch.length) {
+      const fallback = (data.top_sellers?.items || data.specials?.items || data.new_releases?.items || []).find((item) => item?.id);
+      if (fallback) {
+        preorderWatch.push(toStoreWatchItem(fallback, "Popular now", "No pre-order entries were returned, so this shows a current popular Steam game."));
+      }
+    }
+
+    return {
+      storeHighlights: items,
+      preorderWatch
+    };
   } catch (error) {
-    return [];
+    return {
+      storeHighlights: [],
+      preorderWatch: []
+    };
   }
 }
 
 function withLastValues(output, previous) {
   const result = { ...output };
-  const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights"];
+  const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "preorderWatch"];
 
   arrayKeys.forEach((key) => {
     if ((!Array.isArray(result[key]) || !result[key].length) && Array.isArray(previous[key]) && previous[key].length) {
@@ -392,7 +426,8 @@ function fallbackData(reason) {
 async function main() {
   const previous = await readExistingData();
   let output = fallbackData("fallback");
-  const storeHighlights = await loadStoreHighlights();
+  const storeCollections = await loadStoreCollections();
+  const { storeHighlights, preorderWatch } = storeCollections;
 
   if (apiKey) {
     const [profileResponse, ownedResponse, recentResponse, levelResponse] = await Promise.all([
@@ -457,13 +492,15 @@ async function main() {
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
       completedGames: achievementData.completedGames,
-      storeHighlights
+      storeHighlights,
+      preorderWatch
     };
-  } else if (storeHighlights.length) {
+  } else if (storeHighlights.length || preorderWatch.length) {
     output = {
       ...output,
       source: "steam-store",
-      storeHighlights
+      storeHighlights,
+      preorderWatch
     };
   }
 

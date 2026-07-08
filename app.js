@@ -6,6 +6,7 @@
   const root = document.documentElement;
   const cycleTimers = new Map();
   const dataRefreshMs = 60000;
+  let bootQuoteTimer = 0;
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -240,7 +241,7 @@
       result.accountValue = (fallback || {}).accountValue;
     }
 
-    ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "stats"].forEach((key) => {
+    ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "preorderWatch", "stats"].forEach((key) => {
       if (Array.isArray((live || {})[key]) && live[key].length) {
         result[key] = live[key];
       } else if (Array.isArray((fallback || {})[key])) {
@@ -485,6 +486,7 @@
     renderStats(stats);
 
     renderGameList("steam-current", steam.currentlyPlaying);
+    renderCycleList("steam-preorder-watch", steam.preorderWatch, "Pre-Order Watch", 1);
     renderGameList("steam-most-played", steam.mostPlayed);
     renderCycleList("steam-achievements", steam.achievements, "Achievements");
     renderCycleList("steam-completed", steam.completedGames, "100% Games");
@@ -496,27 +498,45 @@
     return `${path}?v=${Date.now()}`;
   }
 
+  async function fetchDataFile(path, timeoutMs = 6500) {
+    const controller = "AbortController" in window ? new AbortController() : null;
+    const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : 0;
+
+    try {
+      const response = await fetch(dataUrl(path), {
+        cache: "no-cache",
+        referrerPolicy: "no-referrer",
+        signal: controller?.signal
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      return response.json();
+    } catch (error) {
+      return null;
+    } finally {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    }
+  }
+
   async function loadSteamData(options = {}) {
     const fallback = config.steam || {};
     if (options.renderFallback !== false) {
       renderSteam(fallback);
     }
 
-    try {
-      const response = await fetch(dataUrl("data/steam.json"), {
-        cache: "no-cache",
-        referrerPolicy: "no-referrer"
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const live = await response.json();
-      renderSteam(mergeSteamData(fallback, live));
-    } catch (error) {
-      return;
+    const live = await fetchDataFile("data/steam.json");
+    if (!live) {
+      return fallback;
     }
+
+    const merged = mergeSteamData(fallback, live);
+    renderSteam(merged);
+    return merged;
   }
 
   function mergeSpotifyData(fallback, live) {
@@ -540,6 +560,77 @@
     });
 
     return result;
+  }
+
+  async function preloadDynamicData() {
+    const fallbackSteam = config.steam || {};
+    const fallbackSpotify = config.spotify || {};
+    const [liveSteam, liveSpotify] = await Promise.all([
+      fetchDataFile("data/steam.json"),
+      fetchDataFile("data/spotify.json")
+    ]);
+
+    return {
+      steam: liveSteam ? mergeSteamData(fallbackSteam, liveSteam) : fallbackSteam,
+      spotify: liveSpotify ? mergeSpotifyData(fallbackSpotify, liveSpotify) : fallbackSpotify
+    };
+  }
+
+  function delay(ms) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
+
+  function finishBoot() {
+    const bootScreen = document.getElementById("boot-screen");
+    if (bootQuoteTimer) {
+      window.clearInterval(bootQuoteTimer);
+      bootQuoteTimer = 0;
+    }
+
+    document.body.classList.remove("is-booting");
+    document.body.classList.add("is-ready");
+
+    if (bootScreen) {
+      window.setTimeout(() => {
+        bootScreen.hidden = true;
+      }, 280);
+    }
+  }
+
+  function bindBootQuotes() {
+    const target = document.getElementById("boot-quote");
+    if (!target) return;
+
+    const quotes = [
+      "Teaching the APIs how to behave.",
+      "Checking if the pixels know the password.",
+      "Unlocking the portfolio vault.",
+      "Politely asking the firewall to smile.",
+      "Loading cool stuff with serious intent.",
+      "Keeping secrets out of browser code.",
+      "Preparing fallback data like a responsible adult.",
+      "Dusting off the access badge.",
+      "Making the loading screen earn its rent.",
+      "Almost in. Pretend this is dramatic."
+    ];
+
+    let quoteIndex = Math.floor(Math.random() * quotes.length);
+    target.textContent = quotes[quoteIndex];
+
+    if (prefersReducedMotion) {
+      return;
+    }
+
+    bootQuoteTimer = window.setInterval(() => {
+      target.classList.add("is-swapping");
+      window.setTimeout(() => {
+        quoteIndex = (quoteIndex + 1) % quotes.length;
+        target.textContent = quotes[quoteIndex];
+        target.classList.remove("is-swapping");
+      }, 180);
+    }, 900);
   }
 
   function renderStatus(id, data) {
@@ -594,21 +685,14 @@
       renderSpotify(fallback);
     }
 
-    try {
-      const response = await fetch(dataUrl("data/spotify.json"), {
-        cache: "no-cache",
-        referrerPolicy: "no-referrer"
-      });
-
-      if (!response.ok) {
-        return;
-      }
-
-      const live = await response.json();
-      renderSpotify(mergeSpotifyData(fallback, live));
-    } catch (error) {
-      return;
+    const live = await fetchDataFile("data/spotify.json");
+    if (!live) {
+      return fallback;
     }
+
+    const merged = mergeSpotifyData(fallback, live);
+    renderSpotify(merged);
+    return merged;
   }
 
   function renderContact() {
@@ -988,27 +1072,35 @@
     draw();
   }
 
-  function init() {
+  async function init() {
+    bindTheme();
+    bindBootQuotes();
+    const [dynamicData] = await Promise.all([preloadDynamicData(), delay(10000)]);
+
     applyProfile();
     renderHighlights();
     renderAbout();
     renderProjectFilters(config.projects || []);
     renderProjects();
-    loadSteamData();
-    loadSpotifyData();
+    renderSteam(dynamicData.steam);
+    renderSpotify(dynamicData.spotify);
     renderSecurity();
     renderContact();
     bindNavigation();
     bindActiveNav();
-    bindTheme();
     bindTypewriter();
     observeReveals();
     bindTiltCards();
     startSignalCanvas();
     loadGitHubRepos();
+    finishBoot();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), dataRefreshMs);
   }
 
-  init();
+  init().catch(() => {
+    renderSteam(config.steam || {});
+    renderSpotify(config.spotify || {});
+    finishBoot();
+  });
 })();

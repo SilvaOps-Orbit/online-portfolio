@@ -63,6 +63,17 @@ body::before {
   pointer-events: none;
 }
 
+body.is-booting {
+  overflow: hidden;
+}
+
+body.is-booting .site-header,
+body.is-booting main,
+body.is-booting .site-footer {
+  opacity: 0;
+  pointer-events: none;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -83,6 +94,218 @@ select {
   height: 100%;
   opacity: 0.88;
   pointer-events: none;
+}
+
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent-3) 16%, transparent), transparent 42%),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--line) 36%, transparent) 0 1px, transparent 1px 52px),
+    color-mix(in srgb, var(--bg) 88%, transparent);
+  color: var(--text);
+  text-align: center;
+  overflow: hidden;
+  transition: opacity 260ms ease, visibility 260ms ease;
+}
+
+.boot-screen[hidden] {
+  display: none;
+}
+
+body:not(.is-booting) .boot-screen {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(100%, 430px);
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 84%, transparent), color-mix(in srgb, var(--bg) 72%, transparent)),
+    repeating-linear-gradient(0deg, transparent 0 14px, color-mix(in srgb, var(--accent) 8%, transparent) 14px 15px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.boot-card::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--accent) 16%, transparent), transparent);
+  opacity: 0.8;
+  transform: translateY(-100%);
+  animation: boot-scan 1800ms linear infinite;
+}
+
+.boot-card > * {
+  position: relative;
+}
+
+.boot-mark-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  aspect-ratio: 1;
+}
+
+.boot-mark {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent-3) 16%, transparent)),
+    color-mix(in srgb, var(--panel) 84%, transparent);
+  color: var(--accent-2);
+  font-size: 1.55rem;
+  font-weight: 950;
+  box-shadow: var(--shadow);
+  animation: boot-pulse 1100ms ease-in-out infinite alternate;
+}
+
+.boot-frame {
+  position: absolute;
+  inset: 0;
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: var(--radius);
+  transform: rotate(45deg);
+  animation: boot-frame 2200ms linear infinite;
+}
+
+.boot-kicker,
+.boot-title {
+  margin: 0;
+}
+
+.boot-kicker {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.boot-title {
+  color: var(--text);
+  font-size: clamp(1.35rem, 4vw, 2rem);
+  font-weight: 950;
+  line-height: 1.05;
+}
+
+.boot-quote {
+  min-height: 28px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 34%, transparent);
+  color: var(--accent-2);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.84rem;
+  font-weight: 800;
+  transform: translateY(0);
+  opacity: 1;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.boot-quote.is-swapping {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.boot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.boot-chips span {
+  min-height: 28px;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 28%, transparent);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.boot-bars {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 5px;
+  width: min(100%, 260px);
+  height: 34px;
+  align-items: end;
+  margin-top: 4px;
+}
+
+.boot-bars span {
+  min-height: 8px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  animation: boot-bars 920ms ease-in-out infinite alternate;
+  animation-delay: calc(var(--bar-index, 0) * 80ms);
+}
+
+.boot-bars span:nth-child(1) { --bar-index: 0; }
+.boot-bars span:nth-child(2) { --bar-index: 1; }
+.boot-bars span:nth-child(3) { --bar-index: 2; }
+.boot-bars span:nth-child(4) { --bar-index: 3; }
+.boot-bars span:nth-child(5) { --bar-index: 4; }
+.boot-bars span:nth-child(6) { --bar-index: 5; }
+.boot-bars span:nth-child(7) { --bar-index: 6; }
+.boot-bars span:nth-child(8) { --bar-index: 7; }
+
+@keyframes boot-scan {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes boot-pulse {
+  from {
+    transform: translateY(0);
+    border-color: var(--line);
+  }
+
+  to {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--accent) 78%, var(--line));
+  }
+}
+
+@keyframes boot-frame {
+  to {
+    transform: rotate(405deg);
+  }
+}
+
+@keyframes boot-bars {
+  from {
+    transform: scaleY(0.32);
+    opacity: 0.58;
+  }
+
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
 }
 
 .skip-link {
@@ -1039,6 +1262,41 @@ h3 {
   margin-top: 0;
 }
 
+.steam-watch {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.steam-watch .steam-label {
+  margin: 0 0 12px;
+  color: var(--accent);
+}
+
+.watch-list.cycle-list.is-cycling {
+  min-height: 118px;
+}
+
+.watch-list .game-item {
+  min-height: 106px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 32%, transparent);
+}
+
+.watch-list .game-item:first-child {
+  border-top-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+}
+
+.watch-list .game-item.has-art {
+  grid-template-columns: 104px minmax(0, 1fr);
+}
+
+.watch-list .game-art {
+  width: 104px;
+}
+
 .steam-store-strip {
   margin-top: clamp(22px, 4vw, 38px);
   overflow: hidden;
@@ -1248,6 +1506,18 @@ h3 {
   .cycle-list.is-cycling {
     min-height: 400px;
   }
+
+  .watch-list.cycle-list.is-cycling {
+    min-height: 108px;
+  }
+
+  .watch-list .game-item.has-art {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+
+  .watch-list .game-art {
+    width: 82px;
+  }
 }
 
 @media (max-width: 420px) {
@@ -1298,6 +1568,16 @@ h3 {
   }
 
   .store-marquee-track {
+    animation: none;
+  }
+
+  .boot-mark {
+    animation: none;
+  }
+
+  .boot-card::before,
+  .boot-frame,
+  .boot-bars span {
     animation: none;
   }
 }

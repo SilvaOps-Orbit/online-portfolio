@@ -257,11 +257,12 @@ async function main() {
   }
 
   const generatedAt = new Date().toISOString();
-  const [profileResponse, recentResponse, storeHighlights] = await Promise.all([
+  const [profileResponse, recentResponse, storeCollections] = await Promise.all([
     steamApi("ISteamUser/GetPlayerSummaries/v0002/", { steamids: steamId }),
     steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } })),
-    loadStoreHighlights()
+    loadStoreCollections()
   ]);
+  const { storeHighlights, preorderWatch } = storeCollections;
   const profile = profileResponse?.response?.players?.[0] || {};
   const recentGames = recentResponse?.response?.games || [];
   const activeAppId = profile?.gameid ? String(profile.gameid) : "";
@@ -291,6 +292,7 @@ async function main() {
     profileUrl: profile.profileurl || previous.profileUrl || `https://steamcommunity.com/profiles/${steamId}`,
     currentlyPlaying: currentGames,
     storeHighlights: storeHighlights.length ? storeHighlights : previous.storeHighlights,
+    preorderWatch: preorderWatch.length ? preorderWatch : previous.preorderWatch,
     status: activeGame.appid
       ? "Steam activity refreshed. Active game is shown from Steam profile status."
       : "Steam activity refreshed. No active game detected, so recently played games are shown.",

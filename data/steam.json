@@ -35,5 +35,13 @@
       "price": "API refresh",
       "note": "The deployment workflow fills this with sales, popular games, new releases, and coming soon titles."
     }
+  ],
+  "preorderWatch": [
+    {
+      "title": "Pre-order feed pending",
+      "meta": "Steam Store",
+      "note": "Shows one upcoming/pre-order game at a time, with top seller fallback when Steam has no upcoming entries.",
+      "url": "https://store.steampowered.com/"
+    }
   ]
 }
