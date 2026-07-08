@@ -12,6 +12,7 @@ window.PORTFOLIO_CONFIG = {
       "a web developer",
       "a cyber security learner",
       "an automation builder"
+      "gamer"
     ],
     kicker: "Interactive Portfolio",
     summary:
