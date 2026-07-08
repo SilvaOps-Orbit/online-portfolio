@@ -316,6 +316,10 @@ async function main() {
 
     const generatedAt = new Date().toISOString();
     const activeGame = activeSteamGame(profile, ownedGames, previous, generatedAt);
+    const recentGameList = recentGames
+      .filter((game) => String(game.appid) !== String(activeGame.appid || ""))
+      .slice(0, 3)
+      .map(toRecentGame);
 
     output = {
       generatedAt,
@@ -344,7 +348,7 @@ async function main() {
         ...achievementData.stats
       ],
       currentlyPlaying: activeGame.appid
-        ? [activeGame]
+        ? [activeGame, ...recentGameList]
         : recentGames.length
           ? recentGames.slice(0, 4).map(toRecentGame)
           : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),

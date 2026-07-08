@@ -131,8 +131,12 @@ async function main() {
   const profile = profileResponse?.response?.players?.[0] || {};
   const recentGames = recentResponse?.response?.games || [];
   const activeGame = activeSteamGame(profile, previous, generatedAt);
+  const recentGameList = recentGames
+    .filter((game) => String(game.appid) !== String(activeGame.appid || ""))
+    .slice(0, 3)
+    .map(toRecentGame);
   const currentGames = activeGame.appid
-    ? [activeGame]
+    ? [activeGame, ...recentGameList]
     : recentGames.length
       ? recentGames.map(toRecentGame)
       : [activeGame];
