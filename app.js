@@ -93,7 +93,7 @@
     const username = profile.githubUsername || "";
 
     document.title = `${profile.name || "Personal"} | Portfolio`;
-    setText("brand-name", profile.name || "Portfolio");
+    setText("brand-label", profile.alias || profile.name || "Portfolio");
     setText("hero-kicker", profile.kicker);
     setText("hero-name", profile.name);
     setText("hero-alias", profile.alias ? `aka ${profile.alias}` : "aka Alias TBC");

@@ -10,7 +10,10 @@
     <meta name="referrer" content="no-referrer">
     <meta name="description" content="Interactive personal portfolio for Alvis Leslie Gordon.">
     <meta name="color-scheme" content="dark light">
+    <meta name="theme-color" content="#0f1115">
     <title>Alvis Leslie Gordon | Portfolio</title>
+    <link rel="icon" type="image/png" href="assets/echoops-app-icon.png">
+    <link rel="apple-touch-icon" href="assets/echoops-app-icon.png">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body class="is-booting">
@@ -19,7 +22,7 @@
     <div class="boot-screen" id="boot-screen" role="status" aria-live="polite">
       <div class="boot-card">
         <div class="boot-mark-wrap" aria-hidden="true">
-          <span class="boot-mark">AG</span>
+          <img class="boot-mark" src="assets/echoops-app-icon.png" alt="">
           <span class="boot-frame"></span>
         </div>
         <p class="boot-kicker">Secure Entry Sequence</p>
@@ -44,7 +47,10 @@
     </div>
 
     <header class="site-header" data-elevated="false">
-      <a class="brand" href="#top" id="brand-name">Portfolio</a>
+      <a class="brand" href="#top" id="brand-name" aria-label="Back to top">
+        <img class="brand-icon" src="assets/echoops-app-icon.png" alt="">
+        <span id="brand-label">Portfolio</span>
+      </a>
       <nav class="site-nav" id="site-nav" aria-label="Primary navigation">
         <a href="#about">About</a>
         <a href="#projects">Projects</a>

@@ -171,9 +171,7 @@ body:not(.is-booting) .boot-screen {
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent-3) 16%, transparent)),
     color-mix(in srgb, var(--panel) 84%, transparent);
-  color: var(--accent-2);
-  font-size: 1.55rem;
-  font-weight: 950;
+  object-fit: cover;
   box-shadow: var(--shadow);
   animation: boot-pulse 1100ms ease-in-out infinite alternate;
 }
@@ -343,9 +341,21 @@ body:not(.is-booting) .boot-screen {
 }
 
 .brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0;
+}
+
+.brand-icon {
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent-3) 48%, var(--line));
+  border-radius: 7px;
+  object-fit: cover;
+  box-shadow: 0 0 22px color-mix(in srgb, var(--accent-3) 22%, transparent);
 }
 
 .site-nav {
