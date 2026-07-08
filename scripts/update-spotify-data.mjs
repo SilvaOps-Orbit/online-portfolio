@@ -235,6 +235,63 @@ async function spotifyGet(path, token, params = {}) {
   return response.json();
 }
 
+function playbackScore(playback, sourceName) {
+  if (!playback?.item) {
+    return -1;
+  }
+
+  let score = sourceName === "playback-state" ? 2 : 0;
+
+  if (playback.is_playing) {
+    score += 10;
+  }
+
+  if (playback.device?.is_active) {
+    score += 3;
+  }
+
+  if (Number.isFinite(Number(playback.progress_ms))) {
+    score += 1;
+  }
+
+  if (playback.currently_playing_type === "track") {
+    score += 1;
+  }
+
+  return score;
+}
+
+function selectActivePlayback(currentlyPlaying, playbackState) {
+  return [
+    { playback: playbackState, sourceName: "playback-state" },
+    { playback: currentlyPlaying, sourceName: "currently-playing" }
+  ]
+    .filter((candidate) => candidate.playback?.item)
+    .map((candidate) => ({
+      ...candidate,
+      score: playbackScore(candidate.playback, candidate.sourceName)
+    }))
+    .sort((a, b) => b.score - a.score)[0]?.playback || null;
+}
+
+function selectedPlaybackSource(playback) {
+  return playback?.device ? "me/player" : "me/player/currently-playing";
+}
+
+function selectedPlaybackSummary(playback) {
+  if (!playback?.item) {
+    return null;
+  }
+
+  return {
+    endpoint: selectedPlaybackSource(playback),
+    isPlaying: Boolean(playback.is_playing),
+    device: playback.device?.name || "",
+    deviceActive: Boolean(playback.device?.is_active),
+    trackUri: playback.item.uri || ""
+  };
+}
+
 async function loadArtistDetails(item, token) {
   const primaryArtist = item?.artists?.[0];
   const artistId = primaryArtist?.id || spotifyIdFromUri(primaryArtist?.uri, "artist");
@@ -511,7 +568,8 @@ async function main() {
   ]);
   const playlists = await loadPlaylists(token, profile?.id);
   const generatedAt = new Date().toISOString();
-  const current = await toCurrentTrack(currentlyPlaying, token, generatedAt) || await toCurrentTrack(playbackState, token, generatedAt);
+  const selectedPlayback = selectActivePlayback(currentlyPlaying, playbackState);
+  const current = await toCurrentTrack(selectedPlayback, token, generatedAt);
   const lastTrack = current || lastUsefulTrack(previous);
   const status = current?.isPlaying
     ? "Spotify is live from the Web API."
@@ -522,6 +580,7 @@ async function main() {
       generatedAt,
       source: "spotify-web-api",
       status,
+      selectedPlayback: selectedPlaybackSummary(selectedPlayback),
       profile: {
         id: profile?.id || "",
         displayName: profile?.display_name || "Spotify Profile",

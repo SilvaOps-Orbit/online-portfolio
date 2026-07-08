@@ -79,7 +79,7 @@ The requested scopes are `user-read-currently-playing user-read-playback-state p
 
 If the scope list changes, run `spotify-local-auth.ps1` again and replace `SPOTIFY_REFRESH_TOKEN` because old refresh tokens do not automatically gain new permissions.
 
-The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live.
+The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live. The browser checks `data/spotify.json` every few seconds, but on GitHub Pages the song can only change after that workflow generates and deploys a new JSON file.
 
 Steam activity has its own `.github/workflows/steam.yml` workflow that runs every 5 minutes. It preserves the heavier Steam stats from the last full deploy and only refreshes the active/recently played game card.
 

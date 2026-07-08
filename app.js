@@ -784,7 +784,9 @@
 
     const timestamp = data?.lastGoodAt || data?.generatedAt;
     if (data?.status) {
-      status.textContent = data.status;
+      status.textContent = timestamp
+        ? `${data.status} Refreshed ${formatDateTime(timestamp)}.`
+        : data.status;
       return;
     }
 
