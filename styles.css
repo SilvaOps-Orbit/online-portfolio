@@ -69,7 +69,8 @@ body.is-booting {
 
 body.is-booting .site-header,
 body.is-booting main,
-body.is-booting .site-footer {
+body.is-booting .site-footer,
+body.is-booting .floating-socials {
   opacity: 0;
   pointer-events: none;
 }
@@ -241,6 +242,15 @@ body:not(.is-booting) .boot-screen {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 850;
+  transition: border-color 240ms ease, background 240ms ease, box-shadow 240ms ease, color 240ms ease, transform 240ms ease;
+}
+
+.boot-chips span.is-complete {
+  border-color: color-mix(in srgb, #35f083 78%, var(--line));
+  background: color-mix(in srgb, #35f083 15%, var(--bg));
+  color: #dcffe9;
+  box-shadow: 0 0 18px color-mix(in srgb, #35f083 28%, transparent);
+  transform: translateY(-1px);
 }
 
 .boot-bars {
@@ -338,6 +348,71 @@ body:not(.is-booting) .boot-screen {
 .site-header[data-elevated="true"] {
   background: color-mix(in srgb, var(--bg) 86%, transparent);
   border-bottom-color: var(--line);
+}
+
+.floating-socials {
+  position: fixed;
+  right: clamp(12px, 2vw, 24px);
+  bottom: clamp(14px, 2vw, 24px);
+  z-index: 12;
+  display: grid;
+  gap: 8px;
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+
+.floating-social {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(in srgb, var(--accent) 44%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent-3) 12%, transparent)),
+    color-mix(in srgb, var(--panel) 84%, transparent);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: 0;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.floating-social:hover,
+.floating-social:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 24%, transparent), 0 12px 28px rgba(0, 0, 0, 0.28);
+  transform: translateY(-2px);
+}
+
+.floating-social::after {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  width: max-content;
+  max-width: min(220px, 62vw);
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  color: var(--text);
+  content: attr(data-label);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 850;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(8px, -50%);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.floating-social:hover::after,
+.floating-social:focus-visible::after {
+  opacity: 1;
+  transform: translate(0, -50%);
 }
 
 .brand {
@@ -1007,16 +1082,16 @@ h3 {
 
 .spotify-player {
   display: grid;
-  grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
-  gap: 14px;
+  grid-template-columns: 1fr;
+  gap: 12px;
   align-items: start;
 }
 
 .spotify-now-art {
   display: block;
-  justify-self: stretch;
-  width: 100%;
-  max-width: none;
+  justify-self: center;
+  width: min(100%, 320px);
+  max-width: 320px;
   aspect-ratio: 1;
   border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
   border-radius: 7px;
@@ -1040,7 +1115,7 @@ h3 {
   display: grid;
   gap: 9px;
   min-width: 0;
-  padding: 12px;
+  padding: 13px;
   border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
   border-left: 3px solid var(--accent);
   border-radius: 7px;
@@ -1051,7 +1126,7 @@ h3 {
 
 .spotify-now-body h3 {
   margin: 0;
-  font-size: clamp(1.45rem, 3.2vw, 2.25rem);
+  font-size: clamp(1.35rem, 2.8vw, 1.95rem);
   line-height: 1.02;
   overflow-wrap: anywhere;
 }
@@ -1177,7 +1252,7 @@ h3 {
 
 .spotify-source-audit {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 1fr;
   gap: 8px;
   align-items: start;
   margin-top: 0;
@@ -1959,13 +2034,9 @@ h3 {
   }
 
   .spotify-now-art {
-    width: min(100%, 260px);
+    width: min(100%, 280px);
     max-width: none;
     justify-self: center;
-  }
-
-  .spotify-source-audit {
-    grid-template-columns: 1fr;
   }
 
   .spotify-fact-ticker {

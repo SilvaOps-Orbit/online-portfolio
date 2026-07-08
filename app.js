@@ -8,6 +8,7 @@
   const dataRefreshMs = 60000;
   const spotifyDataRefreshMs = 5000;
   let bootQuoteTimer = 0;
+  let bootStepTimers = [];
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
 
@@ -724,6 +725,7 @@
       window.clearInterval(bootQuoteTimer);
       bootQuoteTimer = 0;
     }
+    completeBootSteps();
 
     document.body.classList.remove("is-booting");
     document.body.classList.add("is-ready");
@@ -733,6 +735,23 @@
         bootScreen.hidden = true;
       }, 280);
     }
+  }
+
+  function completeBootSteps() {
+    qsa(".boot-chips span").forEach((step) => step.classList.add("is-complete"));
+    bootStepTimers.forEach((timer) => window.clearTimeout(timer));
+    bootStepTimers = [];
+  }
+
+  function bindBootSteps() {
+    const steps = qsa(".boot-chips span");
+    if (!steps.length) return;
+
+    steps.forEach((step) => step.classList.remove("is-complete"));
+    const timings = prefersReducedMotion ? [0, 0, 0] : [1800, 5200, 8400];
+    bootStepTimers = steps.map((step, index) =>
+      window.setTimeout(() => step.classList.add("is-complete"), timings[index] || 0)
+    );
   }
 
   function bindBootQuotes() {
@@ -766,7 +785,7 @@
         target.textContent = quotes[quoteIndex];
         target.classList.remove("is-swapping");
       }, 180);
-    }, 900);
+    }, 1500);
   }
 
   function scheduleDynamicDataWarmups() {
@@ -951,6 +970,7 @@
 
     dataSources.forEach((source) => {
       if (!source?.source) return;
+      if ((source.status || "").toLowerCase() === "matched") return;
       const chip = createElement("span", `spotify-source-chip is-${source.status || "checked"}`, `${source.source} ${source.status || "checked"}`);
       chips.append(chip);
     });
@@ -1130,6 +1150,33 @@
         link.rel = "noopener noreferrer";
       }
       actions.append(link);
+    });
+  }
+
+  function renderFloatingSocials() {
+    const target = document.getElementById("floating-socials");
+    if (!target) return;
+
+    const profile = config.profile || {};
+    const steam = config.steam || {};
+    const discordUrl = profile.discordUrl || "#contact";
+    const links = [
+      { label: "Steam profile", short: "ST", href: steam.profileUrl },
+      { label: profile.discordUrl ? "Discord server" : "Discord server - add invite URL", short: "DC", href: discordUrl },
+      { label: "GitHub profile", short: "GH", href: githubProfileUrl(profile.githubUsername || "") }
+    ].filter((item) => item.href && item.href !== "https://github.com/");
+
+    target.replaceChildren();
+    links.forEach((item) => {
+      const link = createElement("a", "floating-social", item.short);
+      link.href = safeUrl(item.href);
+      link.setAttribute("aria-label", item.label);
+      link.dataset.label = item.label;
+      if (!String(item.href).startsWith("#")) {
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+      }
+      target.append(link);
     });
   }
 
@@ -1488,6 +1535,7 @@
   async function init() {
     bindTheme();
     bindBootQuotes();
+    bindBootSteps();
     const [dynamicData] = await Promise.all([preloadDynamicData(), delay(10000)]);
 
     applyProfile();
@@ -1499,6 +1547,7 @@
     renderSpotify(dynamicData.spotify);
     renderSecurity();
     renderContact();
+    renderFloatingSocials();
     bindNavigation();
     bindActiveNav();
     bindTypewriter();
@@ -1515,6 +1564,7 @@
   init().catch(() => {
     renderSteam(config.steam || {});
     renderSpotify(config.spotify || {});
+    renderFloatingSocials();
     finishBoot();
   });
 })();
