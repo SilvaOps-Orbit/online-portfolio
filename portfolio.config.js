@@ -16,9 +16,9 @@ window.PORTFOLIO_CONFIG = {
     kicker: "Interactive Portfolio",
     summary:
       "Creative developer with a security mindset, building useful digital experiences with thoughtful interaction, clean code, and secure foundations.",
-    location: "Melbourne, Australia",
+    location: "Melboune, Australia",
     focus: "Frontend, cyber security, AI automation",
-    current: "Studying Diploma of ICT (Advanced Networking, Cyber Security)",
+    current: "Studying Diplomia ICT (Advanced Networking, Cyber Security)",
     availability: "Open to opportunities",
     email: "alvis.dev@proton.me",
     githubUsername: "SilvaOps-Orbit",
@@ -32,12 +32,8 @@ window.PORTFOLIO_CONFIG = {
     { value: "0", label: "Client-side secrets" }
   ],
   about: [
-    "I am Alvis Leslie Gordon, a creative developer with a growing cyber security mindset and a strong drive to build something better than where I started.",
-    "I am currently studying a Diploma of ICT, focused on Advanced Networking and Cyber Security, with partial completion of a Certificate IV in ICT. A lot of my skills have also been self-taught through hands-on projects, experimentation, and a genuine passion for technology.",
-    "My work leans toward web development, Discord bots, AI automation, cyber security habits, and building systems that feel polished, useful, and alive. I care about the full path from idea to deployment, including structure, accessibility, performance, and safe defaults.",
-    "I grew up in foster care my whole life, and that experience shaped my mindset. I want to break the cycle for my family and build a future with purpose, stability, and discipline. I am also a father to a 2-year-old, which pushes me even harder to keep improving and create a better life.",
-    "I have ADHD and Autism, and I see the world differently because of it. For me, that means strong focus, creative problem-solving, and a deep interest in how systems work. Outside of tech, I am passionate about gaming, programming, surfing, long drives, travelling, and pushing myself beyond my comfort zone.",
-    "I am also working toward applying for the Australian Defence Force, with the long-term goal of pursuing the 2nd Commando Regiment. Whether it is technology, cyber security, fitness, fatherhood, or personal growth, my mindset stays the same: stay disciplined, keep building, and become better than yesterday."
+    "I am Alvis Leslie Gordon, a creative developer with a growing cyber security mindset. I like building things that feel polished, useful, and a little alive.",
+    "My work leans toward web development, Discord bots, AI automation, and practical security habits. I care about the full path from idea to deployment: structure, accessibility, performance, and safe defaults."
   ],
   skills: [
     { name: "Website Development", level: 89 },
@@ -71,55 +67,6 @@ window.PORTFOLIO_CONFIG = {
       demo: "#"
     }
   ],
-  steam: {
-    profileUrl: "",
-    summary:
-      "Gaming is part downtime, part challenge, and part systems thinking. This section keeps track of what I am playing, what I want to play next, and the achievements I am chasing.",
-    currentlyPlaying: [
-      {
-        title: "Current main game",
-        note: "Add the game you are focused on right now."
-      },
-      {
-        title: "Side rotation",
-        note: "Add the game you jump into when you want a change of pace."
-      }
-    ],
-    wishlist: [
-      {
-        title: "Wishlist game",
-        note: "Add the next game you want to pick up."
-      },
-      {
-        title: "Long-term wishlist",
-        note: "Add a bigger title you are waiting for."
-      }
-    ],
-    mostPlayed: [
-      {
-        title: "Most played game",
-        meta: "Hours TBC",
-        note: "Add your top Steam game and playtime."
-      },
-      {
-        title: "Second most played",
-        meta: "Hours TBC",
-        note: "Add another game that says something about your taste."
-      }
-    ],
-    achievements: [
-      {
-        title: "Achievement highlight",
-        meta: "Game TBC",
-        note: "Add a rare unlock, completion goal, or proud gaming moment."
-      },
-      {
-        title: "Next achievement goal",
-        meta: "In progress",
-        note: "Add the achievement you are currently chasing."
-      }
-    ]
-  },
   security: [
     {
       title: "No Client-Side Secrets",
