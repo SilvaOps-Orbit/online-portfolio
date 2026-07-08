@@ -4,6 +4,7 @@
   const config = window.PORTFOLIO_CONFIG || {};
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const root = document.documentElement;
+  let wishlistCycleTimer = 0;
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -261,43 +262,117 @@
     });
   }
 
+  function appendGameItem(list, item, index) {
+    const game = typeof item === "string" ? { title: item } : item || {};
+    const li = createElement("li");
+    li.className = game.image ? "game-item has-art" : "game-item";
+    const body = createElement("div", "game-body");
+    const title = game.url ? createElement("a", "game-title", game.title || "Untitled game") : createElement("span", "game-title", game.title || "Untitled game");
+
+    if (Number.isInteger(index)) {
+      li.style.setProperty("--item-index", String(index));
+    }
+
+    if (game.url) {
+      title.href = safeUrl(game.url);
+      title.target = "_blank";
+      title.rel = "noopener noreferrer";
+    }
+
+    if (game.image) {
+      const image = createElement("img", "game-art");
+      setImageElement(image, game.image, `${game.title || "Steam game"} artwork`);
+      li.append(image);
+    }
+
+    body.append(title);
+
+    if (game.meta) {
+      body.append(createElement("span", "game-meta", game.meta));
+    }
+
+    if (game.note) {
+      body.append(createElement("span", "game-note", game.note));
+    }
+
+    li.append(body);
+    list.append(li);
+    return li;
+  }
+
   function renderGameList(id, items) {
     const list = document.getElementById(id);
     if (!list) return;
+    list.classList.remove("wishlist-carousel", "is-cycling", "is-swapping");
     list.replaceChildren();
 
-    (items || []).forEach((item) => {
-      const game = typeof item === "string" ? { title: item } : item;
-      const li = createElement("li");
-      li.className = game.image ? "game-item has-art" : "game-item";
-      const body = createElement("div", "game-body");
-      const title = game.url ? createElement("a", "game-title", game.title || "Untitled game") : createElement("span", "game-title", game.title || "Untitled game");
+    (items || []).forEach((item) => appendGameItem(list, item));
+  }
 
-      if (game.url) {
-        title.href = safeUrl(game.url);
-        title.target = "_blank";
-        title.rel = "noopener noreferrer";
+  function renderWishlistCarousel(id, items) {
+    const list = document.getElementById(id);
+    if (!list) return;
+
+    window.clearInterval(wishlistCycleTimer);
+    wishlistCycleTimer = 0;
+    list.classList.add("wishlist-carousel");
+    list.classList.remove("is-swapping");
+    list.replaceChildren();
+
+    const games = (Array.isArray(items) ? items : []).filter(Boolean);
+    const heading = list.closest(".steam-card")?.querySelector("h3");
+
+    if (!games.length) {
+      list.classList.remove("is-cycling");
+      if (heading) {
+        heading.textContent = "Wishlist";
+      }
+      return;
+    }
+
+    const pageSize = Math.min(6, games.length);
+    let startIndex = 0;
+    list.classList.toggle("is-cycling", games.length > pageSize);
+
+    function updateHeading() {
+      if (!heading) return;
+      if (games.length <= pageSize) {
+        heading.textContent = `Wishlist (${games.length})`;
+        return;
       }
 
-      if (game.image) {
-        const image = createElement("img", "game-art");
-        setImageElement(image, game.image, `${game.title || "Steam game"} artwork`);
-        li.append(image);
+      const endIndex = Math.min(startIndex + pageSize, games.length);
+      heading.textContent = `Wishlist (${startIndex + 1}-${endIndex} of ${games.length})`;
+    }
+
+    function visibleGames() {
+      if (games.length <= pageSize) {
+        return games;
       }
 
-      body.append(title);
+      return Array.from({ length: pageSize }, (_, offset) => games[(startIndex + offset) % games.length]);
+    }
 
-      if (game.meta) {
-        body.append(createElement("span", "game-meta", game.meta));
-      }
+    function renderWindow() {
+      list.replaceChildren();
+      visibleGames().forEach((item, index) => appendGameItem(list, item, index));
+      updateHeading();
+      window.requestAnimationFrame(() => list.classList.remove("is-swapping"));
+    }
 
-      if (game.note) {
-        body.append(createElement("span", "game-note", game.note));
-      }
+    renderWindow();
 
-      li.append(body);
-      list.append(li);
-    });
+    if (prefersReducedMotion || games.length <= pageSize) {
+      return;
+    }
+
+    wishlistCycleTimer = window.setInterval(() => {
+      list.classList.add("is-swapping");
+      window.setTimeout(() => {
+        startIndex = (startIndex + pageSize) % games.length;
+        renderWindow();
+      }, 260);
+    }, 4800);
   }
 
   function setImageElement(element, src, alt) {
@@ -345,6 +420,12 @@
       steamDbLink.hidden = false;
     }
 
+    const steamDbWishlistLink = document.getElementById("steamdb-wishlist-link");
+    if (steamDbWishlistLink && steam.steamDbWishlistUrl) {
+      steamDbWishlistLink.href = safeUrl(steam.steamDbWishlistUrl);
+      steamDbWishlistLink.hidden = false;
+    }
+
     const stats = Array.isArray(steam.stats) ? [...steam.stats] : [];
     if (steam.accountValue?.value) {
       stats.push({
@@ -356,7 +437,7 @@
     renderStats(stats);
 
     renderGameList("steam-current", steam.currentlyPlaying);
-    renderGameList("steam-wishlist", steam.wishlist);
+    renderWishlistCarousel("steam-wishlist", steam.wishlist);
     renderGameList("steam-most-played", steam.mostPlayed);
     renderGameList("steam-achievements", steam.achievements);
     observeReveals();

@@ -4,6 +4,7 @@
   "steamId": "76561199192411740",
   "profileUrl": "https://steamcommunity.com/profiles/76561199192411740",
   "steamDbUrl": "https://steamdb.info/calculator/76561199192411740/",
+  "steamDbWishlistUrl": "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012",
   "accountValue": {
     "value": "See SteamDB",
     "note": "SteamDB has no official account-value API; open the calculator link for the live estimate."

@@ -872,6 +872,33 @@ h3 {
   border-top: 1px solid var(--line);
 }
 
+.wishlist-carousel.is-cycling {
+  min-height: clamp(430px, 48vw, 520px);
+  overflow: hidden;
+}
+
+.wishlist-carousel .game-item {
+  min-height: 70px;
+  padding: 11px;
+  border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 28%, transparent);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 260ms ease, transform 260ms ease, border-color 180ms ease, background 180ms ease;
+  transition-delay: calc(var(--item-index, 0) * 34ms);
+}
+
+.wishlist-carousel .game-item:first-child {
+  border-top: 1px solid color-mix(in srgb, var(--accent-3) 50%, var(--line));
+}
+
+.wishlist-carousel.is-swapping .game-item {
+  opacity: 0;
+  transform: translateY(10px);
+  transition-delay: calc(var(--item-index, 0) * 18ms);
+}
+
 .game-list li.has-art {
   grid-template-columns: 86px minmax(0, 1fr);
 }
@@ -1040,6 +1067,10 @@ h3 {
   .game-art {
     width: 76px;
   }
+
+  .wishlist-carousel.is-cycling {
+    min-height: 400px;
+  }
 }
 
 @media (max-width: 420px) {
@@ -1071,5 +1102,9 @@ h3 {
   .reveal {
     opacity: 1;
     transform: none;
+  }
+
+  .wishlist-carousel .game-item {
+    transition: none;
   }
 }

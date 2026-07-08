@@ -75,6 +75,7 @@ window.PORTFOLIO_CONFIG = {
     steamId: "76561199192411740",
     profileUrl: "https://steamcommunity.com/profiles/76561199192411740",
     steamDbUrl: "https://steamdb.info/calculator/76561199192411740/",
+    steamDbWishlistUrl: "https://steamdb.info/sales/?displayOnly=Wishlist&accountid=1232146012",
     accountValue: {
       value: "Account Value A$ 910.00",
     },
