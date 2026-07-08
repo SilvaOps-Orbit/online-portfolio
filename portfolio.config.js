@@ -36,10 +36,10 @@ window.PORTFOLIO_CONFIG = {
     "My work leans toward web development, Discord bots, automation, and practical security habits. I care about the full path from idea to deployment: structure, accessibility, performance, and safe defaults."
   ],
   skills: [
-    { name: "Frontend Development", level: 86 },
+    { name: "Website Development", level: 89 },
     { name: "Cyber Security Basics", level: 74 },
-    { name: "Automation", level: 78 },
-    { name: "UI Interaction Design", level: 82 }
+    { name: "AI Automation", level: 20 },
+    { name: "JavaScript Programming", level: 78 }
   ],
   projects: [
     {
