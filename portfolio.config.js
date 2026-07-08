@@ -47,8 +47,8 @@ window.PORTFOLIO_CONFIG = {
       summary:
         "A fast static portfolio with animated sections, project filtering, a GitHub integration, and strict client-side security defaults.",
       tags: ["Frontend", "Security", "GitHub"," Portfolio","websites"],
-      github: "#",
-      demo: "#"
+      github: "https://github.com/SilvaOps-Orbit/online-portfolio",
+      demo: "https://silvaops-orbit.github.io/online-portfolio/"
     },
     {
       title: "Discord Bot Project",
