@@ -2,7 +2,7 @@ window.PORTFOLIO_CONFIG = {
   profile: {
     name: "Alvis Leslie Gordon",
     initials: "AG",
-    alias: "Alias TBC",
+    alias: "Alias EchoOps",
     role: "Creative developer with a security mindset.",
     rolePrefix: "I am",
     typewriterRoles: [
