@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://steamcdn-a.akamaihd.net https://cdn.cloudflare.steamstatic.com https://cdn.akamai.steamstatic.com https://shared.cloudflare.steamstatic.com https://media.steampowered.com https://i.scdn.co https://mosaic.scdn.co; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://api.github.com; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://*.steamstatic.com https://steamcdn-a.akamaihd.net https://media.steampowered.com https://i.scdn.co https://mosaic.scdn.co; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
     >
     <meta name="referrer" content="no-referrer">
     <meta name="description" content="Interactive personal portfolio for Alvis Leslie Gordon.">
@@ -161,7 +161,7 @@
             <span class="steam-label">Currently Playing</span>
             <ul class="game-list current-games" id="steam-current"></ul>
             <div class="steam-watch">
-              <span class="steam-label">Pre-Order Watch</span>
+              <span class="steam-label">Pre-Order / Top 20 Games Watch</span>
               <ul class="game-list watch-list" id="steam-preorder-watch" aria-live="polite"></ul>
             </div>
           </article>

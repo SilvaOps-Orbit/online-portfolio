@@ -65,6 +65,34 @@ function formatPrice(value, currency) {
   }
 }
 
+function normalizeSteamImageUrl(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return "";
+  }
+
+  return value.trim().replace(/^http:\/\//i, "https://");
+}
+
+function stripText(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function shuffleItems(items) {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 function toRecentGame(game) {
   return {
     appid: game.appid,
@@ -78,82 +106,64 @@ function toRecentGame(game) {
 }
 
 function toStoreHighlight(item, category) {
+  const appid = item.id || item.appid || item.steam_appid;
   const discount = Number(item.discount_percent || 0);
 
   return {
-    appid: item.id,
+    appid,
     title: item.name || "Steam game",
     category,
     price: formatPrice(item.final_price, item.currency),
     originalPrice: discount ? formatPrice(item.original_price, item.currency) : "",
     discount,
     tag: category,
-    image: item.header_image || item.small_capsule_image || "",
-    url: storeItemUrl(item.id)
+    image: normalizeSteamImageUrl(item.header_image || item.large_capsule_image || item.small_capsule_image || item.capsule_image || (appid ? headerImage(appid) : "")),
+    url: appid ? storeItemUrl(appid) : "https://store.steampowered.com/"
   };
 }
 
-function toStoreWatchItem(item, category, note) {
-  const highlight = toStoreHighlight(item, category);
+function priceOverviewText(priceOverview) {
+  if (!priceOverview) {
+    return {
+      price: "Price TBA",
+      originalPrice: "",
+      discount: 0
+    };
+  }
 
+  const discount = Number(priceOverview.discount_percent || 0);
   return {
-    ...highlight,
-    meta: category,
-    note: note || `${highlight.price} on Steam`
+    price: priceOverview.final_formatted || formatPrice(priceOverview.final, priceOverview.currency),
+    originalPrice: discount ? priceOverview.initial_formatted || formatPrice(priceOverview.initial, priceOverview.currency) : "",
+    discount
   };
 }
 
-async function loadStoreCollections() {
-  try {
-    const data = await fetchJson(`https://store.steampowered.com/api/featuredcategories?cc=${encodeURIComponent(storeCountry)}&l=en`);
-    const sources = [
-      ["Special", data.specials?.items || []],
-      ["Coming Soon", data.coming_soon?.items || []],
-      ["Top Seller", data.top_sellers?.items || []],
-      ["New Release", data.new_releases?.items || []]
-    ];
-    const seen = new Set();
-    const items = [];
+function extractEditions(details) {
+  const currency = details?.price_overview?.currency || "AUD";
+  const seen = new Set();
+  const editions = [];
 
-    sources.forEach(([category, list]) => {
-      list.forEach((item) => {
-        if (!item?.id || seen.has(item.id) || items.length >= 24) {
-          return;
-        }
-
-        seen.add(item.id);
-        items.push(toStoreHighlight(item, category));
-      });
-    });
-
-    const preorderWatch = [];
-    const preorderSeen = new Set();
-    (data.coming_soon?.items || []).forEach((item) => {
-      if (!item?.id || preorderSeen.has(item.id) || preorderWatch.length >= 18) {
+  (details?.package_groups || []).forEach((group) => {
+    (group.subs || []).forEach((sub) => {
+      const label = stripText(sub.name || sub.option_text || group.title || "Edition");
+      if (!label || seen.has(label)) {
         return;
       }
 
-      preorderSeen.add(item.id);
-      preorderWatch.push(toStoreWatchItem(item, "Pre-order", "Upcoming on Steam. Open the store page for release/pre-order details."));
+      seen.add(label);
+      editions.push({
+        label,
+        price: sub.price_in_cents_with_discount !== undefined
+          ? formatPrice(sub.price_in_cents_with_discount, currency)
+          : sub.is_free_license
+            ? "Free"
+            : ""
+      });
     });
+  });
 
-    if (!preorderWatch.length) {
-      const fallback = (data.top_sellers?.items || data.specials?.items || data.new_releases?.items || []).find((item) => item?.id);
-      if (fallback) {
-        preorderWatch.push(toStoreWatchItem(fallback, "Popular now", "No pre-order entries were returned, so this shows a current popular Steam game."));
-      }
-    }
-
-    return {
-      storeHighlights: items,
-      preorderWatch
-    };
-  } catch (error) {
-    return {
-      storeHighlights: [],
-      preorderWatch: []
-    };
-  }
+  return editions.slice(0, 4);
 }
 
 async function readExistingData() {
@@ -191,6 +201,121 @@ async function steamApi(path, params) {
     }
   });
   return fetchJson(url);
+}
+
+async function loadAppDetails(appid) {
+  if (!appid) {
+    return null;
+  }
+
+  try {
+    const data = await fetchJson(`https://store.steampowered.com/api/appdetails?appids=${encodeURIComponent(appid)}&cc=${encodeURIComponent(storeCountry)}&l=en`);
+    const record = data?.[appid];
+    return record?.success ? record.data : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function enrichStoreWatchItem(item) {
+  const details = await loadAppDetails(item.appid);
+  if (!details) {
+    return item;
+  }
+
+  const pricing = priceOverviewText(details.price_overview);
+  const editions = extractEditions(details);
+  const price = pricing.price !== "Price TBA" ? pricing.price : editions[0]?.price || item.price || "Price TBA";
+
+  return {
+    ...item,
+    title: details.name || item.title,
+    price,
+    originalPrice: pricing.originalPrice || item.originalPrice || "",
+    discount: pricing.discount || item.discount || 0,
+    image: normalizeSteamImageUrl(details.header_image || details.capsule_image || item.image || (item.appid ? headerImage(item.appid) : "")),
+    editions,
+    note: editions.length
+      ? `Store page lists ${editions.length} edition${editions.length === 1 ? "" : "s"}.`
+      : item.note
+  };
+}
+
+async function toStoreWatchItem(item, category, note) {
+  const highlight = toStoreHighlight(item, category);
+
+  return enrichStoreWatchItem({
+    ...highlight,
+    meta: category,
+    note: note || `${highlight.price} on Steam`
+  });
+}
+
+async function loadStoreCollections() {
+  try {
+    const data = await fetchJson(`https://store.steampowered.com/api/featuredcategories?cc=${encodeURIComponent(storeCountry)}&l=en`);
+    const sources = [
+      ["Special", data.specials?.items || []],
+      ["Coming Soon", data.coming_soon?.items || []],
+      ["Top Seller", data.top_sellers?.items || []],
+      ["New Release", data.new_releases?.items || []]
+    ];
+    const seen = new Set();
+    const items = [];
+
+    sources.forEach(([category, list]) => {
+      list.forEach((item) => {
+        const appid = item?.id || item?.appid || item?.steam_appid;
+        if (!appid || seen.has(appid) || items.length >= 24) {
+          return;
+        }
+
+        seen.add(appid);
+        items.push(toStoreHighlight(item, category));
+      });
+    });
+
+    const watchSeeds = [];
+    const watchSeen = new Set();
+    const addWatchItem = (item, category, note) => {
+      const appid = item?.id || item?.appid || item?.steam_appid;
+      if (!appid || watchSeen.has(appid)) {
+        return;
+      }
+
+      watchSeen.add(appid);
+      watchSeeds.push({ item, category, note });
+    };
+
+    (data.coming_soon?.items || []).slice(0, 20).forEach((item) => {
+      addWatchItem(item, "Pre-order", "Upcoming on Steam. Open the store page for release/pre-order details.");
+    });
+
+    (data.top_sellers?.items || []).slice(0, 20).forEach((item, index) => {
+      addWatchItem(item, "Top 20", `Top seller #${index + 1} on Steam right now.`);
+    });
+
+    if (!watchSeeds.length) {
+      const fallback = (data.specials?.items || data.new_releases?.items || []).find((item) => item?.id);
+      if (fallback) {
+        addWatchItem(fallback, "Popular now", "No pre-order or top 20 entries were returned, so this shows a popular Steam game.");
+      }
+    }
+
+    const preorderWatch = await Promise.all(
+      shuffleItems(watchSeeds).map(({ item, category, note }) => toStoreWatchItem(item, category, note))
+    );
+
+    return {
+      storeHighlights: items,
+      preorderWatch
+    };
+  } catch (error) {
+    return {
+      storeHighlights: [],
+      preorderWatch: []
+    };
+  }
 }
 
 function findPreviousGame(previous, appid) {
@@ -249,18 +374,36 @@ function activeSteamGame(profile, gameData, previous, generatedAt) {
   };
 }
 
+async function writeSteamData(output) {
+  await mkdir(new URL("../data/", import.meta.url), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+  console.log(`Wrote Steam activity for ${steamId} to ${outputPath.pathname}`);
+}
+
 async function main() {
   const previous = await readExistingData();
+  const generatedAt = new Date().toISOString();
+  const storeCollections = await loadStoreCollections();
+  const storeUpdates = {
+    storeHighlights: storeCollections.storeHighlights.length ? storeCollections.storeHighlights : previous.storeHighlights,
+    preorderWatch: storeCollections.preorderWatch.length ? storeCollections.preorderWatch : previous.preorderWatch
+  };
 
   if (!apiKey) {
+    await writeSteamData({
+      ...previous,
+      ...storeUpdates,
+      generatedAt,
+      source: previous.source || "steam-store",
+      status: "Steam store watch refreshed. Active game detection needs STEAM_API_KEY.",
+      stale: false
+    });
     return;
   }
 
-  const generatedAt = new Date().toISOString();
-  const [profileResponse, recentResponse, storeHighlights] = await Promise.all([
+  const [profileResponse, recentResponse] = await Promise.all([
     steamApi("ISteamUser/GetPlayerSummaries/v0002/", { steamids: steamId }),
-    steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } })),
-    loadStoreHighlights()
+    steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } }))
   ]);
   const profile = profileResponse?.response?.players?.[0] || {};
   const recentGames = recentResponse?.response?.games || [];
@@ -276,8 +419,10 @@ async function main() {
     : recentGames.length
       ? recentGames.map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }))
       : [activeGame];
-  const output = {
+
+  await writeSteamData({
     ...previous,
+    ...storeUpdates,
     generatedAt,
     source: previous.source || "steam-activity",
     profile: {
@@ -290,18 +435,13 @@ async function main() {
     },
     profileUrl: profile.profileurl || previous.profileUrl || `https://steamcommunity.com/profiles/${steamId}`,
     currentlyPlaying: currentGames,
-    storeHighlights: storeHighlights.length ? storeHighlights : previous.storeHighlights,
     status: activeGame.appid
       ? "Steam activity refreshed. Active game is shown from Steam profile status."
       : "Steam activity refreshed. No active game detected, so recently played games are shown.",
     stale: false
-  };
-
-  await mkdir(new URL("../data/", import.meta.url), { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
-  console.log(`Wrote Steam activity for ${steamId} to ${outputPath.pathname}`);
+  });
 }
 
-main().catch(async (error) => {
+await main().catch((error) => {
   console.error(error);
 });

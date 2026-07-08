@@ -30,7 +30,7 @@ The deploy script now keeps the last successful Steam values when a refresh fail
 
 The Steam Store Radar uses Steam's public featured categories feed to show sales, top sellers, new releases, and coming soon games in a single animated ticker. The faster Steam activity workflow also refreshes/preserves that ticker data.
 
-The Pre-Order Watch card uses the same Steam Store feed. It cycles one coming-soon/pre-order style game at a time and links directly to the Steam store page. If Steam returns no upcoming entries, it falls back to a current top seller/popular game.
+The Pre-Order / Top 20 Games Watch card uses the same Steam Store feed. It randomizes coming-soon/pre-order entries with Steam's current top 20 sellers, links directly to the store page, and enriches the card with price and edition data when Steam exposes it.
 
 ## Spotify stats
 

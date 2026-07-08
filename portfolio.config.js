@@ -12,7 +12,7 @@ window.PORTFOLIO_CONFIG = {
       "a web developer",
       "a cyber security learner",
       "an automation builder",
-      "gamer"
+      "A gamer"
     ],
     kicker: "Interactive Portfolio",
     summary:
@@ -140,9 +140,10 @@ window.PORTFOLIO_CONFIG = {
     ],
     preorderWatch: [
       {
-        title: "Pre-order feed pending",
+        title: "Pre-order / Top 20 feed pending",
         meta: "Steam Store",
-        note: "Shows one upcoming/pre-order game at a time, with top seller fallback when Steam has no upcoming entries.",
+        price: "API refresh",
+        note: "Shows one randomized upcoming/pre-order or top 20 Steam game at a time after the store refresh runs.",
         url: "https://store.steampowered.com/"
       }
     ]

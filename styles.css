@@ -688,8 +688,25 @@ h3 {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--accent-3);
-  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent-3) 18%, transparent);
+  background: #3ef28f;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, #3ef28f 16%, transparent),
+    0 0 18px color-mix(in srgb, #3ef28f 74%, transparent);
+  animation: status-glow 1600ms ease-in-out infinite alternate;
+}
+
+@keyframes status-glow {
+  from {
+    box-shadow:
+      0 0 0 5px color-mix(in srgb, #3ef28f 12%, transparent),
+      0 0 12px color-mix(in srgb, #3ef28f 54%, transparent);
+  }
+
+  to {
+    box-shadow:
+      0 0 0 8px color-mix(in srgb, #3ef28f 20%, transparent),
+      0 0 24px color-mix(in srgb, #3ef28f 84%, transparent);
+  }
 }
 
 .portrait-mark {
@@ -1226,6 +1243,50 @@ h3 {
   font-size: 0.9rem;
 }
 
+.game-price-row,
+.game-editions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.game-price,
+.game-original-price,
+.game-discount,
+.edition-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.76rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.game-price {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 54%, var(--line));
+  color: var(--accent-2);
+}
+
+.game-original-price {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.game-discount {
+  background: var(--accent);
+  color: #07110f;
+}
+
+.edition-chip {
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--line));
+  background: color-mix(in srgb, var(--bg) 38%, transparent);
+  color: var(--text);
+}
+
 .steam-actions {
   display: flex;
   flex-wrap: nowrap;
@@ -1577,7 +1638,8 @@ h3 {
 
   .boot-card::before,
   .boot-frame,
-  .boot-bars span {
+  .boot-bars span,
+  .status-dot {
     animation: none;
   }
 }

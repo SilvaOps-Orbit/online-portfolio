@@ -67,7 +67,8 @@
     }
 
     try {
-      const parsed = new URL(src);
+      const normalizedSrc = src.trim().replace(/^http:\/\//i, "https://");
+      const parsed = new URL(normalizedSrc);
       if (parsed.protocol !== "https:") {
         return;
       }
@@ -309,6 +310,15 @@
     });
   }
 
+  function shuffleItems(items) {
+    const shuffled = [...(Array.isArray(items) ? items : [])];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+    }
+    return shuffled;
+  }
+
   function appendGameItem(list, item, index) {
     const game = typeof item === "string" ? { title: item } : item || {};
     const li = createElement("li");
@@ -338,8 +348,33 @@
       body.append(createElement("span", "game-meta", game.meta));
     }
 
+    if (game.price || game.discount || game.originalPrice) {
+      const priceRow = createElement("span", "game-price-row");
+      priceRow.append(createElement("span", "game-price", game.price || "Price TBA"));
+
+      if (game.originalPrice && game.originalPrice !== game.price) {
+        priceRow.append(createElement("span", "game-original-price", game.originalPrice));
+      }
+
+      if (game.discount) {
+        priceRow.append(createElement("span", "game-discount", `${game.discount}% off`));
+      }
+
+      body.append(priceRow);
+    }
+
     if (game.note) {
       body.append(createElement("span", "game-note", game.note));
+    }
+
+    if (Array.isArray(game.editions) && game.editions.length) {
+      const editions = createElement("span", "game-editions");
+      game.editions.slice(0, 3).forEach((edition) => {
+        const label = typeof edition === "string" ? edition : edition.label || edition.name || "Edition";
+        const price = typeof edition === "string" ? "" : edition.price || "";
+        editions.append(createElement("span", "edition-chip", price ? `${label}: ${price}` : label));
+      });
+      body.append(editions);
     }
 
     li.append(body);
@@ -436,7 +471,8 @@
     }
 
     try {
-      const parsed = new URL(src);
+      const normalizedSrc = src.trim().replace(/^http:\/\//i, "https://");
+      const parsed = new URL(normalizedSrc);
       if (parsed.protocol !== "https:") {
         return;
       }
@@ -486,7 +522,7 @@
     renderStats(stats);
 
     renderGameList("steam-current", steam.currentlyPlaying);
-    renderCycleList("steam-preorder-watch", steam.preorderWatch, "Pre-Order Watch", 1);
+    renderCycleList("steam-preorder-watch", shuffleItems(steam.preorderWatch), "Pre-Order / Top 20 Games Watch", 1);
     renderGameList("steam-most-played", steam.mostPlayed);
     renderCycleList("steam-achievements", steam.achievements, "Achievements");
     renderCycleList("steam-completed", steam.completedGames, "100% Games");
@@ -631,6 +667,15 @@
         target.classList.remove("is-swapping");
       }, 180);
     }, 900);
+  }
+
+  function scheduleDynamicDataWarmups() {
+    [2000, 8000, 20000].forEach((delayMs) => {
+      window.setTimeout(() => {
+        loadSteamData({ renderFallback: false });
+        loadSpotifyData({ renderFallback: false });
+      }, delayMs);
+    });
   }
 
   function renderStatus(id, data) {
@@ -1094,6 +1139,7 @@
     startSignalCanvas();
     loadGitHubRepos();
     finishBoot();
+    scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), dataRefreshMs);
   }
