@@ -876,34 +876,6 @@
     }
   }
 
-  function appendSpotifyDetail(parent, label, value, href) {
-    if (!value) return;
-    const item = createElement("div", "spotify-detail");
-    item.append(createElement("span", "spotify-detail-label", label));
-    const content = href ? createElement("a", "spotify-detail-value", value) : createElement("span", "spotify-detail-value", value);
-    if (href) {
-      content.href = safeUrl(href);
-      content.target = "_blank";
-      content.rel = "noopener noreferrer";
-    }
-    item.append(content);
-    parent.append(item);
-  }
-
-  function appendFactList(parent, title, facts) {
-    const visibleFacts = shuffleItems(Array.isArray(facts) ? facts : []).slice(0, 3);
-    if (!visibleFacts.length) return;
-
-    const group = createElement("div", "spotify-fact-group");
-    group.append(createElement("span", "spotify-fact-title", title));
-    const list = createElement("ul", "spotify-facts");
-    visibleFacts.forEach((fact) => {
-      list.append(createElement("li", "", fact));
-    });
-    group.append(list);
-    parent.append(group);
-  }
-
   function clearSpotifyFactTimers() {
     spotifyFactTimers.forEach((timer) => window.clearInterval(timer));
     spotifyFactTimers = [];
@@ -955,28 +927,29 @@
     }
 
     const audit = createElement("div", "spotify-source-audit");
+    if (crossReference?.summary) {
+      audit.title = crossReference.summary;
+    }
+
+    audit.append(createElement("span", "spotify-source-title", "Source mix"));
     const factSources = uniqueValues([
       ...(publishedUsing?.songFacts || []),
       ...(publishedUsing?.artistFacts || [])
     ]);
-    const sourceText = [
-      publishedUsing?.playback ? `Playback: ${publishedUsing.playback}` : "",
-      factSources.length ? `Facts: ${factSources.join(" + ")}` : "",
-      publishedUsing?.artwork ? `Artwork: ${publishedUsing.artwork}` : ""
-    ].filter(Boolean).join(" | ");
-
-    if (sourceText) {
-      audit.append(createElement("p", "spotify-source-summary", sourceText));
-    }
-
-    if (crossReference?.summary) {
-      audit.append(createElement("p", "spotify-source-crossref", crossReference.summary));
-    }
 
     const chips = createElement("div", "spotify-source-chips");
+    [
+      publishedUsing?.playback ? `Playback: ${publishedUsing.playback}` : "",
+      factSources.length ? `Facts: ${factSources.join(" + ")}` : "",
+      publishedUsing?.artwork ? `Art: ${publishedUsing.artwork}` : "",
+      crossReference?.matchedSources?.length ? `Checked: ${crossReference.matchedSources.join(" + ")}` : ""
+    ].filter(Boolean).forEach((label) => {
+      chips.append(createElement("span", "spotify-source-chip is-matched", label));
+    });
+
     dataSources.forEach((source) => {
       if (!source?.source) return;
-      const chip = createElement("span", `spotify-source-chip is-${source.status || "checked"}`, `${source.source}: ${source.status || "checked"}`);
+      const chip = createElement("span", `spotify-source-chip is-${source.status || "checked"}`, `${source.source} ${source.status || "checked"}`);
       chips.append(chip);
     });
 

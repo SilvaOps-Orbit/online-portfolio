@@ -21,27 +21,18 @@ function addFact(facts, value, source) {
   }
 }
 
+function addTaggedFact(facts, label, value, source) {
+  const text = normalizeText(value);
+  if (!text) return;
+  addFact(facts, `${label}: ${text}`, source);
+}
+
 function firstSentence(value) {
   const text = normalizeText(value);
   if (!text) return "";
 
   const match = text.match(/^(.+?[.!?])\s/);
   return normalizeText(match?.[1] || text);
-}
-
-function formatDuration(value) {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
-
-  const milliseconds = Number(raw);
-  if (Number.isFinite(milliseconds) && milliseconds > 999) {
-    const totalSeconds = Math.round(milliseconds / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${String(seconds).padStart(2, "0")}`;
-  }
-
-  return normalizeText(raw);
 }
 
 function firstArrayItem(...values) {
@@ -167,17 +158,14 @@ async function loadGeniusProvider(track) {
   const songFacts = [];
   const artistFacts = [];
 
-  addFact(songFacts, song.full_title ? `Matched ${song.full_title}` : "", "Genius");
   addFact(songFacts, song.release_date_for_display ? `Released ${song.release_date_for_display}` : "", "Genius");
   addFact(songFacts, Number.isFinite(song.stats?.pageviews) ? `${song.stats.pageviews.toLocaleString("en-US")} Genius page views` : "", "Genius");
   addFact(songFacts, Number.isFinite(song.annotation_count) ? `${song.annotation_count.toLocaleString("en-US")} Genius annotations` : "", "Genius");
 
-  addFact(artistFacts, artist.name ? `Primary artist page is ${artist.name}` : "", "Genius");
-  addFact(artistFacts, Number.isFinite(artist.followers_count) ? `${artist.followers_count.toLocaleString("en-US")} Genius followers` : "", "Genius");
   addFact(artistFacts, Array.isArray(artist.alternate_names) && artist.alternate_names.length
     ? `Also known as ${artist.alternate_names.slice(0, 3).join(", ")}`
     : "", "Genius");
-  addFact(artistFacts, firstSentence(artist.description_preview?.plain), "Genius");
+  addTaggedFact(artistFacts, "Artist note", firstSentence(artist.description_preview?.plain), "Genius");
 
   const links = [
     song.url
@@ -278,20 +266,17 @@ async function loadAudioDbProvider(track) {
   const songFacts = [];
   const artistFacts = [];
 
-  addFact(songFacts, audioTrack?.strAlbum ? `Album: ${audioTrack.strAlbum}` : "", "TheAudioDB");
   addFact(songFacts, album?.intYearReleased ? `Album released in ${album.intYearReleased}` : "", "TheAudioDB");
   addFact(songFacts, audioTrack?.strGenre || album?.strGenre ? `Genre: ${audioTrack?.strGenre || album?.strGenre}` : "", "TheAudioDB");
   addFact(songFacts, audioTrack?.strMood ? `Mood: ${audioTrack.strMood}` : "", "TheAudioDB");
-  addFact(songFacts, audioTrack?.intDuration ? `Length: ${formatDuration(audioTrack.intDuration)}` : "", "TheAudioDB");
-  addFact(songFacts, audioTrack?.intTrackNumber ? `Track number ${audioTrack.intTrackNumber}` : "", "TheAudioDB");
-  addFact(songFacts, firstSentence(audioTrack?.strDescriptionEN || album?.strDescriptionEN), "TheAudioDB");
+  addTaggedFact(songFacts, "Track note", firstSentence(audioTrack?.strDescriptionEN || album?.strDescriptionEN), "TheAudioDB");
 
   addFact(artistFacts, artist?.strGenre ? `Artist genre: ${artist.strGenre}` : "", "TheAudioDB");
   addFact(artistFacts, artist?.strStyle ? `Style: ${artist.strStyle}` : "", "TheAudioDB");
   addFact(artistFacts, artist?.strMood ? `Mood: ${artist.strMood}` : "", "TheAudioDB");
   addFact(artistFacts, artist?.intFormedYear ? `Formed in ${artist.intFormedYear}` : "", "TheAudioDB");
   addFact(artistFacts, artist?.strCountry ? `From ${artist.strCountry}` : "", "TheAudioDB");
-  addFact(artistFacts, firstSentence(artist?.strBiographyEN), "TheAudioDB");
+  addTaggedFact(artistFacts, "Bio", firstSentence(artist?.strBiographyEN), "TheAudioDB");
 
   const image = firstHttpsUrl(
     audioTrack?.strTrackThumb,

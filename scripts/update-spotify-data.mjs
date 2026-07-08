@@ -37,15 +37,45 @@ function spotifyIdFromUri(value, expectedType) {
   return match?.[1] || "";
 }
 
-function formatNumber(value) {
-  return new Intl.NumberFormat("en-US").format(Number(value || 0));
-}
+function factScore(fact) {
+  const text = String(fact || "").toLowerCase();
+  let score = 0;
 
-function formatDuration(ms) {
-  const totalSeconds = Math.max(0, Math.round(Number(ms || 0) / 1000));
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  [
+    "biography",
+    "formed",
+    "from ",
+    "mood",
+    "style",
+    "also known",
+    "annotation",
+    "page views",
+    "released",
+    "explicit"
+  ].forEach((term) => {
+    if (text.includes(term)) {
+      score += 3;
+    }
+  });
+
+  [
+    "popularity score",
+    "followers",
+    "primary artist",
+    "track number",
+    "length:",
+    "album:"
+  ].forEach((term) => {
+    if (text.includes(term)) {
+      score -= 2;
+    }
+  });
+
+  if (text.length > 70) {
+    score += 1;
+  }
+
+  return score;
 }
 
 function compactFacts(facts, limit = 10) {
@@ -60,7 +90,11 @@ function compactFacts(facts, limit = 10) {
     }
   });
 
-  return uniqueFacts.slice(0, limit);
+  return uniqueFacts
+    .map((fact, index) => ({ fact, index, score: factScore(fact) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, limit)
+    .map((item) => item.fact);
 }
 
 function fallbackData(reason) {
@@ -243,22 +277,16 @@ async function loadPlaylistContext(playback, token) {
 
 function songFacts(item, album) {
   return compactFacts([
-    album?.name ? `Album: ${album.name}` : "",
     album?.releaseDate ? `Released: ${album.releaseDate}` : "",
-    item?.track_number ? `Track ${item.track_number}${album?.totalTracks ? ` of ${album.totalTracks}` : ""}` : "",
-    item?.duration_ms ? `Length: ${formatDuration(item.duration_ms)}` : "",
-    Number.isFinite(item?.popularity) ? `Spotify popularity score: ${item.popularity}/100` : "",
     item?.explicit ? "Marked explicit on Spotify." : ""
-  ]);
+  ], 4);
 }
 
 function artistFacts(artist) {
   return compactFacts([
-    artist?.followers?.total ? `${formatNumber(artist.followers.total)} Spotify followers` : "",
-    Number.isFinite(artist?.popularity) ? `Artist popularity score: ${artist.popularity}/100` : "",
     Array.isArray(artist?.genres) && artist.genres.length ? `Known for: ${artist.genres.slice(0, 3).join(", ")}` : "",
     artist?.name ? `Primary artist: ${artist.name}` : ""
-  ]);
+  ], 4);
 }
 
 function spotifySourceReport(track, baseSongFacts, baseArtistFacts) {
