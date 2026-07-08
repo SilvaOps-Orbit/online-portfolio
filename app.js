@@ -224,12 +224,38 @@
 
   function renderSecurity() {
     const grid = document.getElementById("security-grid");
+    const featureGrid = document.getElementById("nerd-feature-grid");
+
+    renderInfoCards(grid, config.security || [], "Security Control");
+    renderInfoCards(featureGrid, config.nerdFeatures || [], "Build Feature");
+  }
+
+  function renderInfoCards(grid, items, fallbackTitle) {
     if (!grid) return;
     grid.replaceChildren();
 
-    (config.security || []).forEach((item) => {
+    items.forEach((item) => {
       const card = createElement("article", "security-card reveal tilt-card");
-      card.append(createElement("h3", "", item.title || "Security Control"), createElement("p", "", item.body || ""));
+      card.append(createElement("h3", "", item.title || fallbackTitle), createElement("p", "", item.body || ""));
+
+      if (item.why) {
+        card.append(createElement("p", "card-why", `Why: ${item.why}`));
+      }
+
+      const docs = Array.isArray(item.docs) ? item.docs : [];
+      if (docs.length) {
+        const links = createElement("div", "card-doc-links");
+        docs.forEach((doc) => {
+          if (!doc?.url) return;
+          const link = createElement("a", "doc-link", doc.label || "Docs");
+          link.href = safeUrl(doc.url);
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          links.append(link);
+        });
+        card.append(links);
+      }
+
       grid.append(card);
     });
   }

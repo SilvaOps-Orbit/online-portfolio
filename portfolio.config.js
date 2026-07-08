@@ -169,22 +169,57 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "No Client-Side Secrets",
       body:
-        "The GitHub integration only uses public repository data. No personal access token, API key, private key, or Discord token belongs in browser JavaScript."
+        "Steam, Spotify, and GitHub data are designed so API keys, client secrets, refresh tokens, private keys, and Discord tokens never belong in browser JavaScript.",
+      docs: [
+        {
+          label: "GitHub Actions Secrets",
+          url: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions"
+        }
+      ]
     },
     {
       title: "DOM-Safe Rendering",
       body:
-        "Portfolio content is rendered with DOM APIs and textContent instead of injecting raw HTML, reducing the chance of cross-site scripting mistakes."
+        "Portfolio content is rendered with DOM APIs and textContent instead of injecting raw HTML, reducing the chance of cross-site scripting mistakes.",
+      docs: [
+        {
+          label: "OWASP XSS Prevention",
+          url: "https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html"
+        }
+      ]
     },
     {
       title: "Content Security Policy",
       body:
-        "The page includes a restrictive Content Security Policy that limits scripts, styles, images, connections, forms, frames, and embedded objects."
+        "The page includes a restrictive Content Security Policy that limits scripts, styles, images, connections, forms, frames, and embedded objects.",
+      docs: [
+        {
+          label: "MDN CSP",
+          url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP"
+        }
+      ]
     },
     {
       title: "Privacy Headers",
       body:
-        "The deployment header template includes no-referrer, nosniff, frame blocking, and a Permissions-Policy that disables camera, microphone, geolocation, payment, and USB access."
+        "The deployment header template includes no-referrer, nosniff, frame blocking, and a Permissions-Policy that disables camera, microphone, geolocation, payment, and USB access.",
+      docs: [
+        {
+          label: "MDN Permissions-Policy",
+          url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy"
+        }
+      ]
+    },
+    {
+      title: "Generated Public Data",
+      body:
+        "Live Steam and Spotify data is generated in GitHub Actions, saved into public JSON files, and then read by the site. The browser only sees safe output, not the credentials used to collect it.",
+      docs: [
+        {
+          label: "GitHub Actions",
+          url: "https://docs.github.com/en/actions"
+        }
+      ]
     },
     {
       title: "Small Supply Chain",
@@ -194,7 +229,89 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "GitHub Security Automation",
       body:
-        "The repository includes CodeQL scanning and Dependabot updates for GitHub Actions, giving the project ongoing security checks after it is pushed."
+        "The repository includes CodeQL scanning and Dependabot updates for GitHub Actions, giving the project ongoing security checks after it is pushed.",
+      docs: [
+        {
+          label: "CodeQL",
+          url: "https://docs.github.com/en/code-security/concepts/code-scanning/codeql/codeql-code-scanning"
+        },
+        {
+          label: "Dependabot",
+          url: "https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain"
+        }
+      ]
+    }
+  ],
+  nerdFeatures: [
+    {
+      title: "GitHub Repository Feed",
+      body:
+        "The portfolio pulls public repositories from GitHub so the project section can show real work that changes as the account changes.",
+      why: "It proves the portfolio is connected to live public work without needing a GitHub token in the browser.",
+      docs: [
+        {
+          label: "GitHub REST API",
+          url: "https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repositories-for-a-user"
+        }
+      ]
+    },
+    {
+      title: "Steam Activity and Library Data",
+      body:
+        "Steam data is refreshed by scheduled GitHub Actions and written to data/steam.json for active games, recent games, most-played games, achievements, and 100% games.",
+      why: "It gives the portfolio personality while keeping the Steam API key out of the public site.",
+      docs: [
+        {
+          label: "Steam Web API",
+          url: "https://steamcommunity.com/dev"
+        }
+      ]
+    },
+    {
+      title: "Pre-Order and Top Games Watch",
+      body:
+        "The Steam section rotates one highlighted store game at a time with artwork, store links, prices, discounts, and edition data when Steam exposes it.",
+      why: "It fills the gaming section with something current even when no game is actively open."
+    },
+    {
+      title: "Spotify Now Playing",
+      body:
+        "Spotify uses an OAuth refresh token inside GitHub Actions to publish the current track or last saved track without exposing Spotify secrets to visitors.",
+      why: "It makes the site feel alive while keeping authentication on the server-side workflow.",
+      docs: [
+        {
+          label: "Now Playing API",
+          url: "https://developer.spotify.com/documentation/web-api/reference/get-the-users-currently-playing-track"
+        },
+        {
+          label: "Spotify Refresh Tokens",
+          url: "https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens"
+        }
+      ]
+    },
+    {
+      title: "Spotify Public Playlists",
+      body:
+        "The music section can list public playlists from Spotify and cycle them in the page layout.",
+      why: "It adds personal taste without making visitors sign in or loading private playlist data.",
+      docs: [
+        {
+          label: "Playlist API",
+          url: "https://developer.spotify.com/documentation/web-api/reference/get-a-list-of-current-users-playlists"
+        }
+      ]
+    },
+    {
+      title: "Preloaded Dynamic Data",
+      body:
+        "The loading layer fetches Steam and Spotify JSON before revealing the page, then keeps fallbacks when an API refresh fails.",
+      why: "It makes the first view feel intentional and prevents empty live-data sections from looking broken."
+    },
+    {
+      title: "Interactive Personality",
+      body:
+        "The site uses a typewriter role line, dark mode, reveal animations, project filters, cycling lists, and a styled loading screen.",
+      why: "It shows creative front-end taste while keeping the build lightweight and fast."
     }
   ]
 };
