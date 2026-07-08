@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { loadMusicEnrichment } from "./music-enrichment.mjs";
 import { cleanText } from "./text-sanitizer.mjs";
 
 const clientId = process.env.SPOTIFY_CLIENT_ID || "";
@@ -47,8 +48,19 @@ function formatDuration(ms) {
   return `${minutes}:${String(seconds).padStart(2, "0")}`;
 }
 
-function compactFacts(facts) {
-  return facts.filter(Boolean).slice(0, 5);
+function compactFacts(facts, limit = 10) {
+  const seen = new Set();
+  const uniqueFacts = [];
+
+  facts.filter(Boolean).forEach((fact) => {
+    const key = String(fact).toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueFacts.push(fact);
+    }
+  });
+
+  return uniqueFacts.slice(0, limit);
 }
 
 function fallbackData(reason) {
@@ -249,6 +261,86 @@ function artistFacts(artist) {
   ]);
 }
 
+function spotifySourceReport(track, baseSongFacts, baseArtistFacts) {
+  return {
+    source: "Spotify",
+    status: "matched",
+    matched: {
+      song: track.title || "",
+      artist: track.meta || "",
+      album: track.album?.name || "",
+      trackId: track.url ? spotifyIdFromUri(track.url, "track") : ""
+    },
+    usedFor: [
+      "playback state",
+      "progress timing",
+      "base track metadata",
+      baseSongFacts.length ? "song facts" : "",
+      baseArtistFacts.length ? "artist facts" : "",
+      track.image ? "primary artwork" : ""
+    ].filter(Boolean),
+    facts: {
+      song: baseSongFacts.length,
+      artist: baseArtistFacts.length
+    },
+    links: track.url ? 1 : 0,
+    artwork: Boolean(track.image),
+    note: "Spotify is the source of the live playback state, progress, current track, album, artist, and fallback artwork."
+  };
+}
+
+function buildPublishedUsing(baseTrack, enrichment, baseSongFacts, baseArtistFacts) {
+  const sourceReports = [
+    spotifySourceReport(baseTrack, baseSongFacts, baseArtistFacts),
+    ...(enrichment.sourceReports || [])
+  ];
+  const enrichmentSources = enrichment.sources || [];
+  const imageSource = enrichment.imageSource || (baseTrack.image ? "Spotify" : "");
+  const songFactSources = [
+    baseSongFacts.length ? "Spotify" : "",
+    ...enrichmentSources
+  ].filter(Boolean);
+  const artistFactSources = [
+    baseArtistFacts.length ? "Spotify" : "",
+    ...enrichmentSources
+  ].filter(Boolean);
+  const mixedFactSources = [...new Set([...songFactSources, ...artistFactSources])];
+  const matchedExternalSources = enrichment.crossReference?.matchedSources || [];
+  const crossReferenceSummary = matchedExternalSources.length
+    ? `${matchedExternalSources.join(" and ")} were cross-referenced against the Spotify track. Published facts mix ${mixedFactSources.join(", ") || "no sources"}; artwork uses ${imageSource || "none"}; playback and progress use Spotify.`
+    : `Genius and TheAudioDB were checked against the Spotify track but did not publish external facts. Published facts use ${mixedFactSources.join(", ") || "no sources"}; playback and progress use Spotify.`;
+
+  return {
+    dataSources: sourceReports,
+    enrichment: {
+      sources: enrichmentSources,
+      links: enrichment.links || [],
+      sourceReports: enrichment.sourceReports || [],
+      crossReference: {
+        ...(enrichment.crossReference || {}),
+        summary: crossReferenceSummary,
+        spotifyMatch: {
+          song: baseTrack.title || "",
+          artist: baseTrack.meta || "",
+          album: baseTrack.album?.name || ""
+        }
+      }
+    },
+    publishedUsing: {
+      playback: "Spotify",
+      progress: "Spotify",
+      baseMetadata: "Spotify",
+      artwork: imageSource || "none",
+      songFacts: songFactSources,
+      artistFacts: artistFactSources,
+      sourceLinks: [
+        baseTrack.url ? "Spotify" : "",
+        ...(enrichment.links || []).map((link) => link.source || link.label || "").filter(Boolean)
+      ].filter(Boolean)
+    }
+  };
+}
+
 async function toCurrentTrack(playback, token, generatedAt) {
   const item = playback?.item;
   if (!item) {
@@ -274,8 +366,17 @@ async function toCurrentTrack(playback, token, generatedAt) {
         loadArtistDetails(item, token),
         loadPlaylistContext(playback, token)
       ]);
+  const progressMs = playback.progress_ms || 0;
 
-  return {
+  if (context) {
+    context.listenedMs = progressMs;
+    context.observedAt = generatedAt;
+    context.isPlaying = Boolean(playback.is_playing);
+  }
+
+  const baseSongFacts = songFacts(item, album);
+  const baseArtistFacts = artistFacts(artist);
+  const baseTrack = {
     title: item.name || "Spotify track",
     meta: artists || (isEpisode ? "Episode" : "Track"),
     note: playback.is_playing ? "Listening now" : "Paused or recently active",
@@ -284,7 +385,7 @@ async function toCurrentTrack(playback, token, generatedAt) {
     isPlaying: Boolean(playback.is_playing),
     source: playback.device ? "playback-state" : "currently-playing",
     observedAt: generatedAt,
-    progressMs: playback.progress_ms || 0,
+    progressMs,
     durationMs: item.duration_ms || 0,
     album,
     context,
@@ -299,8 +400,35 @@ async function toCurrentTrack(playback, token, generatedAt) {
           popularity: artist.popularity
         }
       : null,
-    songFacts: songFacts(item, album),
-    artistFacts: artistFacts(artist)
+    songFacts: baseSongFacts,
+    artistFacts: baseArtistFacts
+  };
+
+  const enrichment = await loadMusicEnrichment({
+    title: baseTrack.title,
+    meta: baseTrack.meta,
+    artistName: baseTrack.artist?.name || artists,
+    albumName: album?.name || ""
+  });
+
+  const publishAudit = buildPublishedUsing(baseTrack, enrichment, baseSongFacts, baseArtistFacts);
+
+  return {
+    ...baseTrack,
+    image: enrichment.image || baseTrack.image,
+    songFacts: compactFacts([
+      ...baseTrack.songFacts,
+      ...(enrichment.songFacts || [])
+    ]),
+    artistFacts: compactFacts([
+      ...baseTrack.artistFacts,
+      ...(enrichment.artistFacts || [])
+    ]),
+    enrichmentSources: enrichment.sources || [],
+    enrichmentLinks: enrichment.links || [],
+    dataSources: publishAudit.dataSources,
+    enrichment: publishAudit.enrichment,
+    publishedUsing: publishAudit.publishedUsing
   };
 }
 

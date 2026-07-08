@@ -9,6 +9,7 @@
   const spotifyDataRefreshMs = 5000;
   let bootQuoteTimer = 0;
   let spotifyProgressTimer = 0;
+  let spotifyFactTimers = [];
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -807,9 +808,15 @@
 
   function formatDurationMs(value) {
     const totalSeconds = Math.max(0, Math.floor(Number(value || 0) / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+
+    if (hours) {
+      return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }
 
   function currentProgress(track) {
@@ -846,6 +853,13 @@
 
     if (total) {
       total.textContent = formatDurationMs(progress.durationMs);
+    }
+
+    const contextTime = qs(".spotify-context-time", card);
+    if (contextTime && track?.context?.type === "playlist") {
+      contextTime.textContent = progress.progressMs
+        ? `Listening for ${formatDurationMs(progress.progressMs)}`
+        : "Playlist context";
     }
   }
 
@@ -890,61 +904,151 @@
     parent.append(group);
   }
 
+  function clearSpotifyFactTimers() {
+    spotifyFactTimers.forEach((timer) => window.clearInterval(timer));
+    spotifyFactTimers = [];
+  }
+
+  function bindSpotifyFactCycle(element, facts, intervalMs) {
+    const values = shuffleItems(Array.isArray(facts) ? facts.filter(Boolean) : []);
+    if (!element || !values.length) return;
+
+    let index = Math.floor(Math.random() * values.length);
+    element.textContent = values[index];
+
+    if (prefersReducedMotion || values.length === 1) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      index = (index + 1) % values.length;
+      element.classList.add("is-swapping");
+      window.setTimeout(() => {
+        element.textContent = values[index];
+        element.classList.remove("is-swapping");
+      }, 180);
+    }, intervalMs);
+
+    spotifyFactTimers.push(timer);
+  }
+
+  function appendSpotifyFactTicker(parent, label, facts, intervalMs, emptyText) {
+    const item = createElement("div", "spotify-fact-ticker");
+    item.append(createElement("span", "spotify-fact-label", label));
+    const value = createElement("span", "spotify-fact-value", emptyText);
+    item.append(value);
+    parent.append(item);
+    bindSpotifyFactCycle(value, facts, intervalMs);
+  }
+
+  function uniqueValues(values) {
+    return [...new Set((values || []).filter(Boolean))];
+  }
+
+  function appendSpotifySourceAudit(parent, track) {
+    const publishedUsing = track?.publishedUsing;
+    const dataSources = Array.isArray(track?.dataSources) ? track.dataSources : [];
+    const crossReference = track?.enrichment?.crossReference;
+
+    if (!publishedUsing && !dataSources.length && !crossReference?.summary) {
+      return;
+    }
+
+    const audit = createElement("div", "spotify-source-audit");
+    const factSources = uniqueValues([
+      ...(publishedUsing?.songFacts || []),
+      ...(publishedUsing?.artistFacts || [])
+    ]);
+    const sourceText = [
+      publishedUsing?.playback ? `Playback: ${publishedUsing.playback}` : "",
+      factSources.length ? `Facts: ${factSources.join(" + ")}` : "",
+      publishedUsing?.artwork ? `Artwork: ${publishedUsing.artwork}` : ""
+    ].filter(Boolean).join(" | ");
+
+    if (sourceText) {
+      audit.append(createElement("p", "spotify-source-summary", sourceText));
+    }
+
+    if (crossReference?.summary) {
+      audit.append(createElement("p", "spotify-source-crossref", crossReference.summary));
+    }
+
+    const chips = createElement("div", "spotify-source-chips");
+    dataSources.forEach((source) => {
+      if (!source?.source) return;
+      const chip = createElement("span", `spotify-source-chip is-${source.status || "checked"}`, `${source.source}: ${source.status || "checked"}`);
+      chips.append(chip);
+    });
+
+    if (chips.children.length) {
+      audit.append(chips);
+    }
+
+    if (audit.children.length) {
+      parent.append(audit);
+    }
+  }
+
   function renderSpotifyNow(id, item) {
     const target = document.getElementById(id);
     if (!target) return;
     target.replaceChildren();
+    clearSpotifyFactTimers();
 
     const track = item || { title: "No live data yet", note: "Connect Spotify to fill this section." };
     const card = createElement("article", track.image ? "spotify-now-card has-art" : "spotify-now-card");
+
+    const player = createElement("div", "spotify-player");
 
     if (track.image) {
       const image = createElement("img", "spotify-now-art");
       image.loading = "lazy";
       setImageElement(image, track.image, `${track.title || "Spotify track"} artwork`);
-      card.append(image);
+      player.append(image);
+    } else {
+      const placeholder = createElement("div", "spotify-now-art spotify-now-art-placeholder", "SP");
+      player.append(placeholder);
     }
 
     const body = createElement("div", "spotify-now-body");
+    body.append(createElement("span", "spotify-now-note", track.note || "Spotify activity"));
     body.append(createElement("h3", "", track.title || "Spotify track"));
-    body.append(createElement("p", "spotify-now-meta", track.meta || "Spotify"));
+    body.append(createElement("p", "spotify-now-meta", track.meta || "Spotify artist"));
 
-    if (track.note) {
-      body.append(createElement("p", "spotify-now-note", track.note));
+    if (track.album?.name) {
+      const album = track.album.url
+        ? createElement("a", "spotify-album-link", track.album.name)
+        : createElement("span", "spotify-album-link", track.album.name);
+      if (track.album.url) {
+        album.href = safeUrl(track.album.url);
+        album.target = "_blank";
+        album.rel = "noopener noreferrer";
+      }
+      body.append(album);
     }
 
     if (track.context?.type === "playlist" && track.context.title) {
       const playlist = track.context.url
-        ? createElement("a", "spotify-context", `Playlist: ${track.context.title}`)
-        : createElement("span", "spotify-context", `Playlist: ${track.context.title}`);
+        ? createElement("a", "spotify-context")
+        : createElement("div", "spotify-context");
       if (track.context.url) {
         playlist.href = safeUrl(track.context.url);
         playlist.target = "_blank";
         playlist.rel = "noopener noreferrer";
       }
+      if (track.context.image) {
+        const playlistImage = createElement("img", "spotify-context-image");
+        playlistImage.loading = "lazy";
+        setImageElement(playlistImage, track.context.image, `${track.context.title} playlist artwork`);
+        playlist.append(playlistImage);
+      }
+      const playlistText = createElement("span", "spotify-context-copy");
+      playlistText.append(createElement("span", "spotify-context-label", "Playlist"));
+      playlistText.append(createElement("strong", "", track.context.title));
+      playlistText.append(createElement("span", "spotify-context-time", "Playlist context"));
+      playlist.append(playlistText);
       body.append(playlist);
     }
-
-    if (Number(track.durationMs || 0) > 0) {
-      const progress = createElement("div", "spotify-progress");
-      progress.append(createElement("span", "spotify-progress-current", "0:00"));
-      const bar = createElement("span", "spotify-progress-bar");
-      bar.append(createElement("span", "spotify-progress-fill"));
-      progress.append(bar, createElement("span", "spotify-progress-total", formatDurationMs(track.durationMs)));
-      body.append(progress);
-    }
-
-    const details = createElement("div", "spotify-detail-grid");
-    appendSpotifyDetail(details, "Album", track.album?.name, track.album?.url);
-    appendSpotifyDetail(details, "Artist", track.artist?.name || track.meta, track.artist?.url);
-    appendSpotifyDetail(details, "Released", track.album?.releaseDate);
-    appendSpotifyDetail(details, "Track Length", track.durationMs ? formatDurationMs(track.durationMs) : "");
-    if (details.children.length) {
-      body.append(details);
-    }
-
-    appendFactList(body, "Song facts", track.songFacts);
-    appendFactList(body, "Artist facts", track.artistFacts);
 
     if (track.url) {
       const link = createElement("a", "text-link spotify-track-link", "Open in Spotify");
@@ -954,7 +1058,43 @@
       body.append(link);
     }
 
-    card.append(body);
+    if (Array.isArray(track.enrichmentLinks) && track.enrichmentLinks.length) {
+      const links = createElement("div", "spotify-source-links");
+      track.enrichmentLinks.slice(0, 3).forEach((sourceLink) => {
+        if (!sourceLink?.url || !sourceLink?.label) return;
+        const link = createElement("a", "spotify-source-link", sourceLink.label);
+        link.href = safeUrl(sourceLink.url);
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        links.append(link);
+      });
+      if (links.children.length) {
+        body.append(links);
+      }
+    }
+
+    appendSpotifySourceAudit(body, track);
+
+    player.append(body);
+    card.append(player);
+
+    if (Number(track.durationMs || 0) > 0) {
+      const progress = createElement("div", "spotify-progress");
+      const bar = createElement("span", "spotify-progress-bar");
+      bar.append(createElement("span", "spotify-progress-fill"));
+      progress.append(bar);
+      const times = createElement("div", "spotify-progress-times");
+      times.append(createElement("span", "spotify-progress-current", "00:00"));
+      times.append(createElement("span", "spotify-progress-total", formatDurationMs(track.durationMs)));
+      progress.append(times);
+      card.append(progress);
+    }
+
+    const facts = createElement("div", "spotify-fact-strip");
+    appendSpotifyFactTicker(facts, "Artist", track.artistFacts, 5000, track.artist?.name || track.meta || "Artist details will appear here.");
+    appendSpotifyFactTicker(facts, "Song", track.songFacts, 10000, track.album?.name || "Song details will appear here.");
+    card.append(facts);
+
     target.append(card);
     bindSpotifyProgress(card, track);
   }
@@ -1394,7 +1534,7 @@
     finishBoot();
     scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
-    window.setInterval(() => loadSpotifyData({ renderFallback: false }), dataRefreshMs);
+    window.setInterval(() => loadSpotifyData({ renderFallback: false }), spotifyDataRefreshMs);
   }
 
   init().catch(() => {

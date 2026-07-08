@@ -993,6 +993,284 @@ h3 {
   margin-top: 20px;
 }
 
+.spotify-now-card {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent-3) 12%, transparent), transparent 58%),
+    color-mix(in srgb, var(--bg) 46%, transparent);
+}
+
+.spotify-player {
+  display: grid;
+  grid-template-columns: minmax(104px, 0.42fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.spotify-now-art {
+  width: 100%;
+  max-width: 154px;
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+  border-radius: 7px;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent-3) 14%, transparent)),
+    var(--panel-strong);
+  object-fit: cover;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+}
+
+.spotify-now-art-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-weight: 950;
+}
+
+.spotify-now-body {
+  min-width: 0;
+}
+
+.spotify-now-body h3 {
+  margin: 4px 0 4px;
+  font-size: clamp(1.45rem, 3.2vw, 2.25rem);
+  line-height: 1.02;
+  overflow-wrap: anywhere;
+}
+
+.spotify-now-note,
+.spotify-now-meta,
+.spotify-album-link {
+  display: block;
+}
+
+.spotify-now-note {
+  color: var(--accent);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.spotify-now-meta {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.spotify-album-link {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.spotify-context {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--panel) 52%, transparent);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.spotify-context:hover,
+.spotify-context:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 66%, var(--line));
+}
+
+.spotify-context-image {
+  width: 42px;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--panel-strong);
+}
+
+.spotify-context-copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.spotify-context-label,
+.spotify-context-time {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.spotify-context-copy strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.spotify-track-link {
+  display: inline-flex;
+  margin-top: 12px;
+}
+
+.spotify-source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.spotify-source-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 42%, var(--line));
+  border-radius: 6px;
+  color: var(--accent-2);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.spotify-source-link:hover,
+.spotify-source-link:focus-visible {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 10%, transparent);
+}
+
+.spotify-source-audit {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 9px;
+  border: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 28%, transparent);
+}
+
+.spotify-source-summary,
+.spotify-source-crossref {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.spotify-source-crossref {
+  color: color-mix(in srgb, var(--accent) 72%, var(--muted));
+}
+
+.spotify-source-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.spotify-source-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.spotify-source-chip.is-matched {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  color: var(--accent);
+}
+
+.spotify-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.spotify-progress-bar {
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 78%, transparent);
+}
+
+.spotify-progress-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 42%, transparent);
+  transition: width 240ms linear;
+}
+
+.spotify-progress-times {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.spotify-fact-strip {
+  display: grid;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.spotify-fact-ticker {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 34px;
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 34%, transparent);
+}
+
+.spotify-fact-label {
+  color: var(--accent-2);
+  font-size: 0.73rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.spotify-fact-value {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.25;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 180ms ease, transform 180ms ease;
+  overflow-wrap: anywhere;
+}
+
+.spotify-fact-value.is-swapping {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
 .data-status {
   max-width: 780px;
   margin: 12px 0 0;
@@ -1633,6 +1911,20 @@ h3 {
 
   .steam-stat-grid {
     grid-template-columns: 1fr;
+  }
+
+  .spotify-player {
+    grid-template-columns: 1fr;
+  }
+
+  .spotify-now-art {
+    width: min(100%, 220px);
+    max-width: none;
+  }
+
+  .spotify-fact-ticker {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .game-list li.has-art {

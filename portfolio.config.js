@@ -213,7 +213,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Generated Public Data",
       body:
-        "Live Steam and Spotify data is generated in GitHub Actions, saved into public JSON files, and then read by the site. The browser only sees safe output, not the credentials used to collect it.",
+        "Live Steam, Spotify, and music enrichment data is generated in GitHub Actions, saved into public JSON files, and then read by the site. The browser only sees safe output, not the credentials used to collect it.",
       docs: [
         {
           label: "GitHub Actions",
@@ -222,9 +222,20 @@ window.PORTFOLIO_CONFIG = {
       ]
     },
     {
+      title: "Server-Side Music Enrichment",
+      body:
+        "Genius and TheAudioDB music data are treated as build-time API calls. Tokens stay in GitHub Actions secrets, then only sanitized track facts, artist facts, links, artwork URLs, and source-audit metadata are published.",
+      docs: [
+        {
+          label: "GitHub Actions Secrets",
+          url: "https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions"
+        }
+      ]
+    },
+    {
       title: "Plain-Text API Sanitization",
       body:
-        "Steam and Spotify API text is normalized into plain text before it is published to data files, removing tag-like markup, avoiding repeated entity decoding, and keeping generated content safe to display.",
+        "Steam, Spotify, and music API text is normalized into plain text before it is published to data files, removing tag-like markup, avoiding repeated entity decoding, and keeping generated content safe to display.",
       docs: [
         {
           label: "OWASP Output Encoding",
@@ -287,7 +298,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Spotify Now Playing",
       body:
-        "Spotify uses an OAuth refresh token inside GitHub Actions to publish the current track or last saved track without exposing Spotify secrets to visitors.",
+        "Spotify uses an OAuth refresh token inside GitHub Actions to publish the current track or last saved track, then the front end renders it as a mini player with artwork, progress, playlist context, and rotating facts.",
       why: "It makes the site feel alive while keeping authentication on the server-side workflow.",
       docs: [
         {
@@ -297,6 +308,22 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Spotify Refresh Tokens",
           url: "https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens"
+        }
+      ]
+    },
+    {
+      title: "Music Fact Enrichment",
+      body:
+        "The Spotify refresh cross-references the current song against Genius and free TheAudioDB v1, mixes facts from every matched source, then publishes which source was used for playback, facts, links, and artwork.",
+      why: "It turns the music card into something more personal than a plain now-playing widget.",
+      docs: [
+        {
+          label: "Genius API",
+          url: "https://docs.genius.com/"
+        },
+        {
+          label: "TheAudioDB v1",
+          url: "https://www.theaudiodb.com/free_music_api#v1"
         }
       ]
     },

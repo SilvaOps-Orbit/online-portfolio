@@ -85,6 +85,30 @@ Steam activity has its own `.github/workflows/steam.yml` workflow that runs ever
 
 On page startup, the browser preloads `data/steam.json` and `data/spotify.json` before revealing the site. If either generated data file is missing or slow, the page falls back to `portfolio.config.js` so it still opens without exposing API secrets.
 
+### Music enrichment
+
+Genius and TheAudioDB facts are generated in GitHub Actions, not in the browser.
+
+For Genius, add this repository secret in GitHub -> Settings -> Secrets and variables -> Actions:
+
+- `GENIUS_ACCESS_TOKEN` - used for Genius song and artist facts.
+
+If Genius asks for a redirect URL while creating the app, use:
+
+```text
+http://127.0.0.1:8888/callback
+```
+
+TheAudioDB v1 uses the free key `123` by default:
+
+```text
+https://www.theaudiodb.com/api/v1/json/123/search.php?s=coldplay
+```
+
+No GitHub secret is required for the free key. If you ever upgrade, add your premium key as `AUDIODB_API_KEY` and the workflow will use it automatically.
+
+Only sanitized facts, Genius source links, artwork URLs, and a source audit are published to `data/spotify.json`. The published song and artist facts are mixed from Spotify, Genius, and TheAudioDB when they match, while the audit records which source was used for playback, progress, artwork, facts, and links.
+
 ## GitHub Pages
 
 This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:
