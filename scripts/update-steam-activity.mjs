@@ -12,6 +12,14 @@ function headerImage(appid) {
   return `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`;
 }
 
+function formatHours(minutes) {
+  const hours = Math.round(Number(minutes || 0) / 60);
+  if (hours >= 1000) {
+    return `${new Intl.NumberFormat("en-US").format(hours)} hrs`;
+  }
+  return `${hours} hrs`;
+}
+
 function formatDuration(ms) {
   const totalMinutes = Math.max(0, Math.floor(ms / 60000));
   const hours = Math.floor(totalMinutes / 60);
@@ -30,6 +38,17 @@ function formatDuration(ms) {
   }
 
   return "just started";
+}
+
+function toRecentGame(game) {
+  return {
+    appid: game.appid,
+    title: game.name || "Steam game",
+    meta: "Recently played",
+    note: game.playtime_2weeks ? `${formatHours(game.playtime_2weeks)} in the last 2 weeks` : `${formatHours(game.playtime_forever)} total`,
+    image: game.appid ? headerImage(game.appid) : "",
+    url: game.appid ? gameUrl(game.appid) : ""
+  };
 }
 
 async function readExistingData() {
@@ -105,9 +124,18 @@ async function main() {
   }
 
   const generatedAt = new Date().toISOString();
-  const profileResponse = await steamApi("ISteamUser/GetPlayerSummaries/v0002/", { steamids: steamId });
+  const [profileResponse, recentResponse] = await Promise.all([
+    steamApi("ISteamUser/GetPlayerSummaries/v0002/", { steamids: steamId }),
+    steamApi("IPlayerService/GetRecentlyPlayedGames/v0001/", { steamid: steamId, count: 4 }).catch(() => ({ response: { games: [] } }))
+  ]);
   const profile = profileResponse?.response?.players?.[0] || {};
+  const recentGames = recentResponse?.response?.games || [];
   const activeGame = activeSteamGame(profile, previous, generatedAt);
+  const currentGames = activeGame.appid
+    ? [activeGame]
+    : recentGames.length
+      ? recentGames.map(toRecentGame)
+      : [activeGame];
   const output = {
     ...previous,
     generatedAt,
@@ -121,10 +149,10 @@ async function main() {
       visibilityState: profile.communityvisibilitystate
     },
     profileUrl: profile.profileurl || previous.profileUrl || `https://steamcommunity.com/profiles/${steamId}`,
-    currentlyPlaying: [activeGame],
+    currentlyPlaying: currentGames,
     status: activeGame.appid
       ? "Steam activity refreshed. Active game is shown from Steam profile status."
-      : "Steam activity refreshed. No active game detected.",
+      : "Steam activity refreshed. No active game detected, so recently played games are shown.",
     stale: false
   };
 

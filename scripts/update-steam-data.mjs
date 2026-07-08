@@ -98,6 +98,14 @@ function toGame(item, note) {
   };
 }
 
+function toRecentGame(game) {
+  return {
+    ...toGame(game, `${formatHours(game.playtime_forever)} total`),
+    meta: "Recently played",
+    note: game.playtime_2weeks ? `${formatHours(game.playtime_2weeks)} in the last 2 weeks` : `${formatHours(game.playtime_forever)} total`
+  };
+}
+
 function withLastValues(output, previous) {
   const result = { ...output };
   const arrayKeys = ["currentlyPlaying", "mostPlayed", "achievements", "completedGames"];
@@ -335,7 +343,11 @@ async function main() {
         { label: "Steam Level", value: levelResponse?.response?.player_level ? String(levelResponse.response.player_level) : "Private" },
         ...achievementData.stats
       ],
-      currentlyPlaying: [activeGame],
+      currentlyPlaying: activeGame.appid
+        ? [activeGame]
+        : recentGames.length
+          ? recentGames.slice(0, 4).map(toRecentGame)
+          : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
       completedGames: achievementData.completedGames
