@@ -21,7 +21,7 @@ window.PORTFOLIO_CONFIG = {
     current: "Studying Diplomia ICT (Advanced Networking, Cyber Security)",
     availability: "Open to opportunities",
     email: "alvis.dev@proton.me",
-    githubUsername: "",
+    githubUsername: "SilvaOps-Orbit",
     discordUrl: "",
     linkedinUrl: "",
     resumeUrl: ""
