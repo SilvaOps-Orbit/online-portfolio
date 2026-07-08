@@ -75,7 +75,9 @@ powershell -ExecutionPolicy Bypass -File .\scripts\spotify-local-auth.ps1
 powershell -ExecutionPolicy Bypass -File .\scripts\spotify-refresh-token.ps1
 ```
 
-The requested scopes are `user-read-currently-playing playlist-read-private`. Spotify currently documents refresh tokens as lasting 6 months, so if the workflow starts reporting `invalid_grant`, repeat the authorization steps and replace `SPOTIFY_REFRESH_TOKEN`.
+The requested scopes are `user-read-currently-playing user-read-playback-state playlist-read-private`. Spotify currently documents refresh tokens as lasting 6 months, so if the workflow starts reporting `invalid_grant`, repeat the authorization steps and replace `SPOTIFY_REFRESH_TOKEN`.
+
+If the scope list changes, run `spotify-local-auth.ps1` again and replace `SPOTIFY_REFRESH_TOKEN` because old refresh tokens do not automatically gain new permissions.
 
 The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live.
 

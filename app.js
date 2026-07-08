@@ -6,7 +6,9 @@
   const root = document.documentElement;
   const cycleTimers = new Map();
   const dataRefreshMs = 60000;
+  const spotifyDataRefreshMs = 5000;
   let bootQuoteTimer = 0;
+  let spotifyProgressTimer = 0;
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -803,6 +805,160 @@
     target.append(list);
   }
 
+  function formatDurationMs(value) {
+    const totalSeconds = Math.max(0, Math.floor(Number(value || 0) / 1000));
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  function currentProgress(track) {
+    const durationMs = Number(track?.durationMs || 0);
+    let progressMs = Number(track?.progressMs || 0);
+
+    if (track?.isPlaying && track?.observedAt) {
+      const observed = new Date(track.observedAt).getTime();
+      if (Number.isFinite(observed)) {
+        progressMs += Math.max(0, Date.now() - observed);
+      }
+    }
+
+    return {
+      durationMs,
+      progressMs: durationMs ? Math.min(progressMs, durationMs) : Math.max(0, progressMs),
+      percent: durationMs ? Math.min(100, Math.max(0, (progressMs / durationMs) * 100)) : 0
+    };
+  }
+
+  function updateSpotifyProgress(card, track) {
+    const progress = currentProgress(track);
+    const fill = qs(".spotify-progress-fill", card);
+    const current = qs(".spotify-progress-current", card);
+    const total = qs(".spotify-progress-total", card);
+
+    if (fill) {
+      fill.style.width = `${progress.percent}%`;
+    }
+
+    if (current) {
+      current.textContent = formatDurationMs(progress.progressMs);
+    }
+
+    if (total) {
+      total.textContent = formatDurationMs(progress.durationMs);
+    }
+  }
+
+  function bindSpotifyProgress(card, track) {
+    if (spotifyProgressTimer) {
+      window.clearInterval(spotifyProgressTimer);
+      spotifyProgressTimer = 0;
+    }
+
+    updateSpotifyProgress(card, track);
+
+    if (track?.isPlaying && Number(track?.durationMs || 0) > 0) {
+      spotifyProgressTimer = window.setInterval(() => updateSpotifyProgress(card, track), 1000);
+    }
+  }
+
+  function appendSpotifyDetail(parent, label, value, href) {
+    if (!value) return;
+    const item = createElement("div", "spotify-detail");
+    item.append(createElement("span", "spotify-detail-label", label));
+    const content = href ? createElement("a", "spotify-detail-value", value) : createElement("span", "spotify-detail-value", value);
+    if (href) {
+      content.href = safeUrl(href);
+      content.target = "_blank";
+      content.rel = "noopener noreferrer";
+    }
+    item.append(content);
+    parent.append(item);
+  }
+
+  function appendFactList(parent, title, facts) {
+    const visibleFacts = shuffleItems(Array.isArray(facts) ? facts : []).slice(0, 3);
+    if (!visibleFacts.length) return;
+
+    const group = createElement("div", "spotify-fact-group");
+    group.append(createElement("span", "spotify-fact-title", title));
+    const list = createElement("ul", "spotify-facts");
+    visibleFacts.forEach((fact) => {
+      list.append(createElement("li", "", fact));
+    });
+    group.append(list);
+    parent.append(group);
+  }
+
+  function renderSpotifyNow(id, item) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.replaceChildren();
+
+    const track = item || { title: "No live data yet", note: "Connect Spotify to fill this section." };
+    const card = createElement("article", track.image ? "spotify-now-card has-art" : "spotify-now-card");
+
+    if (track.image) {
+      const image = createElement("img", "spotify-now-art");
+      image.loading = "lazy";
+      setImageElement(image, track.image, `${track.title || "Spotify track"} artwork`);
+      card.append(image);
+    }
+
+    const body = createElement("div", "spotify-now-body");
+    body.append(createElement("h3", "", track.title || "Spotify track"));
+    body.append(createElement("p", "spotify-now-meta", track.meta || "Spotify"));
+
+    if (track.note) {
+      body.append(createElement("p", "spotify-now-note", track.note));
+    }
+
+    if (track.context?.type === "playlist" && track.context.title) {
+      const playlist = track.context.url
+        ? createElement("a", "spotify-context", `Playlist: ${track.context.title}`)
+        : createElement("span", "spotify-context", `Playlist: ${track.context.title}`);
+      if (track.context.url) {
+        playlist.href = safeUrl(track.context.url);
+        playlist.target = "_blank";
+        playlist.rel = "noopener noreferrer";
+      }
+      body.append(playlist);
+    }
+
+    if (Number(track.durationMs || 0) > 0) {
+      const progress = createElement("div", "spotify-progress");
+      progress.append(createElement("span", "spotify-progress-current", "0:00"));
+      const bar = createElement("span", "spotify-progress-bar");
+      bar.append(createElement("span", "spotify-progress-fill"));
+      progress.append(bar, createElement("span", "spotify-progress-total", formatDurationMs(track.durationMs)));
+      body.append(progress);
+    }
+
+    const details = createElement("div", "spotify-detail-grid");
+    appendSpotifyDetail(details, "Album", track.album?.name, track.album?.url);
+    appendSpotifyDetail(details, "Artist", track.artist?.name || track.meta, track.artist?.url);
+    appendSpotifyDetail(details, "Released", track.album?.releaseDate);
+    appendSpotifyDetail(details, "Track Length", track.durationMs ? formatDurationMs(track.durationMs) : "");
+    if (details.children.length) {
+      body.append(details);
+    }
+
+    appendFactList(body, "Song facts", track.songFacts);
+    appendFactList(body, "Artist facts", track.artistFacts);
+
+    if (track.url) {
+      const link = createElement("a", "text-link spotify-track-link", "Open in Spotify");
+      link.href = safeUrl(track.url);
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      body.append(link);
+    }
+
+    card.append(body);
+    target.append(card);
+    bindSpotifyProgress(card, track);
+  }
+
   function renderSpotify(spotifyData) {
     const spotify = spotifyData || config.spotify || {};
     setText("spotify-summary", spotify.summary || "");
@@ -816,7 +972,7 @@
     }
 
     const current = spotify.current || spotify.lastTrack;
-    renderFeatureItem("spotify-now", current);
+    renderSpotifyNow("spotify-now", current);
     renderCycleList("spotify-playlists", spotify.playlists, "Public Playlists", 4);
     observeReveals();
   }
