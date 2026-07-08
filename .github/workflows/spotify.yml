@@ -33,6 +33,12 @@ jobs:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
           PRESERVE_DATA_FILES: "steam.json"
 
+      - name: Refresh Steam activity
+        run: node scripts/update-steam-activity.mjs
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
+
       - name: Generate Spotify data
         run: node scripts/update-spotify-data.mjs
         env:

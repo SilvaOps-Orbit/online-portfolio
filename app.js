@@ -424,7 +424,6 @@
     if (profileLink && steam.profileUrl) {
       profileLink.href = safeUrl(steam.profileUrl);
       profileLink.hidden = false;
-      profileLink.classList.add("steam-profile-link");
     }
 
     const steamDbLink = document.getElementById("steamdb-link");

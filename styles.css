@@ -1003,10 +1003,6 @@ h3 {
   font-size: 0.9rem;
 }
 
-.steam-profile-link {
-  margin-top: 22px;
-}
-
 .steam-actions {
   display: flex;
   flex-wrap: nowrap;

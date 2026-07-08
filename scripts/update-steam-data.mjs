@@ -30,6 +30,26 @@ function formatDate(timestamp) {
   return new Intl.DateTimeFormat("en-AU", { day: "numeric", month: "short", year: "numeric" }).format(new Date(timestamp * 1000));
 }
 
+function formatDuration(ms) {
+  const totalMinutes = Math.max(0, Math.floor(ms / 60000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours && minutes) {
+    return `${hours}h ${minutes}m`;
+  }
+
+  if (hours) {
+    return `${hours}h`;
+  }
+
+  if (minutes) {
+    return `${minutes}m`;
+  }
+
+  return "just started";
+}
+
 async function readExistingData() {
   try {
     return JSON.parse(await readFile(outputPath, "utf8"));
@@ -128,6 +148,35 @@ function achievementKey(achievement) {
 
 function achievementUnlocked(achievement) {
   return Number(achievement.achieved || 0) > 0;
+}
+
+function activeSteamGame(profile, ownedGames, previous, generatedAt) {
+  const activeAppId = profile?.gameid ? String(profile.gameid) : "";
+
+  if (!activeAppId) {
+    return {
+      title: "No active Steam game detected",
+      meta: "Steam activity",
+      note: "When Steam reports an open game, it will appear here."
+    };
+  }
+
+  const ownedGame = ownedGames.find((game) => String(game.appid) === activeAppId) || {};
+  const previousActive = Array.isArray(previous.currentlyPlaying) ? previous.currentlyPlaying[0] : {};
+  const activeStartedAt = String(previousActive?.appid || "") === activeAppId && previousActive?.activeStartedAt
+    ? previousActive.activeStartedAt
+    : generatedAt;
+  const activeFor = formatDuration(Date.parse(generatedAt) - Date.parse(activeStartedAt));
+
+  return {
+    appid: activeAppId,
+    title: profile.gameextrainfo || ownedGame.name || "Steam game",
+    meta: "Playing now",
+    note: `Active for ${activeFor}`,
+    image: headerImage(activeAppId),
+    url: gameUrl(activeAppId),
+    activeStartedAt
+  };
 }
 
 async function loadAchievementCollections(ownedGames) {
@@ -257,8 +306,11 @@ async function main() {
     const mostPlayed = [...ownedGames].sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0)).slice(0, 6);
     const achievementData = await loadAchievementCollections(ownedGames);
 
+    const generatedAt = new Date().toISOString();
+    const activeGame = activeSteamGame(profile, ownedGames, previous, generatedAt);
+
     output = {
-      generatedAt: new Date().toISOString(),
+      generatedAt,
       source: "steam-web-api",
       steamId,
       profileUrl: profile.profileurl || profileUrl,
@@ -283,12 +335,7 @@ async function main() {
         { label: "Steam Level", value: levelResponse?.response?.player_level ? String(levelResponse.response.player_level) : "Private" },
         ...achievementData.stats
       ],
-      currentlyPlaying: recentGames.length
-        ? recentGames.slice(0, 4).map((game) => ({
-            ...toGame(game, `${formatHours(game.playtime_forever)} total`),
-            meta: `${formatHours(game.playtime_2weeks)} last 2 weeks`
-          }))
-        : mostPlayed.slice(0, 2).map((game) => toGame(game, "Most played fallback because recent games are private or empty.")),
+      currentlyPlaying: [activeGame],
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
       completedGames: achievementData.completedGames

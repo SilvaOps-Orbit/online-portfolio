@@ -39,7 +39,7 @@ Spotify data is generated into `data/spotify.json` by GitHub Actions so API cred
    - `SPOTIFY_CLIENT_SECRET`
    - `SPOTIFY_REFRESH_TOKEN`
 
-The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 15 minutes to keep the now-playing card closer to live while preserving the last deployed Steam data.
+The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 15 minutes to keep Spotify and Steam activity closer to live while preserving the heavier Steam stats from the last full deploy.
 
 ## GitHub Pages
 
