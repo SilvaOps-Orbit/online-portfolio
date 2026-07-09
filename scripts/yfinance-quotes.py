@@ -34,21 +34,34 @@ def fast_value(info, *keys):
     return None
 
 
-def history_values(ticker):
+def history_snapshot(ticker):
     try:
-        history = ticker.history(period="5d", interval="1d", auto_adjust=False)
+        history = ticker.history(period="7d", interval="1d", auto_adjust=False)
     except Exception:
-        return None, None
+        return None, None, []
 
     try:
         closes = history["Close"].dropna()
         if closes.empty:
-            return None, None
+            return None, None, []
         price = as_float(closes.iloc[-1])
         previous_close = as_float(closes.iloc[-2]) if len(closes) > 1 else None
-        return price, previous_close
+        points = []
+        for index, close in closes.tail(7).items():
+            close_value = as_float(close)
+            if close_value is None:
+                continue
+            try:
+                date_value = index.date().isoformat()
+            except Exception:
+                date_value = str(index)
+            points.append({
+                "date": date_value,
+                "close": close_value,
+            })
+        return price, previous_close, points
     except Exception:
-        return None, None
+        return None, None, []
 
 
 def quote(symbol):
@@ -63,8 +76,10 @@ def quote(symbol):
     price = as_float(fast_value(fast, "last_price", "lastPrice", "regular_market_price"))
     previous_close = as_float(fast_value(fast, "previous_close", "previousClose", "regular_market_previous_close"))
 
+    history_price, history_previous_close, history_points = history_snapshot(ticker)
+
     if price is None:
-        price, history_previous_close = history_values(ticker)
+        price = history_price
         previous_close = previous_close if previous_close is not None else history_previous_close
 
     if price is None:
@@ -83,6 +98,7 @@ def quote(symbol):
         "changePercent": change_percent,
         "currency": currency,
         "exchange": exchange,
+        "history": history_points,
         "updatedAt": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
 

@@ -117,9 +117,9 @@ The markets and news sections are generated into `data/market.json` and `data/ne
 2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
 3. Add repository secret `FINNHUB_API_KEY`.
 
-The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the market/news workflow, so no Yahoo key is exposed in the site.
+The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. `yfinance` also publishes one week of closing prices so each stock card can draw a compact chart, with the S&P 500 card shown as the larger market baseline. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the market/news workflow, so no Yahoo key is exposed in the site.
 
-`.github/workflows/market-news.yml` refreshes market and news data hourly. The news feed is split into Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles.
+`.github/workflows/market-news.yml` refreshes market and news data hourly. The news feed is split into Breaking Worldwide, Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles. Breaking worldwide headlines are English-only and tagged with an inferred affected country/region, plus a conflict tag when the headline/snippet appears war-related. RSS fallbacks are displayed by publisher name, such as ABC News or IGN, and article photos are shown when a feed/API provides a safe image URL.
 
 Optional RSS overrides can be added as workflow environment variables:
 

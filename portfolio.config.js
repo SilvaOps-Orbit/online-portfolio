@@ -167,7 +167,7 @@ window.PORTFOLIO_CONFIG = {
   },
   market: {
     summary:
-      "A watchlist for the S&P 500 plus gaming and technology companies. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
+      "A watchlist for the S&P 500 plus gaming and technology companies, with one-week price charts and a larger S&P 500 market baseline. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
     status:
       "Market data refreshes through GitHub Actions. Until Finnhub is connected, yfinance can still provide a Yahoo Finance fallback.",
     disclaimer:
@@ -275,10 +275,23 @@ window.PORTFOLIO_CONFIG = {
   },
   news: {
     summary:
-      "A compact feed for gaming, finance, and Australian government news. Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results.",
+      "A compact feed for breaking worldwide, gaming, finance, and Australian government news. Breaking news is English-only and tagged by affected country or region; Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results. Feed cards use publisher names and photos when the source provides them.",
     status:
       "News data refreshes through GitHub Actions. The browser only receives sanitized article JSON with source API labels.",
     items: [
+      {
+        category: "Breaking Worldwide",
+        importance: "Developing",
+        title: "Breaking worldwide feed pending",
+        snippet:
+          "Connect NewsAPI and Mediastack to surface urgent English-language world events with affected-region tags.",
+        why: "Gives the site a live awareness layer without exposing API keys in the browser.",
+        source: "Pending source",
+        affectedRegion: "Worldwide / developing",
+        isBreaking: true,
+        tags: ["Breaking"],
+        url: "https://newsapi.org/docs/endpoints/everything"
+      },
       {
         category: "Gaming",
         importance: "Watch",
@@ -487,7 +500,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Market and News Intelligence",
       body:
-        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks, AU-priority NewsAPI and Mediastack article search, RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
+        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks and one-week chart history, English-only breaking worldwide headlines with affected-region tags, AU-priority NewsAPI and Mediastack article search, publisher-labeled RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
       why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser.",
       docs: [
         {

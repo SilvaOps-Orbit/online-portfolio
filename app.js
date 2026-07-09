@@ -760,7 +760,11 @@
   function mergeNewsData(fallback, live) {
     const result = { ...(fallback || {}), ...(live || {}) };
     if (Array.isArray((live || {}).items) && live.items.length) {
-      result.items = live.items;
+      const liveCategories = new Set(live.items.map((item) => String(item?.category || "Other")));
+      const missingFallbackRows = Array.isArray((fallback || {}).items)
+        ? fallback.items.filter((item) => !liveCategories.has(String(item?.category || "Other")))
+        : [];
+      result.items = [...missingFallbackRows, ...live.items];
     } else if (Array.isArray((fallback || {}).items)) {
       result.items = fallback.items;
     }
@@ -1227,6 +1231,114 @@
     return "";
   }
 
+  function marketPointValue(point) {
+    if (typeof point === "number") return point;
+    if (!point || typeof point !== "object") return NaN;
+    return Number(point.close ?? point.price ?? point.value ?? point.y);
+  }
+
+  function marketPointLabel(point, index) {
+    if (!point || typeof point !== "object") return `Day ${index + 1}`;
+    const raw = point.date || point.label || point.time || point.timestamp;
+    if (!raw) return `Day ${index + 1}`;
+
+    try {
+      return new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(new Date(raw));
+    } catch (error) {
+      return String(raw);
+    }
+  }
+
+  function marketHistoryPoints(item) {
+    const raw = Array.isArray(item?.history)
+      ? item.history
+      : Array.isArray(item?.chart)
+        ? item.chart
+        : [];
+
+    return raw
+      .map((point, index) => ({
+        value: marketPointValue(point),
+        label: marketPointLabel(point, index)
+      }))
+      .filter((point) => Number.isFinite(point.value));
+  }
+
+  function svgElement(tag, attributes = {}) {
+    const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    Object.entries(attributes).forEach(([key, value]) => {
+      element.setAttribute(key, String(value));
+    });
+    return element;
+  }
+
+  function renderMarketChart(item, featured = false) {
+    const points = marketHistoryPoints(item);
+    const wrap = createElement("div", `market-chart-wrap${featured ? " is-featured" : ""}`);
+
+    if (points.length < 2) {
+      wrap.classList.add("is-empty");
+      wrap.textContent = "1W chart pending";
+      return wrap;
+    }
+
+    const width = featured ? 640 : 320;
+    const height = featured ? 220 : 112;
+    const pad = featured ? 18 : 12;
+    const values = points.map((point) => point.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || Math.max(Math.abs(max) * 0.02, 1);
+    const usableWidth = width - pad * 2;
+    const usableHeight = height - pad * 2;
+    const coordinates = points.map((point, index) => {
+      const x = pad + (index / Math.max(points.length - 1, 1)) * usableWidth;
+      const y = height - pad - ((point.value - min) / range) * usableHeight;
+      return { ...point, x, y };
+    });
+    const line = coordinates.map((point, index) => `${index ? "L" : "M"} ${point.x.toFixed(1)} ${point.y.toFixed(1)}`).join(" ");
+    const floor = height - pad;
+    const area = `${line} L ${coordinates.at(-1).x.toFixed(1)} ${floor.toFixed(1)} L ${coordinates[0].x.toFixed(1)} ${floor.toFixed(1)} Z`;
+    const isUp = coordinates.at(-1).value >= coordinates[0].value;
+    wrap.classList.add(isUp ? "is-up" : "is-down");
+
+    const svg = svgElement("svg", {
+      class: "market-chart",
+      viewBox: `0 0 ${width} ${height}`,
+      role: "img",
+      "aria-label": `${item.name || item.symbol || "Market"} one week price chart`
+    });
+    const title = svgElement("title");
+    title.textContent = `${item.name || item.symbol || "Market"} one week price chart`;
+    svg.append(title);
+
+    [0.25, 0.5, 0.75].forEach((ratio) => {
+      const y = pad + ratio * usableHeight;
+      svg.append(svgElement("line", {
+        class: "market-chart-grid",
+        x1: pad,
+        x2: width - pad,
+        y1: y.toFixed(1),
+        y2: y.toFixed(1)
+      }));
+    });
+
+    svg.append(svgElement("path", { class: "market-chart-area", d: area }));
+    svg.append(svgElement("path", { class: "market-chart-line", d: line }));
+    svg.append(svgElement("circle", {
+      class: "market-chart-dot",
+      cx: coordinates.at(-1).x.toFixed(1),
+      cy: coordinates.at(-1).y.toFixed(1),
+      r: featured ? 4.4 : 3.2
+    }));
+
+    const caption = createElement("div", "market-chart-caption");
+    caption.append(createElement("span", "", String(item.chartLabel || "1W")));
+    caption.append(createElement("span", "", `${coordinates[0].label} to ${coordinates.at(-1).label}`));
+    wrap.append(svg, caption);
+    return wrap;
+  }
+
   function renderMarketList(id, items, emptyText) {
     const target = document.getElementById(id);
     if (!target) return;
@@ -1239,7 +1351,11 @@
     }
 
     entries.forEach((item) => {
+      const isFeaturedIndex = id === "market-indexes" && /^(SPX|\^GSPC)$/i.test(String(item.symbol || ""));
       const card = createElement(item.url ? "a" : "article", "market-card reveal");
+      if (isFeaturedIndex) {
+        card.classList.add("is-featured-index");
+      }
       if (item.url) {
         card.href = safeUrl(item.url);
         card.target = "_blank";
@@ -1258,9 +1374,32 @@
       const signal = createElement("span", "market-signal", String(item.signal || "Watch"));
       const reason = createElement("p", "market-reason", String(item.reason || "Waiting for the next refresh."));
 
-      card.append(header, priceRow, signal, reason);
+      card.append(header, priceRow, renderMarketChart(item, isFeaturedIndex), signal, reason);
       target.append(card);
     });
+  }
+
+  function newsApiDisplayLabel(item) {
+    const labels = Array.isArray(item?.sourceApis) && item.sourceApis.length
+      ? item.sourceApis
+      : [item?.sourceApi || item?.apiSource || ""];
+    const sourceName = String(item?.source || "News Feed").split("/")[0].trim();
+    return labels
+      .map((label) => String(label || "").trim())
+      .filter(Boolean)
+      .map((label) => label.toUpperCase() === "RSS" ? sourceName : label)
+      .filter(Boolean)
+      .join(" + ");
+  }
+
+  function newsIsBreaking(item) {
+    return Boolean(item?.isBreaking) || /breaking/i.test(String(item?.category || ""));
+  }
+
+  function newsIsWar(item) {
+    return Boolean(item?.isWar)
+      || (Array.isArray(item?.tags) && item.tags.some((tag) => /war|conflict/i.test(String(tag))))
+      || /war|conflict/i.test(String(item?.importance || ""));
   }
 
   function renderMarketSignals(id, signals) {
@@ -1320,7 +1459,7 @@
       return;
     }
 
-    const preferredRows = ["Gaming", "Finance", "Australia"];
+    const preferredRows = ["Breaking Worldwide", "Gaming", "Finance", "Australia"];
     const grouped = items.reduce((groups, item) => {
       const category = String(item.category || "Other");
       if (!groups.has(category)) {
@@ -1336,21 +1475,40 @@
 
     function createNewsCard(item, isDuplicate = false) {
       const card = createElement("article", "news-card");
+      const isBreaking = newsIsBreaking(item);
+      const isWar = newsIsWar(item);
+      if (isBreaking) card.classList.add("is-breaking-news");
+      if (isWar) card.classList.add("is-war-news");
       if (isDuplicate) {
         card.setAttribute("aria-hidden", "true");
       }
       const meta = createElement("div", "news-meta");
-      meta.append(createElement("span", "news-category", String(item.category || "News")));
-      meta.append(createElement("span", "news-importance", String(item.importance || "Important")));
-      const apiLabel = Array.isArray(item.sourceApis) && item.sourceApis.length
-        ? item.sourceApis.join(" + ")
-        : item.sourceApi || item.apiSource || "";
+      const category = createElement("span", `news-category${isBreaking ? " news-breaking-tag" : ""}`, isBreaking ? "Breaking News" : String(item.category || "News"));
+      const importance = createElement("span", "news-importance", String(item.importance || "Important"));
+      meta.append(category, importance);
+      if (isBreaking && item.affectedRegion) {
+        meta.append(createElement("span", "news-region-tag", `Affects: ${item.affectedRegion}`));
+      }
+      if (isWar) {
+        meta.append(createElement("span", "news-war-tag", "War / conflict"));
+      }
+      const apiLabel = newsApiDisplayLabel(item);
       if (apiLabel) {
         const regionalLabel = item.regionalScope === "Australia" ? `${apiLabel} - AU` : apiLabel;
         meta.append(createElement("span", "news-api-source", String(regionalLabel)));
       }
 
       card.append(meta);
+      const imageUrl = safeUrl(item.image || "");
+      if (imageUrl !== "#") {
+        const image = createElement("img", "news-image");
+        image.src = imageUrl;
+        image.alt = item.title ? `${item.title} image` : "";
+        image.loading = "lazy";
+        image.referrerPolicy = "no-referrer";
+        image.addEventListener("error", () => image.remove());
+        card.append(image);
+      }
       card.append(createElement("h3", "", String(item.title || "News update")));
       card.append(createElement("p", "news-snippet", String(item.snippet || "Summary pending.")));
       if (item.why) {
@@ -1373,10 +1531,13 @@
     rowNames.forEach((name) => {
       const rowItems = grouped.get(name) || [];
       const row = createElement("section", "news-row reveal");
+      if (/breaking/i.test(name)) {
+        row.classList.add("is-breaking-row");
+      }
       row.setAttribute("aria-label", `${name} news`);
       const heading = createElement("div", "news-row-heading");
       heading.append(createElement("span", "news-row-label", name));
-      heading.append(createElement("span", "news-row-count", `${rowItems.length} important articles`));
+      heading.append(createElement("span", "news-row-count", `${rowItems.length} ${/breaking/i.test(name) ? "live alerts" : "important articles"}`));
       row.append(heading);
 
       const viewport = createElement("div", "news-marquee");

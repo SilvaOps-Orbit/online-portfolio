@@ -61,8 +61,76 @@ const newsQueries = {
     mediastack: "Australian government,Australia cyber security,Australian defence,digital identity,Australian jobs",
     mediastackCountries: "au",
     strictAustralia: true
+  },
+  "Breaking Worldwide": {
+    newsApi: '("breaking news" OR emergency OR evacuation OR earthquake OR wildfire OR cyclone OR "air strike" OR missile OR war OR conflict OR sanctions OR "state of emergency")',
+    mediastack: "breaking news,emergency,evacuation,earthquake,wildfire,cyclone,air strike,missile,war,conflict,sanctions,state of emergency",
+    mediastackCategories: "general",
+    breaking: true
   }
 };
+
+const countryCodeNames = {
+  au: "Australia",
+  ca: "Canada",
+  cn: "China",
+  de: "Germany",
+  fr: "France",
+  gb: "United Kingdom",
+  id: "Indonesia",
+  il: "Israel",
+  in: "India",
+  ir: "Iran",
+  jp: "Japan",
+  kr: "South Korea",
+  nz: "New Zealand",
+  pk: "Pakistan",
+  ru: "Russia",
+  tw: "Taiwan",
+  ua: "Ukraine",
+  us: "United States"
+};
+
+const affectedPlacePatterns = [
+  { label: "Australia", patterns: ["australia", "sydney", "melbourne", "canberra", "queensland", "victoria"] },
+  { label: "United States", patterns: ["united states", "u.s.", "us ", "america", "washington", "california", "new york"] },
+  { label: "United Kingdom", patterns: ["united kingdom", "uk ", "britain", "london", "england", "scotland"] },
+  { label: "Ukraine", patterns: ["ukraine", "kyiv", "kharkiv", "odesa"] },
+  { label: "Russia", patterns: ["russia", "moscow", "kremlin"] },
+  { label: "Israel", patterns: ["israel", "tel aviv", "jerusalem"] },
+  { label: "Gaza / Palestine", patterns: ["gaza", "palestine", "west bank", "rafah"] },
+  { label: "Iran", patterns: ["iran", "tehran"] },
+  { label: "China", patterns: ["china", "beijing", "hong kong"] },
+  { label: "Taiwan", patterns: ["taiwan", "taipei"] },
+  { label: "India", patterns: ["india", "new delhi", "mumbai"] },
+  { label: "Pakistan", patterns: ["pakistan", "islamabad"] },
+  { label: "Japan", patterns: ["japan", "tokyo"] },
+  { label: "South Korea", patterns: ["south korea", "seoul"] },
+  { label: "North Korea", patterns: ["north korea", "pyongyang"] },
+  { label: "Indonesia", patterns: ["indonesia", "jakarta", "bali"] },
+  { label: "Philippines", patterns: ["philippines", "manila"] },
+  { label: "Europe", patterns: ["europe", "eu ", "european union", "nato"] },
+  { label: "Middle East", patterns: ["middle east", "red sea", "yemen", "syria", "lebanon", "hezbollah"] },
+  { label: "Worldwide", patterns: ["worldwide", "global", "international", "united nations"] }
+];
+
+const conflictTerms = [
+  "war",
+  "conflict",
+  "invasion",
+  "air strike",
+  "airstrike",
+  "missile",
+  "drone attack",
+  "shelling",
+  "ceasefire",
+  "troops",
+  "military",
+  "battlefield",
+  "front line",
+  "hamas",
+  "hezbollah"
+];
 
 function configuredFeeds(name, fallback) {
   const value = process.env[`NEWS_${name.toUpperCase()}_RSS`] || "";
@@ -305,6 +373,7 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
     ? `Price difference is ${crossReferenceDifference.toFixed(2)}% between sources.`
     : "";
   const signal = signalFromMove(target, primary, crossReferenceNote);
+  const history = Array.isArray(yfinance?.history) ? yfinance.history : [];
 
   return {
     symbol: target.symbol,
@@ -316,6 +385,8 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
     reason: signal.reason,
     source: [finnhub?.source, yahoo?.source].filter(Boolean).join(" + ") || "pending",
     crossReference: crossReferenceNote || (finnhub && yahoo ? "Finnhub and yfinance prices aligned within 1%." : "Single source or pending data."),
+    history,
+    chartLabel: "1W",
     updatedAt: primary?.updatedAt || generatedAt,
     url: `https://finance.yahoo.com/quote/${encodeURIComponent(target.yahoo)}`
   };
@@ -378,6 +449,33 @@ function tagValue(block, tag) {
   return match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
 }
 
+function attrValue(block, tagName, attrName) {
+  const match = block.match(new RegExp(`<${tagName}[^>]*\\s${attrName}=["']([^"']+)["'][^>]*>`, "i"));
+  return match ? match[1] : "";
+}
+
+function rssImage(block) {
+  return cleanText(
+    attrValue(block, "media:content", "url")
+      || attrValue(block, "media:thumbnail", "url")
+      || attrValue(block, "enclosure", "url")
+      || tagValue(block, "image")
+  );
+}
+
+function rssSourceName(hostname) {
+  const host = String(hostname || "").replace(/^www\./, "").toLowerCase();
+  const names = {
+    "abc.net.au": "ABC News",
+    "ign.com": "IGN",
+    "pcgamer.com": "PC Gamer",
+    "pm.gov.au": "Prime Minister of Australia"
+  };
+  if (names[host]) return names[host];
+  const label = host.split(".")[0] || "News Feed";
+  return label.replace(/(^|-)([a-z])/g, (match) => match.toUpperCase()).replace(/-/g, " ");
+}
+
 function parseRssItems(xml, category, sourceName) {
   const itemBlocks = String(xml || "").match(/<item[\s\S]*?<\/item>/gi) || [];
   return itemBlocks.map((block) => ({
@@ -386,8 +484,11 @@ function parseRssItems(xml, category, sourceName) {
     snippet: compact(tagValue(block, "description") || tagValue(block, "summary"), 190),
     url: cleanText(tagValue(block, "link")),
     source: sourceName,
-    sourceApi: "RSS",
-    sourceApis: ["RSS"],
+    sourceApi: sourceName,
+    sourceApis: [sourceName],
+    sourceGroup: "RSS",
+    sourceGroups: ["RSS"],
+    image: rssImage(block),
     publishedAt: cleanText(tagValue(block, "pubDate") || tagValue(block, "updated"))
   })).filter((item) => item.title && item.url);
 }
@@ -400,7 +501,9 @@ function apiList(item) {
 }
 
 function sourceHas(item, api) {
-  return apiList(item).includes(api);
+  return apiList(item).includes(api)
+    || item?.sourceGroup === api
+    || (Array.isArray(item?.sourceGroups) && item.sourceGroups.includes(api));
 }
 
 function uniqueStrings(values) {
@@ -427,20 +530,33 @@ function mergeNewsSources(items) {
 
     if (!existing) {
       const sourceApis = apiList(item);
+      const sourceGroups = uniqueStrings([
+        item.sourceGroup,
+        ...(Array.isArray(item.sourceGroups) ? item.sourceGroups : [])
+      ]);
       merged.set(key, {
         ...item,
         sourceApis,
-        sourceApi: sourceApis.join(" + ")
+        sourceApi: sourceApis.join(" + "),
+        sourceGroups
       });
       return;
     }
 
     const sourceApis = uniqueStrings([...apiList(existing), ...apiList(item)]);
+    const sourceGroups = uniqueStrings([
+      existing.sourceGroup,
+      item.sourceGroup,
+      ...(Array.isArray(existing.sourceGroups) ? existing.sourceGroups : []),
+      ...(Array.isArray(item.sourceGroups) ? item.sourceGroups : [])
+    ]);
     const sources = uniqueStrings([existing.source, item.source]).slice(0, 3);
     existing.sourceApis = sourceApis;
     existing.sourceApi = sourceApis.join(" + ");
+    existing.sourceGroups = sourceGroups;
     existing.source = sources.join(" / ") || existing.source;
     existing.snippet = existing.snippet || item.snippet;
+    existing.image = existing.image || item.image;
     existing.publishedAt = existing.publishedAt || item.publishedAt;
     existing.regionPriority = Boolean(existing.regionPriority || item.regionPriority);
     existing.regionalScope = existing.regionPriority ? "Australia" : existing.regionalScope || item.regionalScope;
@@ -457,11 +573,14 @@ function newsImportance(category, item) {
   const keywordSets = {
     Gaming: ["steam", "xbox", "playstation", "nintendo", "release", "delay", "studio", "layoffs", "acquisition", "ai", "security"],
     Finance: ["s&p", "stock", "market", "earnings", "inflation", "interest", "rate", "rba", "fed", "ai", "nvidia", "recession"],
-    Australia: ["government", "defence", "cyber", "security", "budget", "policy", "legislation", "australia", "jobs", "digital"]
+    Australia: ["government", "defence", "cyber", "security", "budget", "policy", "legislation", "australia", "jobs", "digital"],
+    "Breaking Worldwide": ["breaking", "emergency", "evacuation", "earthquake", "wildfire", "cyclone", "war", "conflict", "missile", "sanctions", "attack"]
   };
   const score = (keywordSets[category] || []).reduce((total, keyword) => total + (text.includes(keyword) ? 2 : 0), 0)
     + Math.min(4, Math.floor(text.length / 120));
 
+  if (category === "Breaking Worldwide" && score >= 5) return { label: "Breaking", score: score + 3 };
+  if (category === "Breaking Worldwide") return { label: "Developing", score: score + 1 };
   if (score >= 8) return { label: "High impact", score };
   if (score >= 5) return { label: category === "Finance" ? "Market impact" : "Important", score };
   return { label: "Watch", score };
@@ -477,6 +596,9 @@ function whyNewsMatters(category, item) {
   if (category === "Australia") {
     return "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.";
   }
+  if (category === "Breaking Worldwide") {
+    return `Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: ${inferAffectedRegion(item)}.`;
+  }
   return "This item was kept because it may affect the wider story the portfolio is tracking.";
 }
 
@@ -485,7 +607,7 @@ async function loadRssCategory(category, urls) {
     try {
       const xml = await fetchText(url);
       const host = new URL(url).hostname.replace(/^www\./, "");
-      return parseRssItems(xml, category, host);
+      return parseRssItems(xml, category, rssSourceName(host));
     } catch (error) {
       return [];
     }
@@ -502,7 +624,10 @@ function mapNewsApiArticles(category, articles, regionalScope) {
     source: cleanText(item.source?.name || "NewsAPI source"),
     sourceApi: "NewsAPI",
     sourceApis: ["NewsAPI"],
+    sourceGroup: "NewsAPI",
+    sourceGroups: ["NewsAPI"],
     image: cleanText(item.urlToImage),
+    language: "en",
     regionalScope,
     regionPriority: regionalScope === "Australia",
     publishedAt: cleanText(item.publishedAt || generatedAt)
@@ -573,7 +698,11 @@ function mapMediastackArticles(category, articles, regionalScope) {
     source: cleanText(item.source || "Mediastack source"),
     sourceApi: "Mediastack",
     sourceApis: ["Mediastack"],
+    sourceGroup: "Mediastack",
+    sourceGroups: ["Mediastack"],
     image: cleanText(item.image),
+    country: cleanText(item.country),
+    language: cleanText(item.language || "en"),
     regionalScope,
     regionPriority: regionalScope === "Australia",
     publishedAt: cleanText(item.published_at || generatedAt)
@@ -633,22 +762,38 @@ async function loadFinnhubFinanceNews() {
     source: cleanText(item.source || "Finnhub"),
     sourceApi: "Finnhub",
     sourceApis: ["Finnhub"],
+    sourceGroup: "Finnhub",
+    sourceGroups: ["Finnhub"],
     image: cleanText(item.image),
     publishedAt: item.datetime ? new Date(Number(item.datetime) * 1000).toISOString() : generatedAt
   })).filter((item) => item.title && item.url);
 }
 
 async function buildNewsItems() {
-  const [gamingRss, financeFinnhub, australiaRss, gamingNewsApi, financeNewsApi, australiaNewsApi, gamingMediastack, financeMediastack, australiaMediastack] = await Promise.all([
+  const [
+    gamingRss,
+    financeFinnhub,
+    australiaRss,
+    gamingNewsApi,
+    financeNewsApi,
+    australiaNewsApi,
+    breakingNewsApi,
+    gamingMediastack,
+    financeMediastack,
+    australiaMediastack,
+    breakingMediastack
+  ] = await Promise.all([
     loadRssCategory("Gaming", configuredFeeds("Gaming", defaultFeeds.Gaming)),
     loadFinnhubFinanceNews(),
     loadRssCategory("Australia", configuredFeeds("Australia", defaultFeeds.Australia)),
     loadNewsApiCategory("Gaming"),
     loadNewsApiCategory("Finance"),
     loadNewsApiCategory("Australia"),
+    loadNewsApiCategory("Breaking Worldwide"),
     loadMediastackCategory("Gaming"),
     loadMediastackCategory("Finance"),
-    loadMediastackCategory("Australia")
+    loadMediastackCategory("Australia"),
+    loadMediastackCategory("Breaking Worldwide")
   ]);
 
   const mergedItems = mergeNewsSources([
@@ -658,25 +803,42 @@ async function buildNewsItems() {
     ...gamingNewsApi,
     ...financeNewsApi,
     ...australiaNewsApi,
+    ...breakingNewsApi,
     ...gamingMediastack,
     ...financeMediastack,
-    ...australiaMediastack
+    ...australiaMediastack,
+    ...breakingMediastack
   ]);
 
   const withScoring = mergedItems.map((item) => {
     const importance = newsImportance(item.category, item);
     const apis = apiList(item);
+    const breaking = item.category === "Breaking Worldwide";
+    const warArticle = breaking && isWarArticle(item);
     return {
       ...item,
-      importance: importance.label,
-      importanceScore: importance.score + (item.regionPriority ? 3 : 0),
+      importance: warArticle ? "War / conflict" : importance.label,
+      importanceScore: importance.score + (item.regionPriority ? 3 : 0) + (warArticle ? 2 : 0),
       why: item.crossReference || whyNewsMatters(item.category, item),
       sourceApi: apis.join(" + "),
-      sourceApis: apis
+      sourceApis: apis,
+      affectedRegion: breaking ? inferAffectedRegion(item) : item.affectedRegion,
+      isBreaking: breaking,
+      isWar: warArticle,
+      tags: uniqueStrings([
+        ...(Array.isArray(item.tags) ? item.tags : []),
+        breaking ? "Breaking" : "",
+        warArticle ? "War" : ""
+      ]),
+      sourceGroups: uniqueStrings([
+        item.sourceGroup,
+        ...(Array.isArray(item.sourceGroups) ? item.sourceGroups : [])
+      ])
     };
   });
 
   const sourceQuotas = {
+    "Breaking Worldwide": { NewsAPI: 6, Mediastack: 6 },
     Gaming: { NewsAPI: 4, Mediastack: 4, RSS: 4 },
     Finance: { Finnhub: 4, NewsAPI: 3, Mediastack: 3, RSS: 2 },
     Australia: { NewsAPI: 4, Mediastack: 4, RSS: 4 }
@@ -702,7 +864,7 @@ async function buildNewsItems() {
     return picked;
   }
 
-  return ["Gaming", "Finance", "Australia"].flatMap(pickCategory);
+  return ["Breaking Worldwide", "Gaming", "Finance", "Australia"].flatMap(pickCategory);
 }
 
 function fallbackNewsItems(previous) {
@@ -744,7 +906,7 @@ async function main() {
       "RSS"
     ].filter(Boolean).join(" + "),
     status: newsItems.length
-      ? "News refreshed, cross-referenced, and ranked into gaming, finance, and Australia rows."
+      ? "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, finance, and Australia rows."
       : "News refresh did not return articles. Showing saved values when available.",
     items: newsItems.length ? newsItems : fallbackNewsItems(previousNews)
   };
