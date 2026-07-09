@@ -69,8 +69,7 @@ body.is-booting {
 
 body.is-booting .site-header,
 body.is-booting main,
-body.is-booting .site-footer,
-body.is-booting .floating-socials {
+body.is-booting .site-footer {
   opacity: 0;
   pointer-events: none;
 }
@@ -350,71 +349,6 @@ body:not(.is-booting) .boot-screen {
   border-bottom-color: var(--line);
 }
 
-.floating-socials {
-  position: fixed;
-  right: clamp(12px, 2vw, 24px);
-  bottom: clamp(14px, 2vw, 24px);
-  z-index: 12;
-  display: grid;
-  gap: 8px;
-  opacity: 1;
-  transition: opacity 220ms ease;
-}
-
-.floating-social {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid color-mix(in srgb, var(--accent) 44%, var(--line));
-  border-radius: 8px;
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--accent) 16%, transparent), color-mix(in srgb, var(--accent-3) 12%, transparent)),
-    color-mix(in srgb, var(--panel) 84%, transparent);
-  color: var(--text);
-  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
-  font-size: 0.72rem;
-  font-weight: 950;
-  letter-spacing: 0;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
-  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
-}
-
-.floating-social:hover,
-.floating-social:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 24%, transparent), 0 12px 28px rgba(0, 0, 0, 0.28);
-  transform: translateY(-2px);
-}
-
-.floating-social::after {
-  position: absolute;
-  right: calc(100% + 10px);
-  top: 50%;
-  width: max-content;
-  max-width: min(220px, 62vw);
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--panel) 94%, transparent);
-  color: var(--text);
-  content: attr(data-label);
-  font-family: inherit;
-  font-size: 0.76rem;
-  font-weight: 850;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(8px, -50%);
-  transition: opacity 160ms ease, transform 160ms ease;
-}
-
-.floating-social:hover::after,
-.floating-social:focus-visible::after {
-  opacity: 1;
-  transform: translate(0, -50%);
-}
-
 .brand {
   display: inline-flex;
   align-items: center;
@@ -565,6 +499,12 @@ body:not(.is-booting) .boot-screen {
 .hero > * {
   width: auto;
   margin: 0;
+}
+
+.hero-side {
+  display: grid;
+  gap: 14px;
+  align-self: start;
 }
 
 .kicker {
@@ -758,6 +698,114 @@ h3 {
 
 .profile-panel > * {
   position: relative;
+}
+
+.connections-panel {
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.connections-panel h2 {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.connections-list {
+  display: grid;
+  gap: 10px;
+}
+
+.connection-card {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 54px;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.connection-card:hover,
+.connection-card:focus-visible {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  transform: translateX(2px);
+}
+
+.connection-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid color-mix(in srgb, var(--text) 48%, var(--line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text) 94%, var(--panel));
+  color: var(--bg);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 950;
+}
+
+.connection-copy,
+.connection-title,
+.connection-meta,
+.connection-stats {
+  min-width: 0;
+}
+
+.connection-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.connection-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text);
+  font-size: 1.02rem;
+  line-height: 1.15;
+}
+
+.connection-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-arrow {
+  color: var(--accent);
+  font-weight: 950;
+}
+
+.connection-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+.connection-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.connection-stats span {
+  padding: 3px 6px;
+  border: 1px solid color-mix(in srgb, var(--accent-3) 42%, var(--line));
+  border-radius: 999px;
+  color: var(--accent-2);
+  font-size: 0.72rem;
+  font-weight: 850;
+  line-height: 1.1;
 }
 
 .status-line {
@@ -1018,6 +1066,7 @@ h3 {
   display: grid;
   grid-template-columns: minmax(260px, 0.75fr) minmax(0, 1.25fr);
   gap: 16px;
+  align-items: start;
 }
 
 .spotify-feature,
@@ -1029,7 +1078,7 @@ h3 {
 }
 
 .spotify-feature {
-  min-height: 100%;
+  min-height: 0;
   padding: 22px;
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--accent) 16%, transparent), transparent 58%),
@@ -1037,9 +1086,14 @@ h3 {
 }
 
 .spotify-card {
-  min-height: 250px;
+  align-self: start;
+  min-height: 0;
   padding: 20px;
   transition: transform 180ms ease, border-color 180ms ease, opacity 180ms ease;
+}
+
+#spotify-playlists.cycle-list.is-cycling {
+  min-height: 326px;
 }
 
 .spotify-card:hover,

@@ -11,6 +11,7 @@
   let bootStepTimers = [];
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
+  let latestDynamicData = { steam: null, spotify: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -672,7 +673,9 @@
     }
 
     const merged = mergeSteamData(fallback, live);
+    latestDynamicData.steam = merged;
     renderSteam(merged);
+    renderConnections();
     return merged;
   }
 
@@ -1124,7 +1127,9 @@
     }
 
     const merged = mergeSpotifyData(fallback, live);
+    latestDynamicData.spotify = merged;
     renderSpotify(merged);
+    renderConnections();
     return merged;
   }
 
@@ -1153,25 +1158,92 @@
     });
   }
 
-  function renderFloatingSocials() {
-    const target = document.getElementById("floating-socials");
+  function findStatValue(stats, labels) {
+    const normalizedLabels = labels.map((label) => label.toLowerCase());
+    const match = (stats || []).find((item) => {
+      const label = String(item?.label || "").toLowerCase();
+      return normalizedLabels.some((needle) => label.includes(needle));
+    });
+    const value = String(match?.value || "").trim();
+    return /connect api|needs key|pending/i.test(value) ? "" : value;
+  }
+
+  function withGameLabel(value) {
+    if (!value) return "";
+    return /game/i.test(value) ? value : `${value} Games`;
+  }
+
+  function renderConnections(data = latestDynamicData) {
+    const target = document.getElementById("connections-list");
     if (!target) return;
 
     const profile = config.profile || {};
-    const steam = config.steam || {};
+    const steam = { ...(config.steam || {}), ...((data || {}).steam || {}) };
+    const spotify = { ...(config.spotify || {}), ...((data || {}).spotify || {}) };
+    const steamProfile = steam.profile || {};
+    const spotifyProfile = spotify.profile || {};
     const discordUrl = profile.discordUrl || "#contact";
+    const steamStats = Array.isArray(steam.stats) ? steam.stats : [];
+    const ownedGames = withGameLabel(findStatValue(steamStats, ["owned games", "games owned", "game count"]));
+    const accountValue = String(steam.accountValue?.value || "").replace(/^Account Value\s*/i, "").trim();
+    const memberSince = Number(steamProfile.timeCreated || 0)
+      ? `Member since ${formatDate(Number(steamProfile.timeCreated) * 1000)}`
+      : "";
+    const spotifyUrl = spotifyProfile.url || spotify.profileUrl || "";
+
     const links = [
-      { label: "Steam profile", short: "ST", href: steam.profileUrl },
-      { label: profile.discordUrl ? "Discord server" : "Discord server - add invite URL", short: "DC", href: discordUrl },
-      { label: "GitHub profile", short: "GH", href: githubProfileUrl(profile.githubUsername || "") }
+      {
+        label: profile.githubUsername || "GitHub",
+        short: "GH",
+        href: githubProfileUrl(profile.githubUsername || ""),
+        meta: "GitHub",
+        stats: []
+      },
+      {
+        label: profile.discordUrl ? "Discord Server" : "Discord Server",
+        short: "DC",
+        href: discordUrl,
+        meta: profile.discordUrl ? "Community link" : "Add invite URL in portfolio.config.js",
+        stats: []
+      },
+      {
+        label: steamProfile.personaName || "Silva",
+        short: "ST",
+        href: steam.profileUrl,
+        meta: memberSince,
+        stats: [ownedGames, accountValue].filter(Boolean)
+      },
+      {
+        label: spotifyProfile.displayName || "Alvis",
+        short: "SP",
+        href: spotifyUrl,
+        meta: "Spotify",
+        stats: []
+      }
     ].filter((item) => item.href && item.href !== "https://github.com/");
 
     target.replaceChildren();
     links.forEach((item) => {
-      const link = createElement("a", "floating-social", item.short);
+      const link = createElement("a", "connection-card");
       link.href = safeUrl(item.href);
       link.setAttribute("aria-label", item.label);
-      link.dataset.label = item.label;
+      link.append(createElement("span", "connection-icon", item.short));
+
+      const copy = createElement("span", "connection-copy");
+      const title = createElement("span", "connection-title");
+      title.append(createElement("strong", "", item.label));
+      title.append(createElement("span", "connection-arrow", String(item.href).startsWith("#") ? "↓" : "↗"));
+      copy.append(title);
+      if (item.meta) {
+        copy.append(createElement("span", "connection-meta", item.meta));
+      }
+      if (item.stats.length) {
+        const stats = createElement("span", "connection-stats");
+        item.stats.forEach((stat) => stats.append(createElement("span", "", stat)));
+        copy.append(stats);
+      }
+      link.append(copy);
+
       if (!String(item.href).startsWith("#")) {
         link.target = "_blank";
         link.rel = "noopener noreferrer";
@@ -1539,6 +1611,7 @@
     const [dynamicData] = await Promise.all([preloadDynamicData(), delay(10000)]);
 
     applyProfile();
+    latestDynamicData = dynamicData;
     renderHighlights();
     renderAbout();
     renderProjectFilters(config.projects || []);
@@ -1547,7 +1620,7 @@
     renderSpotify(dynamicData.spotify);
     renderSecurity();
     renderContact();
-    renderFloatingSocials();
+    renderConnections(dynamicData);
     bindNavigation();
     bindActiveNav();
     bindTypewriter();
@@ -1564,7 +1637,7 @@
   init().catch(() => {
     renderSteam(config.steam || {});
     renderSpotify(config.spotify || {});
-    renderFloatingSocials();
+    renderConnections();
     finishBoot();
   });
 })();
