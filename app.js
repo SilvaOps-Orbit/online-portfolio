@@ -759,10 +759,24 @@
     };
   }
 
+  function fallbackDynamicData() {
+    return {
+      steam: config.steam || {},
+      spotify: config.spotify || {}
+    };
+  }
+
   function delay(ms) {
     return new Promise((resolve) => {
       window.setTimeout(resolve, ms);
     });
+  }
+
+  function withTimeout(promise, timeoutMs, fallbackValue) {
+    return Promise.race([
+      promise,
+      delay(timeoutMs).then(() => fallbackValue)
+    ]);
   }
 
   function finishBoot() {
@@ -1598,15 +1612,13 @@
     const burst = createElement("div", "easter-burst");
     burst.setAttribute("aria-hidden", "true");
     if (!prefersReducedMotion) {
-      Array.from({ length: 16 }, (_, index) => {
+      Array.from({ length: 16 }, () => {
         const line = createElement("span");
-        line.style.setProperty("--x", `${6 + index * 6}%`);
-        line.style.setProperty("--delay", `${index * 34}ms`);
         burst.append(line);
         return line;
       });
-      document.body.append(burst);
     }
+    document.body.append(burst);
 
     const toast = createElement("div", "easter-toast");
     toast.setAttribute("role", "status");
@@ -1626,29 +1638,37 @@
   function bindAliasEasterEgg() {
     const alias = document.getElementById("hero-alias");
     if (!alias) return;
+    if (alias.dataset.easterBound === "true") return;
 
+    alias.dataset.easterBound = "true";
     alias.tabIndex = 0;
     alias.setAttribute("role", "button");
-    alias.setAttribute("aria-label", "Alias signal");
+    alias.setAttribute("aria-label", "Alias signal. Click three times to unlock EchoOps mode.");
+    alias.setAttribute("title", "Click 3 times to unlock EchoOps mode");
 
     let taps = 0;
     let resetTimer = 0;
+    const neededTaps = 3;
+
+    const resetTaps = () => {
+      taps = 0;
+      alias.classList.remove("is-primed");
+      alias.removeAttribute("data-easter-progress");
+    };
+
     const registerTap = () => {
       taps += 1;
       window.clearTimeout(resetTimer);
       alias.classList.toggle("is-primed", taps > 1);
+      alias.setAttribute("data-easter-progress", `${Math.min(taps, neededTaps)}/${neededTaps}`);
 
-      if (taps >= 5) {
-        taps = 0;
-        alias.classList.remove("is-primed");
+      if (taps >= neededTaps) {
+        resetTaps();
         triggerAliasEasterEgg();
         return;
       }
 
-      resetTimer = window.setTimeout(() => {
-        taps = 0;
-        alias.classList.remove("is-primed");
-      }, 1800);
+      resetTimer = window.setTimeout(resetTaps, 4000);
     };
 
     alias.addEventListener("click", registerTap);
@@ -1656,6 +1676,23 @@
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         registerTap();
+      }
+    });
+
+    if (document.body.dataset.easterKeyboardBound === "true") return;
+    document.body.dataset.easterKeyboardBound = "true";
+    let typedCode = "";
+    document.addEventListener("keydown", (event) => {
+      const target = event.target;
+      const isTyping = target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+      if (isTyping || event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) {
+        return;
+      }
+
+      typedCode = `${typedCode}${event.key.toLowerCase()}`.slice(-7);
+      if (typedCode === "echoops") {
+        typedCode = "";
+        triggerAliasEasterEgg();
       }
     });
   }
@@ -1851,12 +1888,7 @@
     draw();
   }
 
-  async function init() {
-    bindTheme();
-    bindBootQuotes();
-    bindBootSteps();
-    const [dynamicData] = await Promise.all([preloadDynamicData(), delay(10000)]);
-
+  function bootPortfolio(dynamicData = fallbackDynamicData()) {
     applyProfile();
     latestDynamicData = dynamicData;
     renderHighlights();
@@ -1882,10 +1914,17 @@
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), spotifyDataRefreshMs);
   }
 
+  async function init() {
+    bindTheme();
+    bindBootQuotes();
+    bindBootSteps();
+    const fallbackData = fallbackDynamicData();
+    const dynamicDataPromise = withTimeout(preloadDynamicData(), 8500, fallbackData);
+    const [dynamicData] = await Promise.all([dynamicDataPromise, delay(10000)]);
+    bootPortfolio(dynamicData || fallbackData);
+  }
+
   init().catch(() => {
-    renderSteam(config.steam || {});
-    renderSpotify(config.spotify || {});
-    renderConnections();
-    finishBoot();
+    bootPortfolio(fallbackDynamicData());
   });
 })();

@@ -558,6 +558,7 @@ h3 {
 }
 
 .alias-line {
+  position: relative;
   display: block;
   width: fit-content;
   margin-top: 12px;
@@ -577,6 +578,24 @@ h3 {
   border-color: var(--accent);
   box-shadow: 0 0 22px color-mix(in srgb, var(--accent-3) 22%, transparent);
   transform: translateX(2px);
+}
+
+.alias-line[data-easter-progress]::after {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  width: max-content;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  color: var(--accent);
+  content: "signal " attr(data-easter-progress);
+  font-size: 0.68rem;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+  transform: translateY(-50%);
 }
 
 #typewriter-role {
@@ -2208,7 +2227,7 @@ h3 {
 .easter-burst {
   position: fixed;
   inset: 0;
-  z-index: 24;
+  z-index: 80;
   overflow: hidden;
   pointer-events: none;
   background:
@@ -2220,20 +2239,99 @@ h3 {
 .easter-burst span {
   position: absolute;
   top: -18%;
-  left: var(--x);
   width: 2px;
   height: 140%;
   background: linear-gradient(180deg, transparent, var(--accent), var(--accent-3), transparent);
   opacity: 0;
   transform: rotate(18deg) translateY(-30%);
-  animation: easter-signal 900ms ease var(--delay) forwards;
+  animation: easter-signal 900ms ease forwards;
+}
+
+.easter-burst span:nth-child(1) {
+  left: 6%;
+  animation-delay: 0ms;
+}
+
+.easter-burst span:nth-child(2) {
+  left: 12%;
+  animation-delay: 34ms;
+}
+
+.easter-burst span:nth-child(3) {
+  left: 18%;
+  animation-delay: 68ms;
+}
+
+.easter-burst span:nth-child(4) {
+  left: 24%;
+  animation-delay: 102ms;
+}
+
+.easter-burst span:nth-child(5) {
+  left: 30%;
+  animation-delay: 136ms;
+}
+
+.easter-burst span:nth-child(6) {
+  left: 36%;
+  animation-delay: 170ms;
+}
+
+.easter-burst span:nth-child(7) {
+  left: 42%;
+  animation-delay: 204ms;
+}
+
+.easter-burst span:nth-child(8) {
+  left: 48%;
+  animation-delay: 238ms;
+}
+
+.easter-burst span:nth-child(9) {
+  left: 54%;
+  animation-delay: 272ms;
+}
+
+.easter-burst span:nth-child(10) {
+  left: 60%;
+  animation-delay: 306ms;
+}
+
+.easter-burst span:nth-child(11) {
+  left: 66%;
+  animation-delay: 340ms;
+}
+
+.easter-burst span:nth-child(12) {
+  left: 72%;
+  animation-delay: 374ms;
+}
+
+.easter-burst span:nth-child(13) {
+  left: 78%;
+  animation-delay: 408ms;
+}
+
+.easter-burst span:nth-child(14) {
+  left: 84%;
+  animation-delay: 442ms;
+}
+
+.easter-burst span:nth-child(15) {
+  left: 90%;
+  animation-delay: 476ms;
+}
+
+.easter-burst span:nth-child(16) {
+  left: 96%;
+  animation-delay: 510ms;
 }
 
 .easter-toast {
   position: fixed;
   left: 50%;
   bottom: clamp(18px, 4vw, 42px);
-  z-index: 25;
+  z-index: 81;
   display: grid;
   gap: 2px;
   width: min(92vw, 420px);
@@ -2360,6 +2458,14 @@ h3 {
 
   .security-score-meter {
     min-height: 118px;
+  }
+
+  .alias-line[data-easter-progress]::after {
+    position: static;
+    display: inline-block;
+    margin-left: 8px;
+    transform: none;
+    vertical-align: middle;
   }
 
   .nav-toggle {
