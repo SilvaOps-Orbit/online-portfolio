@@ -11,7 +11,7 @@
   let bootStepTimers = [];
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
-  let latestDynamicData = { steam: null, spotify: null };
+  let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -745,24 +745,54 @@
     return result;
   }
 
+  function mergeMarketData(fallback, live) {
+    const result = { ...(fallback || {}), ...(live || {}) };
+    ["indexes", "stocks", "signals"].forEach((key) => {
+      if (Array.isArray((live || {})[key]) && live[key].length) {
+        result[key] = live[key];
+      } else if (Array.isArray((fallback || {})[key])) {
+        result[key] = fallback[key];
+      }
+    });
+    return result;
+  }
+
+  function mergeNewsData(fallback, live) {
+    const result = { ...(fallback || {}), ...(live || {}) };
+    if (Array.isArray((live || {}).items) && live.items.length) {
+      result.items = live.items;
+    } else if (Array.isArray((fallback || {}).items)) {
+      result.items = fallback.items;
+    }
+    return result;
+  }
+
   async function preloadDynamicData() {
     const fallbackSteam = config.steam || {};
     const fallbackSpotify = config.spotify || {};
-    const [liveSteam, liveSpotify] = await Promise.all([
+    const fallbackMarket = config.market || {};
+    const fallbackNews = config.news || {};
+    const [liveSteam, liveSpotify, liveMarket, liveNews] = await Promise.all([
       fetchDataFile("data/steam.json"),
-      fetchDataFile("data/spotify.json")
+      fetchDataFile("data/spotify.json"),
+      fetchDataFile("data/market.json"),
+      fetchDataFile("data/news.json")
     ]);
 
     return {
       steam: liveSteam ? mergeSteamData(fallbackSteam, liveSteam) : fallbackSteam,
-      spotify: liveSpotify ? mergeSpotifyData(fallbackSpotify, liveSpotify) : fallbackSpotify
+      spotify: liveSpotify ? mergeSpotifyData(fallbackSpotify, liveSpotify) : fallbackSpotify,
+      market: liveMarket ? mergeMarketData(fallbackMarket, liveMarket) : fallbackMarket,
+      news: liveNews ? mergeNewsData(fallbackNews, liveNews) : fallbackNews
     };
   }
 
   function fallbackDynamicData() {
     return {
       steam: config.steam || {},
-      spotify: config.spotify || {}
+      spotify: config.spotify || {},
+      market: config.market || {},
+      news: config.news || {}
     };
   }
 
@@ -1187,6 +1217,160 @@
     latestDynamicData.spotify = merged;
     renderSpotify(merged);
     renderConnections();
+    return merged;
+  }
+
+  function marketChangeClass(value) {
+    const text = String(value || "").toLowerCase();
+    if (/^-|down|loss|red|risk/.test(text)) return "is-down";
+    if (/^\+|up|gain|green|bull/.test(text)) return "is-up";
+    return "";
+  }
+
+  function renderMarketList(id, items, emptyText) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.replaceChildren();
+
+    const entries = (Array.isArray(items) ? items : []).filter((item) => item && item.symbol);
+    if (!entries.length) {
+      target.append(createElement("p", "muted", emptyText));
+      return;
+    }
+
+    entries.forEach((item) => {
+      const card = createElement(item.url ? "a" : "article", "market-card reveal");
+      if (item.url) {
+        card.href = safeUrl(item.url);
+        card.target = "_blank";
+        card.rel = "noopener noreferrer";
+      }
+
+      const header = createElement("div", "market-card-header");
+      const symbol = createElement("span", "market-symbol", String(item.symbol || "TBC"));
+      const name = createElement("span", "market-name", String(item.name || item.sector || "Market item"));
+      header.append(symbol, name);
+
+      const priceRow = createElement("div", "market-price-row");
+      priceRow.append(createElement("span", "market-price", String(item.price || "Price pending")));
+      priceRow.append(createElement("span", `market-change ${marketChangeClass(item.change)}`, String(item.change || "No movement yet")));
+
+      const signal = createElement("span", "market-signal", String(item.signal || "Watch"));
+      const reason = createElement("p", "market-reason", String(item.reason || "Waiting for the next refresh."));
+
+      card.append(header, priceRow, signal, reason);
+      target.append(card);
+    });
+  }
+
+  function renderMarketSignals(id, signals) {
+    const target = document.getElementById(id);
+    if (!target) return;
+    target.replaceChildren();
+
+    const entries = (Array.isArray(signals) ? signals : []).filter((item) => item && item.title);
+    if (!entries.length) {
+      target.append(createElement("p", "muted", "AI signal feed pending."));
+      return;
+    }
+
+    entries.forEach((item) => {
+      const card = createElement("article", "market-signal-card reveal");
+      card.append(createElement("span", "signal-stance", String(item.stance || "Watch")));
+      card.append(createElement("h4", "", `${item.symbol ? `${item.symbol}: ` : ""}${item.title}`));
+      card.append(createElement("p", "", String(item.why || "Waiting for the next analysis refresh.")));
+
+      const drivers = Array.isArray(item.drivers) ? item.drivers.filter(Boolean) : [];
+      if (drivers.length) {
+        const list = createElement("ul", "signal-drivers");
+        drivers.slice(0, 5).forEach((driver) => list.append(createElement("li", "", String(driver))));
+        card.append(list);
+      }
+
+      target.append(card);
+    });
+  }
+
+  function renderMarket(marketData) {
+    const market = marketData || config.market || {};
+    setText("market-summary", market.summary || "");
+    renderStatus("market-status", market);
+    const disclaimer = document.getElementById("market-disclaimer");
+    if (disclaimer) {
+      disclaimer.textContent = market.disclaimer || "Educational research only, not financial advice.";
+    }
+
+    renderMarketList("market-indexes", market.indexes, "S&P 500 data pending.");
+    renderMarketList("market-stocks", market.stocks, "Gaming and tech stock data pending.");
+    renderMarketSignals("market-signals", market.signals);
+    observeReveals();
+  }
+
+  function renderNews(newsData) {
+    const news = newsData || config.news || {};
+    const target = document.getElementById("news-feed");
+    setText("news-summary", news.summary || "");
+    renderStatus("news-status", news);
+    if (!target) return;
+    target.replaceChildren();
+
+    const items = (Array.isArray(news.items) ? news.items : []).filter((item) => item && item.title);
+    if (!items.length) {
+      target.append(createElement("p", "muted", "News feed pending."));
+      return;
+    }
+
+    items.forEach((item) => {
+      const card = createElement("article", "news-card reveal");
+      const meta = createElement("div", "news-meta");
+      meta.append(createElement("span", "news-category", String(item.category || "News")));
+      meta.append(createElement("span", "news-importance", String(item.importance || "Important")));
+
+      card.append(meta);
+      card.append(createElement("h3", "", String(item.title || "News update")));
+      card.append(createElement("p", "news-snippet", String(item.snippet || "Summary pending.")));
+      if (item.why) {
+        card.append(createElement("p", "news-why", `Why it matters: ${item.why}`));
+      }
+
+      const footer = createElement("div", "news-footer");
+      footer.append(createElement("span", "news-source", String(item.source || "Source pending")));
+      if (item.url) {
+        const link = createElement("a", "text-link", "Read more");
+        link.href = safeUrl(item.url);
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        footer.append(link);
+      }
+      card.append(footer);
+      target.append(card);
+    });
+    observeReveals();
+  }
+
+  async function loadMarketData(options = {}) {
+    const fallback = config.market || {};
+    if (options.renderFallback !== false) {
+      renderMarket(fallback);
+    }
+
+    const live = await fetchDataFile("data/market.json");
+    const merged = live ? mergeMarketData(fallback, live) : fallback;
+    latestDynamicData.market = merged;
+    renderMarket(merged);
+    return merged;
+  }
+
+  async function loadNewsData(options = {}) {
+    const fallback = config.news || {};
+    if (options.renderFallback !== false) {
+      renderNews(fallback);
+    }
+
+    const live = await fetchDataFile("data/news.json");
+    const merged = live ? mergeNewsData(fallback, live) : fallback;
+    latestDynamicData.news = merged;
+    renderNews(merged);
     return merged;
   }
 
@@ -1897,6 +2081,8 @@
     renderProjects();
     renderSteam(dynamicData.steam);
     renderSpotify(dynamicData.spotify);
+    renderMarket(dynamicData.market);
+    renderNews(dynamicData.news);
     renderSecurity();
     renderContact();
     renderConnections(dynamicData);
@@ -1912,6 +2098,8 @@
     scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), spotifyDataRefreshMs);
+    window.setInterval(() => loadMarketData({ renderFallback: false }), dataRefreshMs * 5);
+    window.setInterval(() => loadNewsData({ renderFallback: false }), dataRefreshMs * 5);
   }
 
   async function init() {

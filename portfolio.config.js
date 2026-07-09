@@ -165,6 +165,152 @@ window.PORTFOLIO_CONFIG = {
       }
     ]
   },
+  market: {
+    summary:
+      "A watchlist for the S&P 500 plus gaming and technology companies. The browser only reads generated market JSON; API keys and AI prompts belong in a private workflow.",
+    status:
+      "Market data is ready for a scheduled refresh workflow. Until connected, values show placeholders instead of live prices.",
+    disclaimer:
+      "Educational research only, not personal financial advice. Signals are prompts to investigate risk, momentum, valuation, and news before making any decision.",
+    indexes: [
+      {
+        symbol: "SPX",
+        name: "S&P 500 Index",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Baseline",
+        reason: "Use this as the broad market mood check before looking at individual gaming or tech stocks."
+      },
+      {
+        symbol: "SPY",
+        name: "S&P 500 ETF",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Watch",
+        reason: "ETF pricing can be easier to fetch and compare against individual stock movement."
+      }
+    ],
+    stocks: [
+      {
+        symbol: "NVDA",
+        name: "NVIDIA",
+        sector: "AI / Gaming Hardware",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Research buy case",
+        reason: "AI demand and GPU leadership are worth tracking, but valuation risk needs checking."
+      },
+      {
+        symbol: "MSFT",
+        name: "Microsoft",
+        sector: "Cloud / AI / Gaming",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Quality watch",
+        reason: "Cloud, AI tooling, and Xbox/Game Pass make it a core tech-and-gaming watchlist name."
+      },
+      {
+        symbol: "AMD",
+        name: "AMD",
+        sector: "Gaming Hardware / AI Chips",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Momentum watch",
+        reason: "Track whether AI chip growth and gaming hardware demand are improving together."
+      },
+      {
+        symbol: "SONY",
+        name: "Sony",
+        sector: "Gaming / Entertainment",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Gaming watch",
+        reason: "PlayStation, media, and hardware cycles can move differently from pure software stocks."
+      },
+      {
+        symbol: "EA",
+        name: "Electronic Arts",
+        sector: "Game Publisher",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Pipeline watch",
+        reason: "Sports franchises and release timing make news quality important before judging price movement."
+      },
+      {
+        symbol: "TTWO",
+        name: "Take-Two Interactive",
+        sector: "Game Publisher",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Catalyst watch",
+        reason: "Major release cycles can create hype; the risk check is whether price has already run ahead of news."
+      }
+    ],
+    signals: [
+      {
+        stance: "Research buy case",
+        symbol: "NVDA",
+        title: "AI demand can be a growth driver",
+        why:
+          "If revenue growth, margins, and data-center demand stay strong, this becomes a candidate for deeper research rather than an automatic buy.",
+        drivers: ["AI chip demand", "Valuation risk", "Earnings trend"]
+      },
+      {
+        stance: "Sell-risk flag",
+        symbol: "Hype-heavy names",
+        title: "Do not chase news without checking price movement",
+        why:
+          "If a stock jumps hard before earnings or a product launch, the smarter move may be waiting for confirmation instead of buying into hype.",
+        drivers: ["Overextension", "Event risk", "Position sizing"]
+      },
+      {
+        stance: "Watch",
+        symbol: "SPX",
+        title: "Broad market trend comes first",
+        why:
+          "If the S&P 500 is weak, individual tech and gaming names can look good but still struggle with the wider market.",
+        drivers: ["Index trend", "Rate expectations", "Market breadth"]
+      }
+    ]
+  },
+  news: {
+    summary:
+      "A compact feed for gaming, finance, and Australian government news. The goal is to show what matters, why it matters, and where to read more.",
+    status:
+      "News data is ready for a scheduled refresh workflow. AI summaries should be generated privately, then published as sanitized JSON.",
+    items: [
+      {
+        category: "Gaming",
+        importance: "Watch",
+        title: "Gaming news feed pending",
+        snippet:
+          "Connect a news source to summarize game releases, platform updates, studio news, and major industry moves.",
+        why: "Useful for showing personality and keeping the portfolio current.",
+        source: "Pending source",
+        url: "https://www.ign.com/"
+      },
+      {
+        category: "Finance",
+        importance: "Market impact",
+        title: "Finance news feed pending",
+        snippet:
+          "Connect a finance feed to highlight market-moving items such as earnings, rates, inflation, and major company updates.",
+        why: "Pairs with the stock watchlist without turning the site into financial advice.",
+        source: "Pending source",
+        url: "https://www.reuters.com/markets/"
+      },
+      {
+        category: "Australia",
+        importance: "Public policy",
+        title: "Australian government news pending",
+        snippet:
+          "Connect official Australian Government updates for cyber security, defence, digital identity, jobs, and public policy.",
+        why: "Keeps the site connected to Australian context and your defence/cyber goals.",
+        source: "Australian Government",
+        url: "https://www.australia.gov.au/"
+      }
+    ]
+  },
   securitySnapshot: {
     label: "Site Hardening Snapshot",
     summary:
@@ -250,6 +396,11 @@ window.PORTFOLIO_CONFIG = {
       ]
     },
     {
+      title: "Finance and News Boundaries",
+      body:
+        "Market prices, AI-style signals, and news snippets are generated into local JSON files. The browser never receives paid API keys, model tokens, private prompts, or personal financial advice logic."
+    },
+    {
       title: "Small Supply Chain",
       body:
         "The front end avoids third-party packages. Fewer dependencies means fewer packages to audit and fewer supply-chain updates that can break trust."
@@ -332,6 +483,12 @@ window.PORTFOLIO_CONFIG = {
           url: "https://www.theaudiodb.com/free_music_api#v1"
         }
       ]
+    },
+    {
+      title: "Market and News Intelligence",
+      body:
+        "The markets and news sections are built around generated JSON files: stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
+      why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser."
     },
     {
       title: "Spotify Public Playlists",

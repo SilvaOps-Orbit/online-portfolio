@@ -57,6 +57,8 @@
         <a href="#steam">Steam</a>
         <a href="#spotify">Spotify</a>
         <a href="#github">GitHub</a>
+        <a href="#markets">Markets</a>
+        <a href="#news">News</a>
         <a href="#security">For Nerds</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -232,6 +234,49 @@
           </div>
           <div class="repo-grid" id="repo-grid" aria-live="polite"></div>
         </div>
+      </section>
+
+      <section class="section market-section" id="markets">
+        <div class="section-heading reveal">
+          <p class="kicker">Market Intelligence</p>
+          <h2>S&amp;P 500, gaming, and tech stock watch.</h2>
+          <p class="section-summary" id="market-summary"></p>
+          <p class="data-status" id="market-status"></p>
+        </div>
+        <div class="market-layout">
+          <article class="market-panel reveal">
+            <div class="market-panel-heading">
+              <span class="market-label">S&amp;P 500</span>
+              <h3>Index Watch</h3>
+            </div>
+            <div class="market-grid" id="market-indexes"></div>
+          </article>
+          <article class="market-panel reveal">
+            <div class="market-panel-heading">
+              <span class="market-label">Gaming + Tech</span>
+              <h3>Company Watchlist</h3>
+            </div>
+            <div class="market-grid" id="market-stocks"></div>
+          </article>
+          <article class="market-ai-panel reveal">
+            <div class="market-panel-heading">
+              <span class="market-label">AI Signal Layer</span>
+              <h3>Research prompts, not financial advice</h3>
+            </div>
+            <div class="market-disclaimer" id="market-disclaimer"></div>
+            <div class="market-signal-list" id="market-signals"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section band news-section" id="news">
+        <div class="section-heading reveal">
+          <p class="kicker">Important News</p>
+          <h2>Gaming, finance, and Australian government updates.</h2>
+          <p class="section-summary" id="news-summary"></p>
+          <p class="data-status" id="news-status"></p>
+        </div>
+        <div class="news-grid" id="news-feed" aria-live="polite"></div>
       </section>
 
       <section class="section" id="security">
