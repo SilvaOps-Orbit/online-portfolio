@@ -762,6 +762,37 @@ h3 {
   font-weight: 950;
 }
 
+.connection-icon svg,
+.connection-brand {
+  width: 27px;
+  height: 27px;
+}
+
+.connection-card.is-github .connection-icon {
+  background: #f6f8fa;
+  color: #0d1117;
+}
+
+.connection-card.is-discord .connection-icon {
+  border-color: color-mix(in srgb, #5865f2 72%, var(--line));
+  background: #5865f2;
+  color: #ffffff;
+}
+
+.connection-card.is-steam .connection-icon {
+  border-color: color-mix(in srgb, #66c0f4 60%, var(--line));
+  background:
+    radial-gradient(circle at 68% 28%, color-mix(in srgb, #66c0f4 42%, transparent), transparent 34%),
+    linear-gradient(135deg, #111f2f, #163b63);
+  color: #ffffff;
+}
+
+.connection-card.is-spotify .connection-icon {
+  border-color: color-mix(in srgb, #1ed760 72%, var(--line));
+  background: #1ed760;
+  color: #06130a;
+}
+
 .connection-copy,
 .connection-title,
 .connection-meta,
@@ -809,6 +840,9 @@ h3 {
 }
 
 .connection-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 3px 6px;
   border: 1px solid color-mix(in srgb, var(--accent-3) 42%, var(--line));
   border-radius: 999px;
@@ -816,6 +850,22 @@ h3 {
   font-size: 0.72rem;
   font-weight: 850;
   line-height: 1.1;
+}
+
+.connection-stat-icon {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.connection-stats .is-account-value {
+  border-color: color-mix(in srgb, var(--accent-2) 56%, var(--line));
+  color: var(--accent-2);
+}
+
+.connection-stats .is-steam-handle {
+  border-color: color-mix(in srgb, #66c0f4 54%, var(--line));
+  color: #66c0f4;
 }
 
 .status-line {

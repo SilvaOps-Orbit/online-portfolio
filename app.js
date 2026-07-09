@@ -1219,6 +1219,62 @@
     return /game/i.test(value) ? value : `${value} Games`;
   }
 
+  const connectionIconPaths = {
+    discord:
+      "M20.32 4.37A19.79 19.79 0 0 0 15.36 2.8a.07.07 0 0 0-.08.04c-.21.38-.44.88-.6 1.27a18.27 18.27 0 0 0-5.36 0c-.16-.4-.4-.89-.61-1.27a.07.07 0 0 0-.08-.04 19.74 19.74 0 0 0-4.96 1.57.06.06 0 0 0-.03.02C.54 9.04-.32 13.58.1 18.06c0 .02.01.05.03.06a19.9 19.9 0 0 0 6.08 3.07.08.08 0 0 0 .08-.03c.47-.64.89-1.31 1.25-2.02a.08.08 0 0 0-.04-.1 13.1 13.1 0 0 1-1.9-.91.08.08 0 0 1-.01-.13c.13-.1.26-.2.39-.31a.07.07 0 0 1 .08-.01c3.99 1.82 8.31 1.82 12.25 0a.07.07 0 0 1 .08.01c.13.11.26.21.39.31a.08.08 0 0 1-.01.13c-.6.35-1.24.66-1.9.91a.08.08 0 0 0-.04.1c.37.71.79 1.38 1.25 2.02a.08.08 0 0 0 .08.03 19.84 19.84 0 0 0 6.08-3.07.08.08 0 0 0 .03-.06c.5-5.18-.84-9.68-3.99-13.67a.06.06 0 0 0-.03-.02ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.96 2.42-2.16 2.42Zm7.96 0c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.96-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Z",
+    github:
+      "M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.43 7.86 10.96.58.11.79-.25.79-.56v-1.96c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.79 1.2 1.79 1.2 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.47.11-3.05 0 0 .98-.31 3.21 1.18.93-.26 1.93-.39 2.92-.4.99 0 1.99.14 2.92.4 2.23-1.49 3.21-1.18 3.21-1.18.63 1.58.23 2.76.11 3.05.75.81 1.2 1.84 1.2 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z",
+    spotify:
+      "M12 1.8A10.2 10.2 0 1 0 12 22.2 10.2 10.2 0 0 0 12 1.8Zm4.68 14.72a.78.78 0 0 1-1.08.25c-2.95-1.8-6.66-2.2-11.03-1.2a.78.78 0 1 1-.35-1.52c4.79-1.09 8.9-.62 12.21 1.4.37.23.49.7.25 1.07Zm1.25-2.78a.98.98 0 0 1-1.35.32c-3.38-2.08-8.53-2.68-12.52-1.46a.98.98 0 1 1-.57-1.87c4.56-1.38 10.24-.71 14.12 1.68.46.28.6.88.32 1.33Zm.11-2.9C14 8.43 7.36 8.2 3.5 9.38a1.17 1.17 0 1 1-.68-2.24c4.43-1.35 11.77-1.08 16.42 1.68a1.17 1.17 0 0 1-1.2 2.02Z",
+    steam:
+      "M12 2a10 10 0 0 0-9.72 7.7l5.37 2.2a2.84 2.84 0 0 1 1.58-.48l2.34-3.39v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.33 2.38a2.84 2.84 0 1 1-5.58.74l-3.83-1.58A10 10 0 1 0 12 2Zm-2.72 13.82-1.24-.52a1.67 1.67 0 1 0 1.24-1.18l.95.4a1.05 1.05 0 1 1-.95 1.3Zm6.05-5.17a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Zm0-.56a1.64 1.64 0 1 1 0-3.28 1.64 1.64 0 0 1 0 3.28Z"
+  };
+
+  function createBrandSvg(icon, className = "connection-brand") {
+    const pathData = connectionIconPaths[icon];
+    if (!pathData) return null;
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", className);
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    path.setAttribute("fill", "currentColor");
+    svg.append(path);
+    return svg;
+  }
+
+  function createConnectionIcon(icon, fallback) {
+    const wrapper = createElement("span", `connection-icon is-${icon || "text"}`);
+    wrapper.setAttribute("aria-hidden", "true");
+
+    const svg = createBrandSvg(icon);
+    if (svg) {
+      wrapper.append(svg);
+    } else {
+      wrapper.textContent = fallback;
+    }
+
+    return wrapper;
+  }
+
+  function createConnectionStat(stat) {
+    if (typeof stat === "string") {
+      return createElement("span", "", stat);
+    }
+
+    const chip = createElement("span", stat.className || "");
+    if (stat.icon) {
+      const svg = createBrandSvg(stat.icon, "connection-stat-icon");
+      if (svg) chip.append(svg);
+    }
+    chip.append(document.createTextNode(String(stat.text || "")));
+    return chip;
+  }
+
   function renderConnections(data = latestDynamicData) {
     const target = document.getElementById("connections-list");
     if (!target) return;
@@ -1232,6 +1288,7 @@
     const steamStats = Array.isArray(steam.stats) ? steam.stats : [];
     const ownedGames = withGameLabel(findStatValue(steamStats, ["owned games", "games owned", "game count"]));
     const accountValue = String(steam.accountValue?.value || "").replace(/^Account Value\s*/i, "").trim();
+    const steamHandle = steamProfile.personaName || "Silva";
     const memberSince = Number(steamProfile.timeCreated || 0)
       ? `Member since ${formatDate(Number(steamProfile.timeCreated) * 1000)}`
       : "";
@@ -1240,6 +1297,7 @@
     const links = [
       {
         label: profile.githubUsername || "GitHub",
+        icon: "github",
         short: "GH",
         href: githubProfileUrl(profile.githubUsername || ""),
         meta: "GitHub",
@@ -1247,20 +1305,27 @@
       },
       {
         label: profile.discordUrl ? "Discord Server" : "Discord Server",
+        icon: "discord",
         short: "DC",
         href: discordUrl,
         meta: profile.discordUrl ? "Community link" : "Add invite URL in portfolio.config.js",
         stats: []
       },
       {
-        label: steamProfile.personaName || "Silva",
+        label: "Steam",
+        icon: "steam",
         short: "ST",
         href: steam.profileUrl,
         meta: memberSince,
-        stats: [ownedGames, accountValue].filter(Boolean)
+        stats: [
+          accountValue ? { text: accountValue, className: "is-account-value" } : "",
+          steamHandle ? { text: steamHandle, icon: "steam", className: "is-steam-handle" } : "",
+          ownedGames
+        ].filter(Boolean)
       },
       {
         label: spotifyProfile.displayName || "Alvis",
+        icon: "spotify",
         short: "SP",
         href: spotifyUrl,
         meta: "Spotify",
@@ -1271,9 +1336,12 @@
     target.replaceChildren();
     links.forEach((item) => {
       const link = createElement("a", "connection-card");
+      if (item.icon) {
+        link.classList.add(`is-${item.icon}`);
+      }
       link.href = safeUrl(item.href);
       link.setAttribute("aria-label", item.label);
-      link.append(createElement("span", "connection-icon", item.short));
+      link.append(createConnectionIcon(item.icon, item.short));
 
       const copy = createElement("span", "connection-copy");
       const title = createElement("span", "connection-title");
@@ -1285,7 +1353,7 @@
       }
       if (item.stats.length) {
         const stats = createElement("span", "connection-stats");
-        item.stats.forEach((stat) => stats.append(createElement("span", "", stat)));
+        item.stats.forEach((stat) => stats.append(createConnectionStat(stat)));
         copy.append(stats);
       }
       link.append(copy);
