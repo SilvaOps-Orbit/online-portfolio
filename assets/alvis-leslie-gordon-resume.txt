@@ -1,0 +1,48 @@
+Alvis Leslie Gordon
+Alias: EchoOps
+Location: Melbourne, Australia
+Email: alvis.dev@proton.me
+GitHub: https://github.com/SilvaOps-Orbit
+
+PROFILE
+Creative developer with a growing cyber security mindset, focused on building polished, useful, and secure digital experiences. Interested in web development, Discord bots, AI automation, networking, and practical security habits.
+
+EDUCATION
+Diploma of ICT
+Focus: Advanced Networking and Cyber Security
+
+Certificate IV in ICT
+Partial completion
+
+SKILLS
+- Website Development
+- JavaScript Programming
+- Cyber Security Basics
+- AI Automation
+- Discord Bot Development
+- GitHub and GitHub Pages
+- API-backed static site workflows
+
+PROJECTS
+Interactive Portfolio Website
+Fast static portfolio with animated sections, project filtering, GitHub integration, Steam and Spotify data workflows, and secure client-side defaults.
+Source: https://github.com/SilvaOps-Orbit/online-portfolio
+Demo: https://silvaops-orbit.github.io/online-portfolio/
+
+Discord Bot Project
+Project space for commands, automations, community utilities, and bot experiments.
+
+Security Checklist Tool
+Lightweight checklist concept for reviewing common web security controls before shipping a project.
+
+SECURITY MINDSET
+- No client-side secrets
+- DOM-safe rendering with textContent and structured DOM APIs
+- Content Security Policy
+- No-referrer privacy defaults
+- Generated public JSON for API data
+- GitHub Actions secrets for API tokens
+- CodeQL and Dependabot security automation
+
+INTERESTS
+Gaming, programming, surfing, long drives, travelling, cyber security, fitness, and building a better future through discipline and consistency.
