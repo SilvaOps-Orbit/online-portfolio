@@ -1,161 +1,264 @@
-# Interactive Portfolio
+# EchoOps Portfolio
 
-A secure, dependency-light personal portfolio built with plain HTML, CSS, and JavaScript.
+This is my personal portfolio site. I built it with plain HTML, CSS, and JavaScript because I wanted it fast, easy to host, and not packed with random dependencies I do not need.
 
-## Personalize it
+The main idea is simple: make the site feel alive with animation, Steam, Spotify, GitHub, market data, news, and security notes, while keeping API keys and private tokens out of the browser.
 
-Edit `portfolio.config.js`:
+## What is in here
 
-- Replace `Your Name`, `YN`, and the summary with your real details.
-- Set `githubUsername` to your GitHub username to show live public repositories.
-- Set `discordUrl` to a public Discord profile or server link.
-- Add real project links under `projects`.
-- Add your Steam profile, current games, most played games, achievements, and 100% games under `steam`.
-- Set `steam.accountValue.value` to the manual account value you want displayed.
-- Add Spotify fallback text under `spotify`.
-- Add `linkedinUrl` and `resumeUrl` when you have them.
+- Animated portfolio homepage with dark mode.
+- Typewriter intro and interactive sections.
+- Public GitHub repo feed.
+- Steam profile, active/recent games, store radar, stats, and achievement-style sections.
+- Spotify now-playing card, playlists, progress bar, and music facts.
+- Genius and TheAudioDB enrichment for music details.
+- Market watchlist for the S&P 500 plus tech/gaming stocks.
+- Gaming, finance, Australian, and breaking news feeds.
+- For the Nerds section showing security choices and unique features.
+- GitHub Actions workflows that refresh data without exposing secrets.
 
-## Steam stats
+## Main files
 
-The Steam section can refresh during GitHub Pages deployment without exposing your Steam API key.
+- `index.html` - page structure.
+- `styles.css` - the look, layout, animations, and responsive styling.
+- `app.js` - renders the interactive parts and loads JSON data.
+- `portfolio.config.js` - fallback content and personal site settings.
+- `data/*.json` - generated Steam, Spotify, market, and news data.
+- `scripts/*.mjs` - data refresh scripts used by GitHub Actions.
+- `.github/workflows/*.yml` - deploy and refresh workflows.
+- `_headers` - security/cache headers for hosts that support them.
 
-1. Create a Steam Web API key.
-2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
-3. Add repository secret `STEAM_API_KEY`.
-4. Optionally add repository variable `STEAM_ACCOUNT_VALUE` if you want the deploy script to write a manual account value into `data/steam.json`.
+## Running it locally
 
-Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` on push/manual dispatch and by the dedicated Steam workflow. The site prefers the manual value in `portfolio.config.js`, so you can edit it directly without depending on SteamDB.
+From PowerShell:
 
-The deploy script now keeps the last successful Steam values when a refresh fails. SteamDB is linked as a reference, but it is not scraped.
+```powershell
+cd "C:\Users\Alvis ICT\Desktop\resume website github"
+py -m http.server 8010 --bind 127.0.0.1
+```
 
-The Steam Store Radar uses Steam's public featured categories feed to show sales, top sellers, new releases, and coming soon games in a single animated ticker. The faster Steam activity workflow also refreshes/preserves that ticker data.
+Then open:
 
-The Pre-Order / Top 20 Games Watch card uses the same Steam Store feed. It randomizes coming-soon/pre-order entries with Steam's current top 20 sellers, links directly to the store page, and enriches the card with price and edition data when Steam exposes it.
+```text
+http://127.0.0.1:8010
+```
 
-## Spotify stats
+## Things I edit by hand
 
-Spotify data is generated into `data/spotify.json` by GitHub Actions so API credentials never run in the browser.
+Most of the personal content lives in `portfolio.config.js`.
 
-1. Create a Spotify app in the Spotify Developer Dashboard.
-2. Add `http://127.0.0.1:3000` as a redirect URI in the Spotify app settings.
-3. Run the local authorization helper:
-   ```powershell
-   cd "C:\Users\Alvis ICT\Desktop\resume website github"
-   $env:SPOTIFY_CLIENT_ID="your-client-id"
-   $env:SPOTIFY_CLIENT_SECRET="your-client-secret"
-   .\scripts\spotify-local-auth.ps1
-   ```
-4. Approve Spotify in the browser. The helper catches the redirect locally and prints `SPOTIFY_REFRESH_TOKEN`.
-5. Add repository secrets:
-   - `SPOTIFY_CLIENT_ID`
-   - `SPOTIFY_CLIENT_SECRET`
-   - `SPOTIFY_REFRESH_TOKEN`
+Useful things to update there:
 
-If you prefer the manual setup, create the authorization URL:
+- Name, alias, location, intro, and about text.
+- GitHub username.
+- Discord link.
+- Project cards.
+- Manual Steam account value.
+- Fallback Steam/Spotify text.
+- LinkedIn or resume links when I want to add them.
+- Market/news fallback text if the APIs are down.
 
-   ```powershell
-   cd "C:\Users\Alvis ICT\Desktop\resume website github"
-   $env:SPOTIFY_CLIENT_ID="your-client-id"
-   .\scripts\spotify-auth-url.ps1
-   ```
-After approving, the browser may show `127.0.0.1 refused to connect`; that is okay. Copy the `code` value from the address bar and exchange it:
+## Steam setup
 
-   ```powershell
-   cd "C:\Users\Alvis ICT\Desktop\resume website github"
-   $env:SPOTIFY_CLIENT_ID="your-client-id"
-   $env:SPOTIFY_CLIENT_SECRET="your-client-secret"
-   $env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
-   .\scripts\spotify-refresh-token.ps1
-   ```
+Steam data is generated into `data/steam.json` so the public site can show Steam info without putting my Steam API key in browser code.
 
-If PowerShell blocks the helper scripts, run them with:
+GitHub secret needed:
+
+```text
+STEAM_API_KEY
+```
+
+Optional GitHub variable:
+
+```text
+STEAM_ACCOUNT_VALUE
+```
+
+Notes for future me:
+
+- `.github/workflows/steam.yml` refreshes active/recent Steam data.
+- `data/steam.json` keeps the last good values if Steam breaks.
+- SteamDB is linked as a reference, but the site does not scrape SteamDB.
+- The Steam Store Radar uses Steam public store feeds for sales, top sellers, new releases, and coming soon games.
+
+## Spotify setup
+
+Spotify is handled through GitHub Actions so my client secret and refresh token stay private.
+
+In the Spotify Developer Dashboard, add this redirect URI:
+
+```text
+http://127.0.0.1:3000
+```
+
+Then run the helper:
+
+```powershell
+cd "C:\Users\Alvis ICT\Desktop\resume website github"
+$env:SPOTIFY_CLIENT_ID="your-client-id"
+$env:SPOTIFY_CLIENT_SECRET="your-client-secret"
+.\scripts\spotify-local-auth.ps1
+```
+
+After approving Spotify, add these GitHub secrets:
+
+```text
+SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET
+SPOTIFY_REFRESH_TOKEN
+```
+
+If PowerShell blocks the script:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\spotify-local-auth.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\spotify-refresh-token.ps1
 ```
 
-The requested scopes are `user-read-currently-playing user-read-playback-state playlist-read-private`. Spotify currently documents refresh tokens as lasting 6 months, so if the workflow starts reporting `invalid_grant`, repeat the authorization steps and replace `SPOTIFY_REFRESH_TOKEN`.
+Manual backup method:
 
-If the scope list changes, run `spotify-local-auth.ps1` again and replace `SPOTIFY_REFRESH_TOKEN` because old refresh tokens do not automatically gain new permissions.
+```powershell
+cd "C:\Users\Alvis ICT\Desktop\resume website github"
+$env:SPOTIFY_CLIENT_ID="your-client-id"
+.\scripts\spotify-auth-url.ps1
+```
 
-The main Pages workflow preserves the last deployed Spotify data so normal site deploys stay fast. `.github/workflows/spotify.yml` runs every 5 minutes to keep Spotify closer to live. The browser checks `data/spotify.json` every few seconds, but on GitHub Pages the song can only change after that workflow generates and deploys a new JSON file.
+After approving, the browser might say `127.0.0.1 refused to connect`. That is fine. Copy the `code` from the address bar and exchange it:
 
-Steam activity has its own `.github/workflows/steam.yml` workflow that runs every 5 minutes. It preserves the heavier Steam stats from the last full deploy and only refreshes the active/recently played game card.
+```powershell
+cd "C:\Users\Alvis ICT\Desktop\resume website github"
+$env:SPOTIFY_CLIENT_ID="your-client-id"
+$env:SPOTIFY_CLIENT_SECRET="your-client-secret"
+$env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
+.\scripts\spotify-refresh-token.ps1
+```
 
-On page startup, the browser preloads `data/steam.json` and `data/spotify.json` before revealing the site. If either generated data file is missing or slow, the page falls back to `portfolio.config.js` so it still opens without exposing API secrets.
+The scopes I use:
 
-### Music enrichment
+```text
+user-read-currently-playing user-read-playback-state playlist-read-private
+```
 
-Genius and TheAudioDB facts are generated in GitHub Actions, not in the browser.
+If Spotify starts saying `invalid_grant`, redo the auth flow and replace `SPOTIFY_REFRESH_TOKEN`.
 
-For Genius, add this repository secret in GitHub -> Settings -> Secrets and variables -> Actions:
+## Music facts
 
-- `GENIUS_ACCESS_TOKEN` - used for Genius song and artist facts.
+The Spotify card can pull extra facts from Genius and TheAudioDB.
 
-If Genius asks for a redirect URL while creating the app, use:
+Genius secret:
+
+```text
+GENIUS_ACCESS_TOKEN
+```
+
+If Genius asks for a redirect URL:
 
 ```text
 http://127.0.0.1:8888/callback
 ```
 
-TheAudioDB v1 uses the free key `123` by default:
+TheAudioDB uses the free v1 test key by default:
 
 ```text
 https://www.theaudiodb.com/api/v1/json/123/search.php?s=coldplay
 ```
 
-No GitHub secret is required for the free key. If you ever upgrade, add your premium key as `AUDIODB_API_KEY` and the workflow will use it automatically.
-
-Only sanitized facts, Genius source links, artwork URLs, and a source audit are published to `data/spotify.json`. The published song and artist facts are mixed from Spotify, Genius, and TheAudioDB when they match, while the audit records which source was used for playback, progress, artwork, facts, and links.
-
-## Market and news data
-
-The markets and news sections are generated into `data/market.json` and `data/news.json` by GitHub Actions. The browser only reads those JSON files.
-
-1. Create or copy your Finnhub API key from the Finnhub dashboard.
-2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
-3. Add repository secret `FINNHUB_API_KEY`.
-
-The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. `yfinance` also publishes one week of closing prices so each stock card can draw a compact chart, with the S&P 500 card shown as the larger market baseline. The AI signal layer rotates movement-aware research prompts, so stocks doing well can surface different suggestions from stocks under pressure. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the dedicated market/news workflow, so no Yahoo key is exposed in the site.
-
-`.github/workflows/market-news.yml` refreshes market/news data every 5 minutes, which is the shortest scheduled interval GitHub Actions supports. The browser checks `data/market.json` every minute with cache-busting so the stock cards pick up the newest deployed JSON as soon as GitHub Pages serves it. The news feed is split into Breaking Worldwide, Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles. Breaking worldwide headlines are English-only and tagged with an inferred affected country/region, plus a conflict tag when the headline/snippet appears war-related. RSS fallbacks are displayed by publisher name, such as BBC News, Yahoo Finance, ABC News, or IGN, and article photos are shown when a feed/API provides a safe image URL.
-
-Normal pushes use `.github/workflows/pages.yml`, which now preserves the last deployed dynamic JSON instead of regenerating Steam, Spotify, market, and news data on every deploy. That keeps visual/content updates much quicker while the dedicated scheduled workflows keep live data moving.
-
-Optional RSS overrides can be added as workflow environment variables:
+If I ever upgrade TheAudioDB, add:
 
 ```text
-NEWS_GAMING_RSS=http://feeds.ign.com/ign/all
-NEWS_GAMING_RSS=https://pcgamer.com
-NEWS_GAMING_RSS=
+AUDIODB_API_KEY
+```
+
+Only cleaned-up facts, links, artwork URLs, and source labels get published to `data/spotify.json`.
+
+## Markets and news
+
+Market and news data are generated into:
+
+```text
+data/market.json
+data/news.json
+```
+
+GitHub secret needed:
+
+```text
+FINNHUB_API_KEY
+```
+
+The market section uses:
+
+- Finnhub for keyed quote/news data.
+- `yfinance` as the Yahoo Finance cross-check/fallback.
+- One-week charts for the S&P 500 and tech/gaming stocks.
+- A rotating stock deck for the gaming/tech companies.
+- AI-style research prompts for educational signals only.
+
+The news section uses:
+
+- NewsAPI.
+- Mediastack.
+- Finnhub finance news.
+- RSS fallbacks.
+- AU-focused Australian news.
+- English-only breaking worldwide news.
+
+Optional news secrets:
+
+```text
+NEWSAPI_KEY
+NEWS_API_KEY
+MEDIASTACK_API_KEY
+MEDIASTACK_ACCESS_KEY
+```
+
+Optional RSS overrides:
+
+```text
 NEWS_BREAKING_WORLDWIDE_RSS=https://feeds.bbci.co.uk/news/world/rss.xml
+NEWS_GAMING_RSS=http://feeds.ign.com/ign/all
 NEWS_FINANCE_RSS=https://finance.yahoo.com/news/rssindex
 NEWS_AUSTRALIA_RSS=https://feeds.abcnews.com/abcnews/politicsheadlines
 ```
 
-Finance signals are educational research prompts only. They are not personal financial advice or automated trading instructions.
+Important note: GitHub Actions scheduled workflows cannot run every minute. The fastest schedule GitHub supports is every 5 minutes. The browser checks market data every minute, but the deployed JSON can only update after the workflow runs and GitHub Pages serves the new files.
 
-## GitHub Pages
+Also, the market stuff is not financial advice. It is just research prompts and watchlist context.
 
-This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:
+## GitHub Pages deploy
 
-1. Open the repository on GitHub.
+This repo deploys through GitHub Actions.
+
+On GitHub:
+
+1. Open the repo.
 2. Go to Settings -> Pages.
 3. Set Source to GitHub Actions.
-4. Push to `main`; the workflow deploys the site.
+4. Push to `main`.
 
-## Security notes
+The main deploy workflow keeps deploys faster by preserving the last generated Steam, Spotify, market, and news JSON instead of regenerating every API feed every time I push a small visual change.
 
-- No npm dependencies are required.
-- No secrets or GitHub tokens are used in browser code.
-- GitHub repository data comes from the public GitHub API.
-- Dynamic data is rendered with DOM APIs and `textContent`.
-- A restrictive CSP is included in `index.html`.
-- `_headers` is included for hosts that support custom security headers, such as Netlify or Cloudflare Pages.
+## Security choices
 
+Stuff I want to keep doing right:
 
-jjjj
-GitHub Pages does not let projects set custom HTTP security headers. The in-page CSP still helps, but use Netlify, Cloudflare Pages, or another host if you need full response headers.
-# my-portfolio-template
-# my-portfolio-template
+- No API secrets in browser JavaScript.
+- No Discord bot tokens in the site.
+- GitHub repo data only comes from the public GitHub API.
+- Dynamic content is rendered with DOM APIs and `textContent`.
+- Security headers live in `_headers` for hosts that support them.
+- GitHub Pages does not support custom response headers for project pages, so the in-page CSP still helps, but a host like Netlify or Cloudflare Pages is better if I want full response headers.
+- External links use safe attributes where needed.
+- The site keeps fallback data so API failures do not make sections look broken.
+
+## Quick reminder
+
+When I change something and want it live:
+
+```powershell
+git status
+git add .
+git commit -m "Update portfolio"
+git push
+```
+
+Then check the Actions tab on GitHub if the site takes a while to update.
