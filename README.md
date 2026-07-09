@@ -114,23 +114,20 @@ Only sanitized facts, Genius source links, artwork URLs, and a source audit are 
 The markets and news sections are generated into `data/market.json` and `data/news.json` by GitHub Actions. The browser only reads those JSON files.
 
 1. Create or copy your Finnhub API key from the Finnhub dashboard.
-2. Create or copy your NewsAPI key from NewsAPI.
-3. Create or copy your Mediastack API key from Mediastack.
-4. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
-5. Add repository secrets:
-   - `FINNHUB_API_KEY`
-   - `NEWSAPI_KEY`
-   - `MEDIASTACK_API_KEY`
+2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
+3. Add repository secret `FINNHUB_API_KEY`.
 
-The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. The news feed mixes Finnhub finance news, NewsAPI article search, Mediastack article search, and RSS fallbacks. The Australian row only pulls AU-filtered NewsAPI/Mediastack results plus Australian RSS feeds; Gaming and Finance try AU-filtered API results first, then use wider results as fallback. Matching articles are deduped, and each news card shows the API or feed that supplied it.
+The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the market/news workflow, so no Yahoo key is exposed in the site.
 
 `.github/workflows/market-news.yml` refreshes market and news data hourly. The news feed is split into Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles.
 
 Optional RSS overrides can be added as workflow environment variables:
 
 ```text
-NEWS_GAMING_RSS=https://example.com/feed.xml,https://example.com/second.xml
-NEWS_AUSTRALIA_RSS=https://example.com/feed.xml
+NEWS_GAMING_RSS=http://feeds.ign.com/ign/all
+NEWS_GAMING_RSS=https://pcgamer.com
+NEWS_GAMING_RSS=
+NEWS_AUSTRALIA_RSS=https://feeds.abcnews.com/abcnews/politicsheadlines
 ```
 
 Finance signals are educational research prompts only. They are not personal financial advice or automated trading instructions.
