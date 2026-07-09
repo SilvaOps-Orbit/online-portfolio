@@ -25,7 +25,7 @@ window.PORTFOLIO_CONFIG = {
     githubUsername: "SilvaOps-Orbit",
     discordUrl: "",
     linkedinUrl: "",
-    resumeUrl: ""
+    resumeUrl: "assets/alvis-leslie-gordon-resume.txt"
   },
   highlights: [
     { value: "3+", label: "Featured projects" },
@@ -164,6 +164,12 @@ window.PORTFOLIO_CONFIG = {
         note: "Add Spotify secrets in GitHub Actions to publish playlist data."
       }
     ]
+  },
+  securitySnapshot: {
+    label: "Site Hardening Snapshot",
+    summary:
+      "A quick security scorecard for the portfolio itself: static-first, no browser secrets, DOM-safe rendering, public API data only, and ongoing GitHub security automation.",
+    posture: "Strong static-site posture"
   },
   security: [
     {

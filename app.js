@@ -114,6 +114,17 @@
 
     setLink("github-profile-link", githubProfileUrl(username));
     setLink("email-link", `mailto:${profile.email || ""}`);
+
+    const footerResume = document.getElementById("footer-resume-link");
+    if (footerResume) {
+      if (profile.resumeUrl) {
+        footerResume.href = safeUrl(profile.resumeUrl);
+        footerResume.hidden = false;
+        footerResume.setAttribute("download", "");
+      } else {
+        footerResume.hidden = true;
+      }
+    }
   }
 
   function renderHighlights() {
@@ -231,8 +242,40 @@
     const grid = document.getElementById("security-grid");
     const featureGrid = document.getElementById("nerd-feature-grid");
 
+    renderSecuritySnapshot();
     renderInfoCards(grid, config.security || [], "Security Control");
     renderInfoCards(featureGrid, config.nerdFeatures || [], "Build Feature");
+  }
+
+  function renderSecuritySnapshot() {
+    const target = document.getElementById("security-score");
+    if (!target) return;
+
+    const controls = (config.security || []).filter(Boolean);
+    const snapshot = config.securitySnapshot || {};
+    const activeCount = controls.length;
+    const featuredControls = controls.slice(0, 6);
+
+    target.replaceChildren();
+    const score = createElement("div", "security-score-meter");
+    score.append(
+      createElement("span", "security-score-value", `${activeCount}/${activeCount}`),
+      createElement("span", "security-score-label", "controls active")
+    );
+
+    const copy = createElement("div", "security-score-copy");
+    copy.append(
+      createElement("span", "security-score-kicker", snapshot.label || "Site Hardening Snapshot"),
+      createElement("h4", "", snapshot.posture || "Strong static-site posture"),
+      createElement("p", "", snapshot.summary || "Security controls are rendered from the same config that powers the detailed cards below.")
+    );
+
+    const chips = createElement("div", "security-score-chips");
+    featuredControls.forEach((control) => {
+      chips.append(createElement("span", "", control.title || "Security control"));
+    });
+    copy.append(chips);
+    target.append(score, copy);
   }
 
   function renderInfoCards(grid, items, fallbackTitle) {
@@ -1154,6 +1197,9 @@
         link.target = "_blank";
         link.rel = "noopener noreferrer";
       }
+      if (item.label === "Resume") {
+        link.setAttribute("download", "");
+      }
       actions.append(link);
     });
   }
@@ -1274,6 +1320,29 @@
     }
   }
 
+  function isFeaturedRepo(repo) {
+    const repoUrl = String(repo?.html_url || "").toLowerCase();
+    const repoName = String(repo?.name || "").toLowerCase();
+    return (config.projects || []).some((project) => {
+      const projectUrl = String(project.github || "").toLowerCase();
+      return projectUrl === repoUrl || (repoName && projectUrl.endsWith(`/${repoName}`));
+    });
+  }
+
+  function appendRepoChip(parent, text, className = "") {
+    if (!text) return;
+    parent.append(createElement("span", className, text));
+  }
+
+  function appendRepoLink(parent, label, href) {
+    if (!href) return;
+    const link = createElement("a", "text-link", label);
+    link.href = safeUrl(href);
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    parent.append(link);
+  }
+
   async function loadGitHubRepos() {
     const profile = config.profile || {};
     const username = profile.githubUsername;
@@ -1298,33 +1367,74 @@
       }
 
       const repos = await response.json();
-      const visibleRepos = repos.filter((repo) => !repo.fork).slice(0, 6);
+      const visibleRepos = repos
+        .filter((repo) => !repo.fork)
+        .sort((a, b) => {
+          if (isFeaturedRepo(a) !== isFeaturedRepo(b)) {
+            return isFeaturedRepo(a) ? -1 : 1;
+          }
+          return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+        })
+        .slice(0, 6);
+      const totalStars = visibleRepos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
+      const totalForks = visibleRepos.reduce((sum, repo) => sum + Number(repo.forks_count || 0), 0);
+      const latestUpdate = visibleRepos
+        .map((repo) => new Date(repo.updated_at || 0).getTime())
+        .filter(Number.isFinite)
+        .sort((a, b) => b - a)[0];
 
-      status.textContent = `Showing recently updated public repositories from ${username}.`;
+      status.textContent = visibleRepos.length
+        ? `Showing ${visibleRepos.length} public repositories from ${username}. ${totalStars} stars, ${totalForks} forks, latest update ${formatDate(latestUpdate)}. Public GitHub API only, no token exposed.`
+        : `No non-fork public repositories found for ${username}.`;
+
       visibleRepos.forEach((repo) => {
-        const card = createElement("article", "repo-card reveal tilt-card");
+        const featured = isFeaturedRepo(repo);
+        const card = createElement("article", featured ? "repo-card reveal tilt-card is-featured" : "repo-card reveal tilt-card");
+        const header = createElement("div", "repo-card-header");
         const title = createElement("h3");
         const link = createElement("a", "", repo.name || "Repository");
         link.href = safeUrl(repo.html_url);
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         title.append(link);
+        header.append(title);
+        if (featured) {
+          header.append(createElement("span", "repo-badge", "Featured"));
+        }
 
-        const description = createElement("p", "", repo.description || "Public repository");
+        const description = createElement("p", "repo-description", repo.description || "Public repository");
         const meta = createElement("div", "repo-meta");
-        meta.append(
-          createElement("span", "", repo.language || "Code"),
-          createElement("span", "", `${Number(repo.stargazers_count || 0)} stars`),
-          createElement("span", "", `Updated ${formatDate(repo.updated_at)}`)
+        appendRepoChip(meta, repo.language || "Code", "is-language");
+        appendRepoChip(meta, `${Number(repo.stargazers_count || 0)} stars`);
+        appendRepoChip(meta, `${Number(repo.forks_count || 0)} forks`);
+        appendRepoChip(meta, `${Number(repo.open_issues_count || 0)} open issues`);
+        appendRepoChip(meta, `Updated ${formatDate(repo.updated_at)}`);
+        if (repo.has_pages) appendRepoChip(meta, "GitHub Pages", "is-live");
+        if (repo.archived) appendRepoChip(meta, "Archived");
+
+        const topics = createElement("div", "repo-topics");
+        (repo.topics || []).slice(0, 5).forEach((topic) => appendRepoChip(topics, topic));
+
+        const securityNote = createElement(
+          "p",
+          "repo-security-note",
+          "Public repo metadata only. External links open safely and private repo data is never requested."
         );
 
-        card.append(title, description, meta);
+        const links = createElement("div", "repo-links");
+        appendRepoLink(links, "Source", repo.html_url);
+        appendRepoLink(links, "Demo", repo.homepage);
+        if (repo.has_issues) {
+          appendRepoLink(links, "Issues", `${repo.html_url}/issues`);
+        }
+
+        card.append(header, description, meta);
+        if (topics.children.length) {
+          card.append(topics);
+        }
+        card.append(securityNote, links);
         grid.append(card);
       });
-
-      if (!visibleRepos.length) {
-        status.textContent = `No non-fork public repositories found for ${username}.`;
-      }
     } catch (error) {
       status.textContent = "GitHub repositories could not be loaded right now.";
     }
