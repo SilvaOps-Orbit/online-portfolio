@@ -129,3 +129,4 @@ This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:
 
 GitHub Pages does not let projects set custom HTTP security headers. The in-page CSP still helps, but use Netlify, Cloudflare Pages, or another host if you need full response headers.
 # my-portfolio-template
+# my-portfolio-template
