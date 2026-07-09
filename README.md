@@ -128,3 +128,4 @@ This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:
 - `_headers` is included for hosts that support custom security headers, such as Netlify or Cloudflare Pages.
 
 GitHub Pages does not let projects set custom HTTP security headers. The in-page CSP still helps, but use Netlify, Cloudflare Pages, or another host if you need full response headers.
+# my-portfolio-template
