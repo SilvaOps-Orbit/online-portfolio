@@ -6,8 +6,8 @@ import { cleanText } from "./text-sanitizer.mjs";
 
 const execFileAsync = promisify(execFile);
 const finnhubApiKey = process.env.FINNHUB_API_KEY || "";
-const newsApiKey = process.env.NEWSAPI_KEY || process.env.NEWS_API_KEY || "";
-const mediastackApiKey = process.env.MEDIASTACK_API_KEY || "";
+const newsApiKey = process.env.NEWSAPI_KEY || process.env.NEWS_API_KEY || process.env.NEWS_API_ORG_KEY || "";
+const mediastackApiKey = process.env.MEDIASTACK_API_KEY || process.env.MEDIASTACK_ACCESS_KEY || process.env.MEDIASTACK_KEY || "";
 const mediastackBaseUrl = process.env.MEDIASTACK_BASE_URL || "https://api.mediastack.com/v1/news";
 const marketOutputPath = new URL("../data/market.json", import.meta.url);
 const newsOutputPath = new URL("../data/news.json", import.meta.url);
@@ -28,9 +28,16 @@ const quoteTargets = [
 ];
 
 const defaultFeeds = {
+  "Breaking Worldwide": [
+    "https://feeds.bbci.co.uk/news/world/rss.xml"
+  ],
   Gaming: [
     "https://www.pcgamer.com/rss/",
     "https://www.ign.com/rss/articles/feed?tags=games"
+  ],
+  Finance: [
+    "https://finance.yahoo.com/news/rssindex",
+    "https://www.cnbc.com/id/100003114/device/rss/rss.html"
   ],
   Australia: [
     "https://www.pm.gov.au/rss.xml",
@@ -93,7 +100,7 @@ const countryCodeNames = {
 
 const affectedPlacePatterns = [
   { label: "Australia", patterns: ["australia", "sydney", "melbourne", "canberra", "queensland", "victoria"] },
-  { label: "United States", patterns: ["united states", "u.s.", "us ", "america", "washington", "california", "new york"] },
+  { label: "United States", patterns: ["united states", "u.s.", "america", "washington", "california", "new york"] },
   { label: "United Kingdom", patterns: ["united kingdom", "uk ", "britain", "london", "england", "scotland"] },
   { label: "Ukraine", patterns: ["ukraine", "kyiv", "kharkiv", "odesa"] },
   { label: "Russia", patterns: ["russia", "moscow", "kremlin"] },
@@ -132,8 +139,12 @@ const conflictTerms = [
   "hezbollah"
 ];
 
+function feedEnvName(name) {
+  return String(name || "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
 function configuredFeeds(name, fallback) {
-  const value = process.env[`NEWS_${name.toUpperCase()}_RSS`] || "";
+  const value = process.env[`NEWS_${feedEnvName(name)}_RSS`] || "";
   return value.split(",").map((item) => item.trim()).filter(Boolean).concat(value ? [] : fallback);
 }
 
@@ -153,14 +164,17 @@ async function writeJson(path, data) {
 async function fetchWithTimeout(url, options = {}) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), fetchTimeoutMs);
+  const headers = {
+    Accept: "application/json, application/rss+xml, application/xml, text/xml, text/plain, */*",
+    "User-Agent": "SilvaOps-Orbit portfolio data refresh (+https://silvaops-orbit.github.io/online-portfolio)",
+    ...(options.headers || {})
+  };
 
   try {
     return await fetch(url, {
       ...options,
       signal: controller.signal,
-      headers: {
-        ...(options.headers || {})
-      }
+      headers
     });
   } finally {
     clearTimeout(timeoutId);
@@ -374,6 +388,9 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
     : "";
   const signal = signalFromMove(target, primary, crossReferenceNote);
   const history = Array.isArray(yfinance?.history) ? yfinance.history : [];
+  const priceValue = Number(primary?.price);
+  const changeValue = Number(primary?.change);
+  const changePercent = Number(primary?.changePercent);
 
   return {
     symbol: target.symbol,
@@ -381,6 +398,10 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
     sector: target.sector,
     price: formatMoney(primary?.price, primary?.currency || "USD"),
     change: formatChange(primary?.change, primary?.changePercent),
+    priceValue: Number.isFinite(priceValue) ? priceValue : null,
+    changeValue: Number.isFinite(changeValue) ? changeValue : null,
+    changePercent: Number.isFinite(changePercent) ? changePercent : null,
+    trend: Number.isFinite(changePercent) && changePercent > 0 ? "up" : Number.isFinite(changePercent) && changePercent < 0 ? "down" : "flat",
     signal: signal.signal,
     reason: signal.reason,
     source: [finnhub?.source, yahoo?.source].filter(Boolean).join(" + ") || "pending",
@@ -395,14 +416,50 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
 function buildMarketSignals(indexes, stocks) {
   const signals = [];
   const all = [...indexes, ...stocks];
+  const index = indexes[0];
+  const indexPercent = Number(index?.changePercent);
+  const winners = stocks
+    .filter((item) => Number.isFinite(Number(item.changePercent)) && Number(item.changePercent) > 0.75)
+    .sort((a, b) => Number(b.changePercent) - Number(a.changePercent));
+  const pressure = stocks
+    .filter((item) => Number.isFinite(Number(item.changePercent)) && Number(item.changePercent) < -1)
+    .sort((a, b) => Number(a.changePercent) - Number(b.changePercent));
   const sellRisk = all.find((item) => /sell-risk/i.test(item.signal));
   const momentum = all.find((item) => /momentum/i.test(item.signal));
   const research = all.find((item) => /research buy/i.test(item.signal));
-  const index = indexes[0];
+
+  winners.slice(0, 3).forEach((winner) => {
+    const percent = Number(winner.changePercent);
+    const supportiveMarket = Number.isFinite(indexPercent) && indexPercent >= 0;
+    signals.push({
+      stance: percent >= 3 ? "Strong mover" : "Doing well",
+      tone: "positive",
+      symbol: winner.symbol,
+      change: `${percent > 0 ? "+" : ""}${percent.toFixed(2)}% today`,
+      title: `${winner.name} is showing strength`,
+      why: `${winner.name} is up ${percent.toFixed(2)}%. ${supportiveMarket ? "The broad market is supportive, so this momentum is cleaner to research." : "The broad market is not clearly helping, so treat this as relative strength and confirm the catalyst."} Check news, earnings, and valuation before acting.`,
+      drivers: ["Relative strength", "Catalyst check", "Do not chase blind"]
+    });
+  });
+
+  if (pressure.length) {
+    const item = pressure[0];
+    const percent = Number(item.changePercent);
+    signals.push({
+      stance: "Risk check",
+      tone: "caution",
+      symbol: item.symbol,
+      change: `${percent.toFixed(2)}% today`,
+      title: `${item.name} is under pressure`,
+      why: `${item.name} is down ${Math.abs(percent).toFixed(2)}%. Check whether the move is company-specific, sector-wide, or just broad market weakness before calling it a discount.`,
+      drivers: ["News scan", "Support levels", "Position sizing"]
+    });
+  }
 
   if (research) {
     signals.push({
       stance: "Research buy case",
+      tone: "research",
       symbol: research.symbol,
       title: `${research.name} has a theme worth investigating`,
       why: research.reason,
@@ -413,6 +470,7 @@ function buildMarketSignals(indexes, stocks) {
   if (sellRisk) {
     signals.push({
       stance: "Sell-risk flag",
+      tone: "caution",
       symbol: sellRisk.symbol,
       title: `${sellRisk.name} needs risk review`,
       why: sellRisk.reason,
@@ -423,6 +481,7 @@ function buildMarketSignals(indexes, stocks) {
   if (momentum) {
     signals.push({
       stance: "Momentum watch",
+      tone: "positive",
       symbol: momentum.symbol,
       title: `${momentum.name} is moving faster than usual`,
       why: momentum.reason,
@@ -432,15 +491,17 @@ function buildMarketSignals(indexes, stocks) {
 
   if (index) {
     signals.push({
-      stance: "Market filter",
+      stance: Number.isFinite(indexPercent) && indexPercent >= 0 ? "Market support" : "Market filter",
+      tone: Number.isFinite(indexPercent) && indexPercent < 0 ? "caution" : "market",
       symbol: index.symbol,
+      change: Number.isFinite(indexPercent) ? `${indexPercent > 0 ? "+" : ""}${indexPercent.toFixed(2)}% today` : "",
       title: "Check the broad market before individual names",
       why: `${index.name} is the baseline mood check. Strong individual stocks are more convincing when the broad market is supportive.`,
       drivers: ["S&P 500 trend", "Rate expectations", "Market breadth"]
     });
   }
 
-  return signals.slice(0, 4);
+  return signals.slice(0, 9);
 }
 
 function tagValue(block, tag) {
@@ -454,12 +515,18 @@ function attrValue(block, tagName, attrName) {
   return match ? match[1] : "";
 }
 
+function htmlImage(block) {
+  const match = String(block || "").match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match ? match[1] : "";
+}
+
 function rssImage(block) {
   return cleanText(
     attrValue(block, "media:content", "url")
       || attrValue(block, "media:thumbnail", "url")
       || attrValue(block, "enclosure", "url")
       || tagValue(block, "image")
+      || htmlImage(block)
   );
 }
 
@@ -467,6 +534,11 @@ function rssSourceName(hostname) {
   const host = String(hostname || "").replace(/^www\./, "").toLowerCase();
   const names = {
     "abc.net.au": "ABC News",
+    "bbc.co.uk": "BBC News",
+    "bbc.com": "BBC News",
+    "feeds.bbci.co.uk": "BBC News",
+    "cnbc.com": "CNBC",
+    "finance.yahoo.com": "Yahoo Finance",
     "ign.com": "IGN",
     "pcgamer.com": "PC Gamer",
     "pm.gov.au": "Prime Minister of Australia"
@@ -477,20 +549,25 @@ function rssSourceName(hostname) {
 }
 
 function parseRssItems(xml, category, sourceName) {
-  const itemBlocks = String(xml || "").match(/<item[\s\S]*?<\/item>/gi) || [];
-  return itemBlocks.map((block) => ({
-    category,
-    title: cleanText(tagValue(block, "title")),
-    snippet: compact(tagValue(block, "description") || tagValue(block, "summary"), 190),
-    url: cleanText(tagValue(block, "link")),
-    source: sourceName,
-    sourceApi: sourceName,
-    sourceApis: [sourceName],
-    sourceGroup: "RSS",
-    sourceGroups: ["RSS"],
-    image: rssImage(block),
-    publishedAt: cleanText(tagValue(block, "pubDate") || tagValue(block, "updated"))
-  })).filter((item) => item.title && item.url);
+  const text = String(xml || "");
+  const itemBlocks = text.match(/<item[\s\S]*?<\/item>/gi) || [];
+  const entryBlocks = text.match(/<entry[\s\S]*?<\/entry>/gi) || [];
+  return [...itemBlocks, ...entryBlocks].map((block) => {
+    const url = cleanText(tagValue(block, "link") || attrValue(block, "link", "href"));
+    return {
+      category,
+      title: cleanText(tagValue(block, "title")),
+      snippet: compact(tagValue(block, "description") || tagValue(block, "summary") || tagValue(block, "content:encoded") || tagValue(block, "content"), 190),
+      url,
+      source: sourceName,
+      sourceApi: sourceName,
+      sourceApis: [sourceName],
+      sourceGroup: "RSS",
+      sourceGroups: ["RSS"],
+      image: rssImage(block),
+      publishedAt: cleanText(tagValue(block, "pubDate") || tagValue(block, "updated") || tagValue(block, "published"))
+    };
+  }).filter((item) => item.title && item.url);
 }
 
 function apiList(item) {
@@ -771,7 +848,9 @@ async function loadFinnhubFinanceNews() {
 
 async function buildNewsItems() {
   const [
+    breakingRss,
     gamingRss,
+    financeRss,
     financeFinnhub,
     australiaRss,
     gamingNewsApi,
@@ -783,7 +862,9 @@ async function buildNewsItems() {
     australiaMediastack,
     breakingMediastack
   ] = await Promise.all([
+    loadRssCategory("Breaking Worldwide", configuredFeeds("Breaking Worldwide", defaultFeeds["Breaking Worldwide"])),
     loadRssCategory("Gaming", configuredFeeds("Gaming", defaultFeeds.Gaming)),
+    loadRssCategory("Finance", configuredFeeds("Finance", defaultFeeds.Finance)),
     loadFinnhubFinanceNews(),
     loadRssCategory("Australia", configuredFeeds("Australia", defaultFeeds.Australia)),
     loadNewsApiCategory("Gaming"),
@@ -797,7 +878,9 @@ async function buildNewsItems() {
   ]);
 
   const mergedItems = mergeNewsSources([
+    ...breakingRss,
     ...gamingRss,
+    ...financeRss,
     ...financeFinnhub,
     ...australiaRss,
     ...gamingNewsApi,
@@ -838,7 +921,7 @@ async function buildNewsItems() {
   });
 
   const sourceQuotas = {
-    "Breaking Worldwide": { NewsAPI: 6, Mediastack: 6 },
+    "Breaking Worldwide": { NewsAPI: 5, Mediastack: 5, RSS: 4 },
     Gaming: { NewsAPI: 4, Mediastack: 4, RSS: 4 },
     Finance: { Finnhub: 4, NewsAPI: 3, Mediastack: 3, RSS: 2 },
     Australia: { NewsAPI: 4, Mediastack: 4, RSS: 4 }

@@ -5,3 +5,12 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin
+
+/data/*
+  Cache-Control: no-store, max-age=0
+
+/app.js
+  Cache-Control: no-cache, max-age=0
+
+/portfolio.config.js
+  Cache-Control: no-cache, max-age=0

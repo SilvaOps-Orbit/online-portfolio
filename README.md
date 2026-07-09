@@ -24,7 +24,7 @@ The Steam section can refresh during GitHub Pages deployment without exposing yo
 3. Add repository secret `STEAM_API_KEY`.
 4. Optionally add repository variable `STEAM_ACCOUNT_VALUE` if you want the deploy script to write a manual account value into `data/steam.json`.
 
-Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` on push, manual dispatch, and a daily schedule. The site prefers the manual value in `portfolio.config.js`, so you can edit it directly without depending on SteamDB.
+Steam data is generated into `data/steam.json` by `.github/workflows/pages.yml` on push/manual dispatch and by the dedicated Steam workflow. The site prefers the manual value in `portfolio.config.js`, so you can edit it directly without depending on SteamDB.
 
 The deploy script now keeps the last successful Steam values when a refresh fails. SteamDB is linked as a reference, but it is not scraped.
 
@@ -79,7 +79,7 @@ The requested scopes are `user-read-currently-playing user-read-playback-state p
 
 If the scope list changes, run `spotify-local-auth.ps1` again and replace `SPOTIFY_REFRESH_TOKEN` because old refresh tokens do not automatically gain new permissions.
 
-The main Pages workflow refreshes Spotify data on deploy. `.github/workflows/spotify.yml` also runs every 5 minutes to keep Spotify closer to live. The browser checks `data/spotify.json` every few seconds, but on GitHub Pages the song can only change after that workflow generates and deploys a new JSON file.
+The main Pages workflow preserves the last deployed Spotify data so normal site deploys stay fast. `.github/workflows/spotify.yml` runs every 5 minutes to keep Spotify closer to live. The browser checks `data/spotify.json` every few seconds, but on GitHub Pages the song can only change after that workflow generates and deploys a new JSON file.
 
 Steam activity has its own `.github/workflows/steam.yml` workflow that runs every 5 minutes. It preserves the heavier Steam stats from the last full deploy and only refreshes the active/recently played game card.
 
@@ -117,9 +117,11 @@ The markets and news sections are generated into `data/market.json` and `data/ne
 2. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
 3. Add repository secret `FINNHUB_API_KEY`.
 
-The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. `yfinance` also publishes one week of closing prices so each stock card can draw a compact chart, with the S&P 500 card shown as the larger market baseline. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the market/news workflow, so no Yahoo key is exposed in the site.
+The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. `yfinance` also publishes one week of closing prices so each stock card can draw a compact chart, with the S&P 500 card shown as the larger market baseline. The AI signal layer rotates movement-aware research prompts, so stocks doing well can surface different suggestions from stocks under pressure. The Finance news row also uses Finnhub's market news API. GitHub Actions installs `yfinance` during the dedicated market/news workflow, so no Yahoo key is exposed in the site.
 
-`.github/workflows/market-news.yml` refreshes market and news data hourly. The news feed is split into Breaking Worldwide, Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles. Breaking worldwide headlines are English-only and tagged with an inferred affected country/region, plus a conflict tag when the headline/snippet appears war-related. RSS fallbacks are displayed by publisher name, such as ABC News or IGN, and article photos are shown when a feed/API provides a safe image URL.
+`.github/workflows/market-news.yml` refreshes market/news data every 5 minutes, which is the shortest scheduled interval GitHub Actions supports. The browser checks `data/market.json` every minute with cache-busting so the stock cards pick up the newest deployed JSON as soon as GitHub Pages serves it. The news feed is split into Breaking Worldwide, Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles. Breaking worldwide headlines are English-only and tagged with an inferred affected country/region, plus a conflict tag when the headline/snippet appears war-related. RSS fallbacks are displayed by publisher name, such as BBC News, Yahoo Finance, ABC News, or IGN, and article photos are shown when a feed/API provides a safe image URL.
+
+Normal pushes use `.github/workflows/pages.yml`, which now preserves the last deployed dynamic JSON instead of regenerating Steam, Spotify, market, and news data on every deploy. That keeps visual/content updates much quicker while the dedicated scheduled workflows keep live data moving.
 
 Optional RSS overrides can be added as workflow environment variables:
 
@@ -127,6 +129,8 @@ Optional RSS overrides can be added as workflow environment variables:
 NEWS_GAMING_RSS=http://feeds.ign.com/ign/all
 NEWS_GAMING_RSS=https://pcgamer.com
 NEWS_GAMING_RSS=
+NEWS_BREAKING_WORLDWIDE_RSS=https://feeds.bbci.co.uk/news/world/rss.xml
+NEWS_FINANCE_RSS=https://finance.yahoo.com/news/rssindex
 NEWS_AUSTRALIA_RSS=https://feeds.abcnews.com/abcnews/politicsheadlines
 ```
 

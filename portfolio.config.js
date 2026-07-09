@@ -169,7 +169,7 @@ window.PORTFOLIO_CONFIG = {
     summary:
       "A watchlist for the S&P 500 plus gaming and technology companies, with one-week price charts and a larger S&P 500 market baseline. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
     status:
-      "Market data refreshes through GitHub Actions. Until Finnhub is connected, yfinance can still provide a Yahoo Finance fallback.",
+      "The browser checks market data every minute. GitHub Actions refreshes generated market/news JSON every 5 minutes, which is GitHub's shortest scheduled interval.",
     disclaimer:
       "Educational research only, not personal financial advice. Signals are prompts to investigate risk, momentum, valuation, and news before making any decision.",
     indexes: [
@@ -249,6 +249,7 @@ window.PORTFOLIO_CONFIG = {
     signals: [
       {
         stance: "Research buy case",
+        tone: "research",
         symbol: "NVDA",
         title: "AI demand can be a growth driver",
         why:
@@ -257,6 +258,7 @@ window.PORTFOLIO_CONFIG = {
       },
       {
         stance: "Sell-risk flag",
+        tone: "caution",
         symbol: "Hype-heavy names",
         title: "Do not chase news without checking price movement",
         why:
@@ -265,11 +267,30 @@ window.PORTFOLIO_CONFIG = {
       },
       {
         stance: "Watch",
+        tone: "market",
         symbol: "SPX",
         title: "Broad market trend comes first",
         why:
           "If the S&P 500 is weak, individual tech and gaming names can look good but still struggle with the wider market.",
         drivers: ["Index trend", "Rate expectations", "Market breadth"]
+      },
+      {
+        stance: "Doing well",
+        tone: "positive",
+        symbol: "Watchlist",
+        title: "When a stock is green, ask why first",
+        why:
+          "A strong daily move is only useful if the reason is real. Check whether it came from earnings, product news, sector momentum, or just market-wide hype.",
+        drivers: ["Catalyst quality", "Volume check", "Avoid FOMO"]
+      },
+      {
+        stance: "Risk check",
+        tone: "caution",
+        symbol: "Portfolio",
+        title: "Protect the downside before thinking upside",
+        why:
+          "The signal layer should help you slow down. If a name is falling hard, check the news and broad market first instead of assuming it is suddenly cheap.",
+        drivers: ["Downside risk", "News scan", "Position size"]
       }
     ]
   },
@@ -277,7 +298,7 @@ window.PORTFOLIO_CONFIG = {
     summary:
       "A compact feed for breaking worldwide, gaming, finance, and Australian government news. Breaking news is English-only and tagged by affected country or region; Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results. Feed cards use publisher names and photos when the source provides them.",
     status:
-      "News data refreshes through GitHub Actions. The browser only receives sanitized article JSON with source API labels.",
+      "News data refreshes through GitHub Actions from NewsAPI, Mediastack, Finnhub, and RSS fallbacks. The browser only receives sanitized article JSON with source labels.",
     items: [
       {
         category: "Breaking Worldwide",
@@ -500,7 +521,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Market and News Intelligence",
       body:
-        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks and one-week chart history, English-only breaking worldwide headlines with affected-region tags, AU-priority NewsAPI and Mediastack article search, publisher-labeled RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
+        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks and one-week chart history, movement-aware rotating market research prompts, English-only breaking worldwide headlines with affected-region tags, AU-priority NewsAPI and Mediastack article search, publisher-labeled RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
       why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser.",
       docs: [
         {

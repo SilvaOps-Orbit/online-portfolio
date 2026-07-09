@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-  schedule:
-    - cron: "37 17 * * *"
   workflow_dispatch:
 
 permissions:
@@ -14,8 +12,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -30,37 +28,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Set up Python for yfinance
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install market data tools
-        run: python -m pip install "yfinance>=0.2.66,<2"
-
-      - name: Generate Steam data
-        run: node scripts/update-steam-data.mjs
+      - name: Preserve deployed dynamic data
+        run: node scripts/preserve-deployed-data.mjs
         env:
-          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
-          STEAM_ID: "76561199192411740"
-          STEAM_ACCOUNT_VALUE: ${{ vars.STEAM_ACCOUNT_VALUE }}
-          STEAMDB_ACCOUNT_VALUE: ${{ vars.STEAMDB_ACCOUNT_VALUE }}
-
-      - name: Generate Spotify data
-        run: node scripts/update-spotify-data.mjs
-        env:
-          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
-          GENIUS_ACCESS_TOKEN: ${{ secrets.GENIUS_ACCESS_TOKEN }}
-          AUDIODB_API_KEY: ${{ secrets.AUDIODB_API_KEY }}
-
-      - name: Generate market and news data
-        run: node scripts/update-market-news-data.mjs
-        env:
-          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
-          NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-          MEDIASTACK_API_KEY: ${{ secrets.MEDIASTACK_API_KEY }}
+          PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
+          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

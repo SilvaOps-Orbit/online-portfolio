@@ -11,6 +11,7 @@
   let bootStepTimers = [];
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
+  let marketSignalTimer = 0;
   let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
@@ -887,6 +888,11 @@
       window.setTimeout(() => {
         loadSteamData({ renderFallback: false });
         loadSpotifyData({ renderFallback: false });
+        loadMarketData({ renderFallback: false });
+
+        if (delayMs >= 8000) {
+          loadNewsData({ renderFallback: false });
+        }
       }, delayMs);
     });
   }
@@ -1339,12 +1345,119 @@
     return wrap;
   }
 
+  function createMarketCard(item, options = {}) {
+    const isFeaturedIndex = Boolean(options.featuredIndex);
+    const card = createElement(item.url ? "a" : "article", `market-card${options.reveal === false ? "" : " reveal"}`);
+    if (isFeaturedIndex) {
+      card.classList.add("is-featured-index");
+    }
+    if (options.stockDeck) {
+      card.classList.add("stock-deck-card");
+      card.style.setProperty("--stock-index", String(options.index || 0));
+    }
+    if (item.url) {
+      card.href = safeUrl(item.url);
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+    }
+
+    const header = createElement("div", "market-card-header");
+    const symbol = createElement("span", "market-symbol", String(item.symbol || "TBC"));
+    const name = createElement("span", "market-name", String(item.name || item.sector || "Market item"));
+    header.append(symbol, name);
+
+    const priceRow = createElement("div", "market-price-row");
+    priceRow.append(createElement("span", "market-price", String(item.price || "Price pending")));
+    priceRow.append(createElement("span", `market-change ${marketChangeClass(item.change)}`, String(item.change || "No movement yet")));
+
+    const signal = createElement("span", "market-signal", String(item.signal || "Watch"));
+    const reason = createElement("p", "market-reason", String(item.reason || "Waiting for the next refresh."));
+
+    card.append(header, priceRow, renderMarketChart(item, isFeaturedIndex), signal, reason);
+    return card;
+  }
+
+  function setActiveStockDeck(cards, chips, index) {
+    cards.forEach((card, cardIndex) => {
+      const active = cardIndex === index;
+      card.classList.toggle("is-active", active);
+      card.setAttribute("aria-hidden", active ? "false" : "true");
+      if (card.matches("a")) {
+        card.tabIndex = active ? 0 : -1;
+      }
+    });
+
+    chips.forEach((chip, chipIndex) => {
+      chip.classList.toggle("is-active", chipIndex === index);
+      chip.setAttribute("aria-pressed", chipIndex === index ? "true" : "false");
+    });
+  }
+
+  function renderStockDeck(id, target, entries, emptyText) {
+    target.classList.add("stock-deck");
+    target.replaceChildren();
+
+    if (!entries.length) {
+      target.append(createElement("p", "muted", emptyText));
+      return;
+    }
+
+    const stage = createElement("div", "stock-deck-stage");
+    const controls = createElement("div", "stock-deck-controls");
+    const cards = [];
+    const chips = [];
+    let activeIndex = 0;
+
+    entries.forEach((item, index) => {
+      const card = createMarketCard(item, { stockDeck: true, index, reveal: false });
+      const chip = createElement("button", "stock-deck-chip");
+      const percent = marketPercentValue(item);
+      chip.type = "button";
+      chip.setAttribute("aria-label", `Show ${item.symbol || item.name || "stock"} in the market deck`);
+      chip.append(createElement("span", "stock-chip-symbol", String(item.symbol || "TBC")));
+      chip.append(createElement("span", `stock-chip-change ${marketChangeClass(item.change)}`, Number.isFinite(percent) ? marketSignalLabel(percent) : String(item.change || "Watch")));
+      chip.addEventListener("click", () => {
+        activeIndex = index;
+        target.classList.add("is-scanning");
+        setActiveStockDeck(cards, chips, activeIndex);
+        window.setTimeout(() => target.classList.remove("is-scanning"), 620);
+      });
+
+      cards.push(card);
+      chips.push(chip);
+      stage.append(card);
+      controls.append(chip);
+    });
+
+    target.append(stage, controls);
+    setActiveStockDeck(cards, chips, activeIndex);
+
+    if (prefersReducedMotion || cards.length < 2) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      activeIndex = (activeIndex + 1) % cards.length;
+      target.classList.add("is-scanning");
+      setActiveStockDeck(cards, chips, activeIndex);
+      window.setTimeout(() => target.classList.remove("is-scanning"), 620);
+    }, 5600);
+    cycleTimers.set(id, timer);
+  }
+
   function renderMarketList(id, items, emptyText) {
     const target = document.getElementById(id);
     if (!target) return;
+    clearCycle(id);
+    target.classList.remove("stock-deck", "is-scanning");
     target.replaceChildren();
 
     const entries = (Array.isArray(items) ? items : []).filter((item) => item && item.symbol);
+    if (id === "market-stocks") {
+      renderStockDeck(id, target, entries, emptyText);
+      return;
+    }
+
     if (!entries.length) {
       target.append(createElement("p", "muted", emptyText));
       return;
@@ -1352,29 +1465,7 @@
 
     entries.forEach((item) => {
       const isFeaturedIndex = id === "market-indexes" && /^(SPX|\^GSPC)$/i.test(String(item.symbol || ""));
-      const card = createElement(item.url ? "a" : "article", "market-card reveal");
-      if (isFeaturedIndex) {
-        card.classList.add("is-featured-index");
-      }
-      if (item.url) {
-        card.href = safeUrl(item.url);
-        card.target = "_blank";
-        card.rel = "noopener noreferrer";
-      }
-
-      const header = createElement("div", "market-card-header");
-      const symbol = createElement("span", "market-symbol", String(item.symbol || "TBC"));
-      const name = createElement("span", "market-name", String(item.name || item.sector || "Market item"));
-      header.append(symbol, name);
-
-      const priceRow = createElement("div", "market-price-row");
-      priceRow.append(createElement("span", "market-price", String(item.price || "Price pending")));
-      priceRow.append(createElement("span", `market-change ${marketChangeClass(item.change)}`, String(item.change || "No movement yet")));
-
-      const signal = createElement("span", "market-signal", String(item.signal || "Watch"));
-      const reason = createElement("p", "market-reason", String(item.reason || "Waiting for the next refresh."));
-
-      card.append(header, priceRow, renderMarketChart(item, isFeaturedIndex), signal, reason);
+      const card = createMarketCard(item, { featuredIndex: isFeaturedIndex });
       target.append(card);
     });
   }
@@ -1402,20 +1493,160 @@
       || /war|conflict/i.test(String(item?.importance || ""));
   }
 
-  function renderMarketSignals(id, signals) {
+  function marketPercentValue(item) {
+    const direct = Number(item?.changePercent ?? item?.changePercentValue);
+    if (Number.isFinite(direct)) return direct;
+    const text = String(item?.change || "");
+    const matches = [...text.matchAll(/([+-]?\d+(?:\.\d+)?)%/g)];
+    if (!matches.length) return NaN;
+    return Number(matches.at(-1)[1]);
+  }
+
+  function marketSignalTone(item) {
+    const tone = String(item?.tone || "").toLowerCase();
+    if (tone) return tone;
+    const stance = String(item?.stance || item?.signal || "").toLowerCase();
+    if (/sell|risk|pressure|down|caution/.test(stance)) return "caution";
+    if (/momentum|doing well|green|strength|gain/.test(stance)) return "positive";
+    if (/research|buy|quality|theme/.test(stance)) return "research";
+    if (/market|baseline|filter/.test(stance)) return "market";
+    return "neutral";
+  }
+
+  function marketSignalLabel(percent) {
+    if (!Number.isFinite(percent)) return "";
+    const sign = percent > 0 ? "+" : "";
+    return `${sign}${percent.toFixed(2)}% today`;
+  }
+
+  function enrichMarketSignals(signals, market = {}) {
+    const baseSignals = (Array.isArray(signals) ? signals : []).filter((item) => item && item.title);
+    const stocks = (Array.isArray(market.stocks) ? market.stocks : []).filter((item) => item && item.symbol);
+    const indexes = (Array.isArray(market.indexes) ? market.indexes : []).filter((item) => item && item.symbol);
+    const index = indexes[0];
+    const indexPercent = marketPercentValue(index);
+    const winners = stocks
+      .map((stock) => ({ ...stock, percent: marketPercentValue(stock) }))
+      .filter((stock) => Number.isFinite(stock.percent) && stock.percent > 0.75)
+      .sort((a, b) => b.percent - a.percent);
+    const pressure = stocks
+      .map((stock) => ({ ...stock, percent: marketPercentValue(stock) }))
+      .filter((stock) => Number.isFinite(stock.percent) && stock.percent < -1)
+      .sort((a, b) => a.percent - b.percent);
+
+    const dynamic = [];
+    winners.slice(0, 3).forEach((stock) => {
+      const supportiveMarket = Number.isFinite(indexPercent) && indexPercent >= 0;
+      dynamic.push({
+        stance: stock.percent >= 3 ? "Strong mover" : "Doing well",
+        tone: "positive",
+        symbol: stock.symbol,
+        change: marketSignalLabel(stock.percent),
+        title: `${stock.name || stock.symbol} is showing strength`,
+        why: `${stock.name || stock.symbol} is up ${stock.percent.toFixed(2)}%. ${supportiveMarket ? "Because the broad market is also holding up, this is a cleaner momentum read." : "Because the broad market is not clearly helping, treat it as possible relative strength and check the catalyst."} Still research news, earnings, and valuation before acting.`,
+        drivers: ["Relative strength", "Catalyst check", "Do not chase blind"]
+      });
+    });
+
+    if (pressure.length) {
+      const stock = pressure[0];
+      dynamic.push({
+        stance: "Risk check",
+        tone: "caution",
+        symbol: stock.symbol,
+        change: marketSignalLabel(stock.percent),
+        title: `${stock.name || stock.symbol} is under pressure`,
+        why: `${stock.name || stock.symbol} is down ${Math.abs(stock.percent).toFixed(2)}%. Check whether the drop is company-specific, sector-wide, or just broad market weakness before calling it a discount.`,
+        drivers: ["News scan", "Support levels", "Position sizing"]
+      });
+    }
+
+    if (index && Number.isFinite(indexPercent)) {
+      dynamic.push({
+        stance: indexPercent >= 0 ? "Market support" : "Market drag",
+        tone: indexPercent >= 0 ? "market" : "caution",
+        symbol: index.symbol,
+        change: marketSignalLabel(indexPercent),
+        title: indexPercent >= 0 ? "Broad market is helping the watchlist" : "Broad market is working against the watchlist",
+        why: `${index.name || index.symbol} is ${indexPercent >= 0 ? "positive" : "negative"} today. Individual stock signals are stronger when they line up with the wider market, and more suspicious when they fight it.`,
+        drivers: ["S&P 500 trend", "Market breadth", "Rate expectations"]
+      });
+    }
+
+    const seen = new Set();
+    return [...dynamic, ...baseSignals].filter((item) => {
+      const key = `${item.symbol || ""}|${item.title || ""}|${item.stance || ""}`.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, 9);
+  }
+
+  function setActiveMarketSignal(cards, dots, index) {
+    cards.forEach((card, cardIndex) => {
+      const active = cardIndex === index;
+      card.classList.toggle("is-active", active);
+      card.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+    dots.forEach((dot, dotIndex) => {
+      dot.classList.toggle("is-active", dotIndex === index);
+      dot.setAttribute("aria-pressed", dotIndex === index ? "true" : "false");
+    });
+  }
+
+  function bindMarketSignalRotation(cards, dots) {
+    if (marketSignalTimer) {
+      window.clearInterval(marketSignalTimer);
+      marketSignalTimer = 0;
+    }
+    if (!cards.length) return;
+
+    let index = 0;
+    setActiveMarketSignal(cards, dots, index);
+    if (prefersReducedMotion || cards.length < 2) return;
+
+    marketSignalTimer = window.setInterval(() => {
+      index = (index + 1) % cards.length;
+      setActiveMarketSignal(cards, dots, index);
+    }, 6200);
+
+    dots.forEach((dot, dotIndex) => {
+      dot.addEventListener("click", () => {
+        index = dotIndex;
+        setActiveMarketSignal(cards, dots, index);
+      });
+    });
+  }
+
+  function renderMarketSignals(id, signals, market = {}) {
     const target = document.getElementById(id);
     if (!target) return;
+    if (marketSignalTimer) {
+      window.clearInterval(marketSignalTimer);
+      marketSignalTimer = 0;
+    }
     target.replaceChildren();
+    target.classList.add("signal-rotor");
 
-    const entries = (Array.isArray(signals) ? signals : []).filter((item) => item && item.title);
+    const entries = enrichMarketSignals(signals, market);
     if (!entries.length) {
       target.append(createElement("p", "muted", "AI signal feed pending."));
       return;
     }
 
-    entries.forEach((item) => {
-      const card = createElement("article", "market-signal-card reveal");
+    const stage = createElement("div", "signal-rotor-stage");
+    const controls = createElement("div", "signal-rotor-controls");
+    const cards = [];
+    const dots = [];
+
+    entries.forEach((item, index) => {
+      const card = createElement("article", "market-signal-card");
+      card.classList.add(`signal-tone-${marketSignalTone(item)}`);
+      card.style.setProperty("--signal-index", index);
       card.append(createElement("span", "signal-stance", String(item.stance || "Watch")));
+      if (item.change) {
+        card.append(createElement("span", "signal-change-chip", String(item.change)));
+      }
       card.append(createElement("h4", "", `${item.symbol ? `${item.symbol}: ` : ""}${item.title}`));
       card.append(createElement("p", "", String(item.why || "Waiting for the next analysis refresh.")));
 
@@ -1426,8 +1657,16 @@
         card.append(list);
       }
 
-      target.append(card);
+      const dot = createElement("button", "signal-rotor-dot");
+      dot.type = "button";
+      dot.setAttribute("aria-label", `Show market signal ${index + 1}`);
+      controls.append(dot);
+      cards.push(card);
+      dots.push(dot);
+      stage.append(card);
     });
+    target.append(stage, controls);
+    bindMarketSignalRotation(cards, dots);
   }
 
   function renderMarket(marketData) {
@@ -1441,7 +1680,7 @@
 
     renderMarketList("market-indexes", market.indexes, "S&P 500 data pending.");
     renderMarketList("market-stocks", market.stocks, "Gaming and tech stock data pending.");
-    renderMarketSignals("market-signals", market.signals);
+    renderMarketSignals("market-signals", market.signals, market);
     observeReveals();
   }
 
@@ -2303,7 +2542,7 @@
     scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), spotifyDataRefreshMs);
-    window.setInterval(() => loadMarketData({ renderFallback: false }), dataRefreshMs * 5);
+    window.setInterval(() => loadMarketData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadNewsData({ renderFallback: false }), dataRefreshMs * 5);
   }
 
