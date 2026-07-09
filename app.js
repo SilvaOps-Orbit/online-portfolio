@@ -1320,11 +1320,35 @@
       return;
     }
 
-    items.forEach((item) => {
-      const card = createElement("article", "news-card reveal");
+    const preferredRows = ["Gaming", "Finance", "Australia"];
+    const grouped = items.reduce((groups, item) => {
+      const category = String(item.category || "Other");
+      if (!groups.has(category)) {
+        groups.set(category, []);
+      }
+      groups.get(category).push(item);
+      return groups;
+    }, new Map());
+    const rowNames = [
+      ...preferredRows.filter((name) => grouped.has(name)),
+      ...Array.from(grouped.keys()).filter((name) => !preferredRows.includes(name))
+    ];
+
+    function createNewsCard(item, isDuplicate = false) {
+      const card = createElement("article", "news-card");
+      if (isDuplicate) {
+        card.setAttribute("aria-hidden", "true");
+      }
       const meta = createElement("div", "news-meta");
       meta.append(createElement("span", "news-category", String(item.category || "News")));
       meta.append(createElement("span", "news-importance", String(item.importance || "Important")));
+      const apiLabel = Array.isArray(item.sourceApis) && item.sourceApis.length
+        ? item.sourceApis.join(" + ")
+        : item.sourceApi || item.apiSource || "";
+      if (apiLabel) {
+        const regionalLabel = item.regionalScope === "Australia" ? `${apiLabel} - AU` : apiLabel;
+        meta.append(createElement("span", "news-api-source", String(regionalLabel)));
+      }
 
       card.append(meta);
       card.append(createElement("h3", "", String(item.title || "News update")));
@@ -1343,7 +1367,27 @@
         footer.append(link);
       }
       card.append(footer);
-      target.append(card);
+      return card;
+    }
+
+    rowNames.forEach((name) => {
+      const rowItems = grouped.get(name) || [];
+      const row = createElement("section", "news-row reveal");
+      row.setAttribute("aria-label", `${name} news`);
+      const heading = createElement("div", "news-row-heading");
+      heading.append(createElement("span", "news-row-label", name));
+      heading.append(createElement("span", "news-row-count", `${rowItems.length} important articles`));
+      row.append(heading);
+
+      const viewport = createElement("div", "news-marquee");
+      const track = createElement("div", "news-track");
+      const visibleItems = rowItems.slice(0, 12);
+      const repeatedItems = visibleItems.length < 4 ? [...visibleItems, ...visibleItems, ...visibleItems] : visibleItems;
+      repeatedItems.forEach((item) => track.append(createNewsCard(item)));
+      repeatedItems.forEach((item) => track.append(createNewsCard(item, true)));
+      viewport.append(track);
+      row.append(viewport);
+      target.append(row);
     });
     observeReveals();
   }

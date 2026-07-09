@@ -27,11 +27,11 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Preserve deployed Spotify data
+      - name: Preserve deployed non-Steam data
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "spotify.json"
+          PRESERVE_DATA_FILES: "spotify.json,market.json,news.json"
 
       - name: Preserve deployed Steam data
         run: node scripts/preserve-deployed-data.mjs

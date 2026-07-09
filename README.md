@@ -109,6 +109,32 @@ No GitHub secret is required for the free key. If you ever upgrade, add your pre
 
 Only sanitized facts, Genius source links, artwork URLs, and a source audit are published to `data/spotify.json`. The published song and artist facts are mixed from Spotify, Genius, and TheAudioDB when they match, while the audit records which source was used for playback, progress, artwork, facts, and links.
 
+## Market and news data
+
+The markets and news sections are generated into `data/market.json` and `data/news.json` by GitHub Actions. The browser only reads those JSON files.
+
+1. Create or copy your Finnhub API key from the Finnhub dashboard.
+2. Create or copy your NewsAPI key from NewsAPI.
+3. Create or copy your Mediastack API key from Mediastack.
+4. In GitHub, open this repo -> Settings -> Secrets and variables -> Actions.
+5. Add repository secrets:
+   - `FINNHUB_API_KEY`
+   - `NEWSAPI_KEY`
+   - `MEDIASTACK_API_KEY`
+
+The stock watchlist uses Finnhub as the keyed quote source and `yfinance` as the Yahoo Finance cross-reference/fallback. The news feed mixes Finnhub finance news, NewsAPI article search, Mediastack article search, and RSS fallbacks. The Australian row only pulls AU-filtered NewsAPI/Mediastack results plus Australian RSS feeds; Gaming and Finance try AU-filtered API results first, then use wider results as fallback. Matching articles are deduped, and each news card shows the API or feed that supplied it.
+
+`.github/workflows/market-news.yml` refreshes market and news data hourly. The news feed is split into Gaming, Finance, and Australia rows, with three visible cards at a time and a conveyor animation showing more articles.
+
+Optional RSS overrides can be added as workflow environment variables:
+
+```text
+NEWS_GAMING_RSS=https://example.com/feed.xml,https://example.com/second.xml
+NEWS_AUSTRALIA_RSS=https://example.com/feed.xml
+```
+
+Finance signals are educational research prompts only. They are not personal financial advice or automated trading instructions.
+
 ## GitHub Pages
 
 This repo includes `.github/workflows/pages.yml`. After you push it to GitHub:

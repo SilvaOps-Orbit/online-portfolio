@@ -1830,7 +1830,8 @@ h3 {
 .market-signal,
 .signal-stance,
 .news-category,
-.news-importance {
+.news-importance,
+.news-api-source {
   width: fit-content;
   min-height: 28px;
   padding: 5px 8px;
@@ -1973,14 +1974,71 @@ h3 {
 
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.news-row {
+  display: grid;
+  gap: 12px;
+}
+
+.news-row-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.news-row-label {
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 950;
+}
+
+.news-row-count {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.news-marquee {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--panel) 44%, transparent);
+}
+
+.news-track {
+  display: flex;
+  width: max-content;
+  min-width: 100%;
   gap: 16px;
+  padding: 16px;
+  animation: news-conveyor-right 42s linear infinite;
+}
+
+.news-row:nth-child(2) .news-track {
+  animation-duration: 48s;
+}
+
+.news-row:nth-child(3) .news-track {
+  animation-duration: 54s;
+}
+
+.news-marquee:hover .news-track,
+.news-marquee:focus-within .news-track {
+  animation-play-state: paused;
 }
 
 .news-card {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  flex: 0 0 calc((min(1120px, 100vw - 80px) - 32px) / 3);
+  width: calc((min(1120px, 100vw - 80px) - 32px) / 3);
+  min-width: 280px;
+  max-width: 380px;
 }
 
 .news-card h3 {
@@ -1992,10 +2050,25 @@ h3 {
   color: var(--accent-2);
 }
 
+.news-api-source {
+  border-color: color-mix(in srgb, var(--accent-3) 48%, var(--line));
+  color: var(--accent-3);
+}
+
 .news-footer {
   margin-top: auto;
   padding-top: 8px;
   border-top: 1px solid var(--line);
+}
+
+@keyframes news-conveyor-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .steam-layout {
@@ -2715,6 +2788,17 @@ h3 {
     min-height: auto;
   }
 
+  .news-track {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .news-card {
+    flex-basis: min(84vw, 360px);
+    width: min(84vw, 360px);
+    max-width: none;
+  }
+
   .quick-facts div {
     grid-template-columns: 1fr;
     gap: 2px;
@@ -2787,6 +2871,11 @@ h3 {
     padding: 7px 10px;
   }
 
+  .news-card {
+    flex-basis: min(88vw, 320px);
+    width: min(88vw, 320px);
+  }
+
   .footer-actions {
     justify-content: flex-start;
     width: 100%;
@@ -2816,7 +2905,8 @@ h3 {
     transition: none;
   }
 
-  .store-marquee-track {
+  .store-marquee-track,
+  .news-track {
     animation: none;
   }
 

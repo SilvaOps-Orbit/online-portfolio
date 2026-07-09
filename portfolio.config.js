@@ -12,7 +12,7 @@ window.PORTFOLIO_CONFIG = {
       "a web developer",
       "a cyber security learner",
       "an automation builder",
-      "A gamer"
+      "a gamer"
     ],
     kicker: "Interactive Portfolio",
     summary:
@@ -51,7 +51,7 @@ window.PORTFOLIO_CONFIG = {
       title: "This Portfolio Website!!",
       summary:
         "A fast static portfolio with animated sections, project filtering, a GitHub integration, and strict client-side security defaults.",
-      tags: ["Frontend", "Security", "GitHub"," Portfolio","websites"],
+      tags: ["Frontend", "Security", "GitHub", "Portfolio", "Websites"],
       github: "https://github.com/SilvaOps-Orbit/online-portfolio",
       demo: "https://silvaops-orbit.github.io/online-portfolio/"
     },
@@ -167,9 +167,9 @@ window.PORTFOLIO_CONFIG = {
   },
   market: {
     summary:
-      "A watchlist for the S&P 500 plus gaming and technology companies. The browser only reads generated market JSON; API keys and AI prompts belong in a private workflow.",
+      "A watchlist for the S&P 500 plus gaming and technology companies. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
     status:
-      "Market data is ready for a scheduled refresh workflow. Until connected, values show placeholders instead of live prices.",
+      "Market data refreshes through GitHub Actions. Until Finnhub is connected, yfinance can still provide a Yahoo Finance fallback.",
     disclaimer:
       "Educational research only, not personal financial advice. Signals are prompts to investigate risk, momentum, valuation, and news before making any decision.",
     indexes: [
@@ -275,9 +275,9 @@ window.PORTFOLIO_CONFIG = {
   },
   news: {
     summary:
-      "A compact feed for gaming, finance, and Australian government news. The goal is to show what matters, why it matters, and where to read more.",
+      "A compact feed for gaming, finance, and Australian government news. Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results.",
     status:
-      "News data is ready for a scheduled refresh workflow. AI summaries should be generated privately, then published as sanitized JSON.",
+      "News data refreshes through GitHub Actions. The browser only receives sanitized article JSON with source API labels.",
     items: [
       {
         category: "Gaming",
@@ -398,7 +398,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Finance and News Boundaries",
       body:
-        "Market prices, AI-style signals, and news snippets are generated into local JSON files. The browser never receives paid API keys, model tokens, private prompts, or personal financial advice logic."
+        "Market prices, AI-style signals, and news snippets are generated into local JSON files from Finnhub, yfinance, NewsAPI, Mediastack, and RSS feeds. The browser never receives paid API keys, model tokens, private prompts, or personal financial advice logic."
     },
     {
       title: "Small Supply Chain",
@@ -487,8 +487,30 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Market and News Intelligence",
       body:
-        "The markets and news sections are built around generated JSON files: stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
-      why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser."
+        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks, AU-priority NewsAPI and Mediastack article search, RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
+      why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser.",
+      docs: [
+        {
+          label: "Finnhub Quote API",
+          url: "https://finnhub.io/docs/api/quote"
+        },
+        {
+          label: "Finnhub Market News",
+          url: "https://finnhub.io/docs/api/market-news"
+        },
+        {
+          label: "NewsAPI Everything",
+          url: "https://newsapi.org/docs/endpoints/everything"
+        },
+        {
+          label: "Mediastack",
+          url: "https://mediastack.com/documentation"
+        },
+        {
+          label: "yfinance",
+          url: "https://pypi.org/project/yfinance/"
+        }
+      ]
     },
     {
       title: "Spotify Public Playlists",
