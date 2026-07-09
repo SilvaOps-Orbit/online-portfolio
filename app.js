@@ -1523,6 +1523,75 @@
     tick();
   }
 
+  function triggerAliasEasterEgg() {
+    if (document.body.classList.contains("easter-active")) return;
+
+    document.body.classList.add("easter-active");
+    const burst = createElement("div", "easter-burst");
+    burst.setAttribute("aria-hidden", "true");
+    if (!prefersReducedMotion) {
+      Array.from({ length: 16 }, (_, index) => {
+        const line = createElement("span");
+        line.style.setProperty("--x", `${6 + index * 6}%`);
+        line.style.setProperty("--delay", `${index * 34}ms`);
+        burst.append(line);
+        return line;
+      });
+      document.body.append(burst);
+    }
+
+    const toast = createElement("div", "easter-toast");
+    toast.setAttribute("role", "status");
+    toast.append(
+      createElement("strong", "", "EchoOps mode unlocked"),
+      createElement("span", "", "Signal boost engaged. Nice find.")
+    );
+    document.body.append(toast);
+
+    window.setTimeout(() => {
+      document.body.classList.remove("easter-active");
+      burst.remove();
+      toast.remove();
+    }, prefersReducedMotion ? 2400 : 4200);
+  }
+
+  function bindAliasEasterEgg() {
+    const alias = document.getElementById("hero-alias");
+    if (!alias) return;
+
+    alias.tabIndex = 0;
+    alias.setAttribute("role", "button");
+    alias.setAttribute("aria-label", "Alias signal");
+
+    let taps = 0;
+    let resetTimer = 0;
+    const registerTap = () => {
+      taps += 1;
+      window.clearTimeout(resetTimer);
+      alias.classList.toggle("is-primed", taps > 1);
+
+      if (taps >= 5) {
+        taps = 0;
+        alias.classList.remove("is-primed");
+        triggerAliasEasterEgg();
+        return;
+      }
+
+      resetTimer = window.setTimeout(() => {
+        taps = 0;
+        alias.classList.remove("is-primed");
+      }, 1800);
+    };
+
+    alias.addEventListener("click", registerTap);
+    alias.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        registerTap();
+      }
+    });
+  }
+
   function bindNavigation() {
     const nav = document.getElementById("site-nav");
     const toggle = document.getElementById("nav-toggle");
@@ -1734,6 +1803,7 @@
     bindNavigation();
     bindActiveNav();
     bindTypewriter();
+    bindAliasEasterEgg();
     observeReveals();
     bindTiltCards();
     startSignalCanvas();
