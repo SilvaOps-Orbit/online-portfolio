@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-09T23:59:47.390Z",
+  "generatedAt": "2026-07-10T04:28:24.171Z",
   "source": "RSS",
   "stale": false,
-  "lastGoodAt": "2026-07-09T23:59:47.390Z",
+  "lastGoodAt": "2026-07-10T04:28:24.171Z",
   "status": "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, finance, and Australia rows.",
   "items": [
     {
@@ -88,33 +88,6 @@
     },
     {
       "category": "Breaking Worldwide",
-      "title": "Ukraine to get licence to produce Patriot missiles, Trump says",
-      "snippet": "Although the Patriots are highly effective against Russia's ballistic missiles, they also have lengthy production times.",
-      "url": "https://www.bbc.co.uk/news/articles/ce8klree690o?at_medium=RSS&at_campaign=rss",
-      "source": "BBC News",
-      "sourceApi": "BBC News",
-      "sourceApis": [
-        "BBC News"
-      ],
-      "sourceGroup": "RSS",
-      "sourceGroups": [
-        "RSS"
-      ],
-      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/9ca1/live/ce2ce8c0-7af2-11f1-94d8-c95634a95d3e.jpg",
-      "publishedAt": "Wed, 08 Jul 2026 17:18:14 GMT",
-      "importance": "War / conflict",
-      "importanceScore": 6,
-      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
-      "affectedRegion": "Ukraine / Russia",
-      "isBreaking": true,
-      "isWar": true,
-      "tags": [
-        "Breaking",
-        "War"
-      ]
-    },
-    {
-      "category": "Breaking Worldwide",
       "title": "Motherhood not all warm and fuzzy: Bollywood actor's play spotlights messier side",
       "snippet": "As a society, we take mothers for granted and raising children is a thankless job, says actor Kalki Koechlin.",
       "url": "https://www.bbc.co.uk/news/articles/c04yxnlkdxzo?at_medium=RSS&at_campaign=rss",
@@ -154,8 +127,8 @@
       "sourceGroups": [
         "RSS"
       ],
-      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/066e/live/c9c79920-7bbe-11f1-8b3b-4de03d5aab17.jpg",
-      "publishedAt": "Thu, 09 Jul 2026 23:02:18 GMT",
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/25b2/live/c138fc50-7bf4-11f1-bee8-53ce494e1abc.jpg",
+      "publishedAt": "Fri, 10 Jul 2026 04:18:14 GMT",
       "importance": "Developing",
       "importanceScore": 4,
       "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Iran.",
@@ -168,9 +141,9 @@
     },
     {
       "category": "Breaking Worldwide",
-      "title": "Ukraine strikes Russian ships near Crimea, escalating attacks on fuel supplies",
-      "snippet": "The attacks appear to be the latest phase of Ukraine's bid to choke off supplies and routes into and out of occupied Crimea.",
-      "url": "https://www.bbc.co.uk/news/articles/c70yd1g67z5o?at_medium=RSS&at_campaign=rss",
+      "title": "Twelve die in wildfire in Spain as heatwave continues in southern Europe",
+      "snippet": "Six people were injured in the blaze in Los Gallardos in the province of Almería.",
+      "url": "https://www.bbc.co.uk/news/articles/c8e2382jk7jo?at_medium=RSS&at_campaign=rss",
       "source": "BBC News",
       "sourceApi": "BBC News",
       "sourceApis": [
@@ -180,12 +153,12 @@
       "sourceGroups": [
         "RSS"
       ],
-      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/db10/live/4259e690-7ac5-11f1-b541-536d253827b8.png",
-      "publishedAt": "Thu, 09 Jul 2026 15:21:17 GMT",
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/0de1/live/cb2200c0-7c05-11f1-9510-1546718f668b.jpg",
+      "publishedAt": "Fri, 10 Jul 2026 02:44:18 GMT",
       "importance": "Developing",
       "importanceScore": 4,
-      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
-      "affectedRegion": "Ukraine / Russia",
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Europe.",
+      "affectedRegion": "Europe",
       "isBreaking": true,
       "isWar": false,
       "tags": [
@@ -212,6 +185,32 @@
       "importanceScore": 4,
       "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
       "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Ukraine strikes Russian ships near Crimea, escalating attacks on fuel supplies",
+      "snippet": "The attacks appear to be the latest phase of Ukraine's bid to choke off supplies and routes into and out of occupied Crimea.",
+      "url": "https://www.bbc.co.uk/news/articles/c70yd1g67z5o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/db10/live/4259e690-7ac5-11f1-b541-536d253827b8.png",
+      "publishedAt": "Thu, 09 Jul 2026 15:21:17 GMT",
+      "importance": "Developing",
+      "importanceScore": 4,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
+      "affectedRegion": "Ukraine / Russia",
       "isBreaking": true,
       "isWar": false,
       "tags": [
@@ -272,6 +271,32 @@
     },
     {
       "category": "Breaking Worldwide",
+      "title": "Chip giant SK Hynix raises $26.5bn in mega US share sale",
+      "snippet": "The shares are set to start trading on the Nasdaq on Friday in what will be the largest ever debut by a foreign firm.",
+      "url": "https://www.bbc.co.uk/news/articles/c4gym70r0y4o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/8cb7/live/4865ed80-7c0b-11f1-a0e5-951d7247156a.jpg",
+      "publishedAt": "Fri, 10 Jul 2026 02:48:18 GMT",
+      "importance": "Developing",
+      "importanceScore": 2,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
       "title": "Tensions erupt in Indian state after 11-year-old raped and murdered",
       "snippet": "The girl's body was fished out from a pond on Sunday - a day after her family reported her missing.",
       "url": "https://www.bbc.co.uk/news/articles/cze9zd8drzro?at_medium=RSS&at_campaign=rss",
@@ -290,32 +315,6 @@
       "importanceScore": 2,
       "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: India.",
       "affectedRegion": "India",
-      "isBreaking": true,
-      "isWar": false,
-      "tags": [
-        "Breaking"
-      ]
-    },
-    {
-      "category": "Breaking Worldwide",
-      "title": "Democrat Graham Platner suspends campaign for key US Senate race after assault allegation",
-      "snippet": "The decision came days after a woman accused him of sexual assault, an accusation he says is \"categorically false\".",
-      "url": "https://www.bbc.co.uk/news/articles/c9v229434p2o?at_medium=RSS&at_campaign=rss",
-      "source": "BBC News",
-      "sourceApi": "BBC News",
-      "sourceApis": [
-        "BBC News"
-      ],
-      "sourceGroup": "RSS",
-      "sourceGroups": [
-        "RSS"
-      ],
-      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/e675/live/2d7ced30-7b2e-11f1-8a1e-d1fe57c2b5bf.jpg",
-      "publishedAt": "Thu, 09 Jul 2026 14:37:19 GMT",
-      "importance": "Developing",
-      "importanceScore": 2,
-      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
-      "affectedRegion": "Worldwide",
       "isBreaking": true,
       "isWar": false,
       "tags": [
@@ -361,29 +360,6 @@
       ],
       "image": "https://cdn.mos.cms.futurecdn.net/emMNB4JSxUjoJCd2NYw8Vm-1280-80.jpg",
       "publishedAt": "Wed, 08 Jul 2026 19:15:24 +0000",
-      "importance": "High impact",
-      "importanceScore": 8,
-      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
-      "isBreaking": false,
-      "isWar": false,
-      "tags": []
-    },
-    {
-      "category": "Gaming",
-      "title": "id Software Was Reportedly 'Toying With' Pitches for a New Perfect Dark, a John Wick-Inspired Game, and More Before Layoffs",
-      "snippet": "id Software was reportedly toying with a bunch of ideas for future game projects when Microsoft laid off more than half of the studio.",
-      "url": "https://www.ign.com/articles/id-software-was-reportedly-toying-with-pitches-for-a-new-perfect-dark-a-john-wick-inspired-game-and-more-before-layoffs",
-      "source": "IGN",
-      "sourceApi": "IGN",
-      "sourceApis": [
-        "IGN"
-      ],
-      "sourceGroup": "RSS",
-      "sourceGroups": [
-        "RSS"
-      ],
-      "image": "https://assets-prd.ignimgs.com/2026/07/08/doomthumb-1783524521667.png",
-      "publishedAt": "Thu, 9 Jul 2026 00:08:14 +0000",
       "importance": "High impact",
       "importanceScore": 8,
       "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
@@ -599,6 +575,29 @@
       "tags": []
     },
     {
+      "category": "Gaming",
+      "title": "John Carmack reacts to massive layoffs at id Software: 'My 'Microsoft will probably be a good steward of the brand' statement isn't aging well'",
+      "snippet": "\"You can't rule out the possibility that executives are idiots, but that shouldn't be your default belief.\"",
+      "url": "https://www.pcgamer.com/gaming-industry/john-carmack-reacts-to-massive-layoffs-at-id-software-my-microsoft-will-probably-be-a-good-steward-of-the-brand-statement-isnt-aging-well/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/U6y9h6wi2Vf7KmWZ6QS5eK-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 22:45:26 +0000",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
       "category": "Finance",
       "title": "Kalshi traders see roughly 50% odds of a rate hike in 2026 as Fed is split on policy",
       "snippet": "Wednesday's Fed minutes showed a divided outlook on where interest rates are headed this year. Traders on Kalshi see a 54% likelihood of a hike before 2027.",
@@ -616,6 +615,29 @@
       "publishedAt": "Thu, 09 Jul 2026 19:24:21 GMT",
       "importance": "High impact",
       "importanceScore": 8,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Fed minutes expose deep divide over interest-rate outlook",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/economy/policy/articles/fed-minutes-expose-deep-divide-141700465.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://media.zenfs.com/en/thestreet_881/758eb408c293e3892adf51cde1f9bc05",
+      "publishedAt": "2026-07-09T14:17:00Z",
+      "importance": "Market impact",
+      "importanceScore": 6,
       "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
       "isBreaking": false,
       "isWar": false,
@@ -646,20 +668,20 @@
     },
     {
       "category": "Finance",
-      "title": "Revenue and Growth Outlook Affirm Why Taiwan Semiconductor Manufacturing Co. (TSM) is a Top AI Stock on Wall Street’s Radar",
-      "snippet": "",
-      "url": "https://finance.yahoo.com/technology/ai/articles/revenue-growth-outlook-affirm-why-153912617.html",
-      "source": "Yahoo Finance",
-      "sourceApi": "Yahoo Finance",
+      "title": "Why the world’s best-performing stock market this year fell into bear territory",
+      "snippet": "The Kospi fell more than 5% on Wednesday, which brought it 20% below its June 19 record high, according to LSEG data.",
+      "url": "https://www.cnbc.com/2026/07/09/kospi-bear-territory-ai-samsung-skhynix-chipmakers.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
       "sourceApis": [
-        "Yahoo Finance"
+        "CNBC"
       ],
       "sourceGroup": "RSS",
       "sourceGroups": [
         "RSS"
       ],
-      "image": "https://media.zenfs.com/en/insidermonkey.com/a99fb68631ca24eb25c6859d7e68279b",
-      "publishedAt": "2026-07-08T15:39:12Z",
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 08:48:32 GMT",
       "importance": "Market impact",
       "importanceScore": 5,
       "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
@@ -844,29 +866,6 @@
       ],
       "image": "https://s.yimg.com/uu/api/res/1.2/3gsOJJ8Ez13ZKpEiUSdu0Q--~B/aD0yMDgwO3c9MzEyMDthcHBpZD15dGFjaHlvbg--/https://d29szjachogqwa.cloudfront.net/images/2026-07/d4381404-64f8-4bb7-bf6d-8920b09f97f0",
       "publishedAt": "2026-07-06T13:10:03Z",
-      "importance": "Watch",
-      "importanceScore": 4,
-      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
-      "isBreaking": false,
-      "isWar": false,
-      "tags": []
-    },
-    {
-      "category": "Finance",
-      "title": "Nvidia Is Allegedly Delaying Its Kyber Rack-Scale Architecture by More Than 12 Months. What This Means for NVDA Stock.",
-      "snippet": "",
-      "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-allegedly-delaying-kyber-rack-155030298.html",
-      "source": "Yahoo Finance",
-      "sourceApi": "Yahoo Finance",
-      "sourceApis": [
-        "Yahoo Finance"
-      ],
-      "sourceGroup": "RSS",
-      "sourceGroups": [
-        "RSS"
-      ],
-      "image": "https://media.zenfs.com/en/barchart_com_477/e6f9cbf762054b4a83941a8757d2d9f9",
-      "publishedAt": "2026-07-08T15:50:30Z",
       "importance": "Watch",
       "importanceScore": 4,
       "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
@@ -1083,6 +1082,29 @@
     },
     {
       "category": "Australia",
+      "title": "Opening match of Big Bash League to be played in India with expanded sporting ties",
+      "snippet": "Australia and India have committed to expanding sports cooperation, a shared passion and rapidly growing economic opportunity for both nations.&nbsp;Prime Minister Anthony Albanese and...",
+      "url": "https://www.pm.gov.au/media/opening-match-big-bash-league-be-played-india-expanded-sporting-ties",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Friday 10 July 2026",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
       "title": "Advancing education, science and technology ties with India",
       "snippet": "Australia and India are committed to unlocking the full potential of our relationship by investing in education, science and technology. &nbsp;Prime Minister Anthony Albanese and Prime...",
       "url": "https://www.pm.gov.au/media/advancing-education-science-and-technology-ties-india",
@@ -1109,29 +1131,6 @@
       "title": "Australia-India Economic Roadmap Business Reception",
       "snippet": "Thank you to the Centre for Australia-India Relations and Ryan for organising this reception.I begin by acknowledging the traditional owners of the land we’re meeting on and pay my respect...",
       "url": "https://www.pm.gov.au/media/australia-india-economic-roadmap-business-reception",
-      "source": "Prime Minister of Australia",
-      "sourceApi": "Prime Minister of Australia",
-      "sourceApis": [
-        "Prime Minister of Australia"
-      ],
-      "sourceGroup": "RSS",
-      "sourceGroups": [
-        "RSS"
-      ],
-      "image": "",
-      "publishedAt": "Thursday 9 July 2026",
-      "importance": "Watch",
-      "importanceScore": 4,
-      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
-      "isBreaking": false,
-      "isWar": false,
-      "tags": []
-    },
-    {
-      "category": "Australia",
-      "title": "Third Australia–India Annual Summit Joint Statement",
-      "snippet": "At the invitation of the Prime Minister of Australia the Honourable Anthony Albanese MP, the Honourable Prime Minister of India, Shri Narendra Modi visited Australia from 8-10 July 2026...",
-      "url": "https://www.pm.gov.au/media/australia-india-joint-statement",
       "source": "Prime Minister of Australia",
       "sourceApi": "Prime Minister of Australia",
       "sourceApis": [

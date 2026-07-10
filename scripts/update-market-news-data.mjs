@@ -24,7 +24,19 @@ const quoteTargets = [
   { symbol: "EA", name: "Electronic Arts", type: "stock", yahoo: "EA", finnhub: "EA", sector: "Game Publisher" },
   { symbol: "TTWO", name: "Take-Two Interactive", type: "stock", yahoo: "TTWO", finnhub: "TTWO", sector: "Game Publisher" },
   { symbol: "RBLX", name: "Roblox", type: "stock", yahoo: "RBLX", finnhub: "RBLX", sector: "Gaming Platform" },
-  { symbol: "CRWD", name: "CrowdStrike", type: "stock", yahoo: "CRWD", finnhub: "CRWD", sector: "Cyber Security / Tech" }
+  { symbol: "CRWD", name: "CrowdStrike", type: "stock", yahoo: "CRWD", finnhub: "CRWD", sector: "Cyber Security / Tech" },
+  { symbol: "META", name: "Meta", type: "stock", yahoo: "META", finnhub: "META", sector: "AI / Social / VR" },
+  { symbol: "GOOGL", name: "Alphabet", type: "stock", yahoo: "GOOGL", finnhub: "GOOGL", sector: "AI / Cloud / Search" },
+  { symbol: "AAPL", name: "Apple", type: "stock", yahoo: "AAPL", finnhub: "AAPL", sector: "Consumer Tech / Gaming Hardware" },
+  { symbol: "AMZN", name: "Amazon", type: "stock", yahoo: "AMZN", finnhub: "AMZN", sector: "Cloud / Twitch / AI" },
+  { symbol: "NFLX", name: "Netflix", type: "stock", yahoo: "NFLX", finnhub: "NFLX", sector: "Streaming / Games" },
+  { symbol: "U", name: "Unity", type: "stock", yahoo: "U", finnhub: "U", sector: "Game Engine / Tools" },
+  { symbol: "PLTR", name: "Palantir", type: "stock", yahoo: "PLTR", finnhub: "PLTR", sector: "AI / Data Platforms" },
+  { symbol: "NET", name: "Cloudflare", type: "stock", yahoo: "NET", finnhub: "NET", sector: "Edge / Cyber Security" },
+  { symbol: "PANW", name: "Palo Alto Networks", type: "stock", yahoo: "PANW", finnhub: "PANW", sector: "Cyber Security" },
+  { symbol: "TSM", name: "TSMC", type: "stock", yahoo: "TSM", finnhub: "TSM", sector: "Semiconductors" },
+  { symbol: "BTC", name: "Bitcoin", type: "asset", yahoo: "BTC-USD", finnhub: "BINANCE:BTCUSDT", sector: "Crypto / Risk Sentiment" },
+  { symbol: "AUD/USD", name: "Australian Dollar", type: "asset", yahoo: "AUDUSD=X", finnhub: "OANDA:AUD_USD", sector: "FX / Australia" }
 ];
 
 const defaultFeeds = {
@@ -266,6 +278,17 @@ function formatMoney(value, currency = "USD") {
   }
 }
 
+function formatPrice(target, value, currency = "USD") {
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) return "Price pending";
+
+  if (target?.symbol === "AUD/USD") {
+    return `AUD/USD ${number.toFixed(4)}`;
+  }
+
+  return formatMoney(number, currency);
+}
+
 function formatChange(change, percent) {
   const changeNumber = Number(change);
   const percentNumber = Number(percent);
@@ -275,7 +298,8 @@ function formatChange(change, percent) {
 
   const sign = changeNumber > 0 || percentNumber > 0 ? "+" : "";
   if (Number.isFinite(changeNumber) && Number.isFinite(percentNumber)) {
-    return `${sign}${changeNumber.toFixed(2)} (${sign}${percentNumber.toFixed(2)}%)`;
+    const changeDecimals = Math.abs(changeNumber) > 0 && Math.abs(changeNumber) < 0.01 ? 4 : 2;
+    return `${sign}${changeNumber.toFixed(changeDecimals)} (${sign}${percentNumber.toFixed(2)}%)`;
   }
   return `${sign}${(Number.isFinite(percentNumber) ? percentNumber : changeNumber).toFixed(2)}%`;
 }
@@ -428,7 +452,7 @@ async function buildQuoteItem(target, yfinanceQuotes = {}) {
     symbol: target.symbol,
     name: target.name,
     sector: target.sector,
-    price: formatMoney(primary?.price, primary?.currency || "USD"),
+    price: formatPrice(target, primary?.price, primary?.currency || "USD"),
     change: formatChange(primary?.change, primary?.changePercent),
     priceValue: Number.isFinite(priceValue) ? priceValue : null,
     changeValue: Number.isFinite(changeValue) ? changeValue : null,
@@ -995,7 +1019,7 @@ async function main() {
   const yfinanceQuotes = await loadYfinanceQuotes(quoteTargets);
   const quoteItems = await Promise.all(quoteTargets.map((target) => buildQuoteItem(target, yfinanceQuotes).catch(() => null)));
   const indexes = quoteItems.filter((item, index) => item && quoteTargets[index].type === "index");
-  const stocks = quoteItems.filter((item, index) => item && quoteTargets[index].type === "stock");
+  const stocks = quoteItems.filter((item, index) => item && quoteTargets[index].type !== "index");
   const signals = buildMarketSignals(indexes, stocks);
   const newsItems = await buildNewsItems().catch((error) => {
     console.warn(`News refresh failed before fallback: ${cleanText(error.message || "unknown error")}`);

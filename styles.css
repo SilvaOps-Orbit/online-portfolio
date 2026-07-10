@@ -1822,6 +1822,16 @@ h3 {
   color: #d687ff;
 }
 
+.language-7 {
+  background: #4ea5ff;
+  color: #4ea5ff;
+}
+
+.language-8 {
+  background: #f05dd8;
+  color: #f05dd8;
+}
+
 .github-activity-card {
   min-width: 0;
 }

@@ -51,7 +51,7 @@ window.PORTFOLIO_CONFIG = {
       title: "This Portfolio Website!!",
       summary:
         "A fast static portfolio with animated sections, project filtering, a GitHub integration, and strict client-side security defaults.",
-      tags: ["Frontend", "Security", "GitHub", "Portfolio", "Websites"],
+      tags: ["HTML", "CSS", "JavaScript", "PowerShell", "GitHub Actions", "Security", "APIs"],
       github: "https://github.com/SilvaOps-Orbit/online-portfolio",
       demo: "https://silvaops-orbit.github.io/online-portfolio/"
     },
@@ -167,7 +167,7 @@ window.PORTFOLIO_CONFIG = {
   },
   market: {
     summary:
-      "A watchlist for the S&P 500 plus gaming and technology companies, with one-week price charts and a larger S&P 500 market baseline. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
+      "A watchlist for the S&P 500 plus gaming, technology, Bitcoin, and AUD/USD, with one-week price charts and a larger S&P 500 market baseline. Finnhub and yfinance refresh the generated market JSON; API keys stay in private workflows.",
     status:
       "The browser checks market data every minute. GitHub Actions refreshes generated market/news JSON every 5 minutes, which is GitHub's shortest scheduled interval.",
     disclaimer:
@@ -244,6 +244,51 @@ window.PORTFOLIO_CONFIG = {
         change: "Connect market data",
         signal: "Catalyst watch",
         reason: "Major release cycles can create hype; the risk check is whether price has already run ahead of news."
+      },
+      {
+        symbol: "META",
+        name: "Meta",
+        sector: "AI / Social / VR",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Platform watch",
+        reason: "AI, ads, VR, and creator platforms make it a useful tech sentiment check."
+      },
+      {
+        symbol: "GOOGL",
+        name: "Alphabet",
+        sector: "AI / Cloud / Search",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Quality watch",
+        reason: "Search, cloud, YouTube, and AI infrastructure make it a core technology baseline."
+      },
+      {
+        symbol: "AAPL",
+        name: "Apple",
+        sector: "Consumer Tech / Gaming Hardware",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Ecosystem watch",
+        reason: "Hardware, services, and App Store gaming make Apple useful for broader consumer tech context."
+      },
+      {
+        symbol: "BTC",
+        name: "Bitcoin",
+        sector: "Crypto / Risk Sentiment",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Risk appetite watch",
+        reason: "Bitcoin can act like a high-volatility risk sentiment check next to tech stocks."
+      },
+      {
+        symbol: "AUD/USD",
+        name: "Australian Dollar",
+        sector: "FX / Australia",
+        price: "API pending",
+        change: "Connect market data",
+        signal: "Currency watch",
+        reason: "AUD/USD gives Australian context for USD-priced tech, gaming, crypto, and market headlines."
       }
     ],
     signals: [

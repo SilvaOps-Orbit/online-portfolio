@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T23:59:47.390Z",
+  "generatedAt": "2026-07-10T04:28:24.171Z",
   "source": "yfinance-fallback",
   "status": "Add FINNHUB_API_KEY to GitHub Actions for Finnhub quotes/news. yfinance was used as the stock fallback.",
   "disclaimer": "Educational research only, not personal financial advice. Signals are prompts to investigate risk, momentum, valuation, and news before making any decision.",
@@ -49,7 +49,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:49.978454Z",
+      "updatedAt": "2026-07-10T04:28:27.110715Z",
       "url": "https://finance.yahoo.com/quote/%5EGSPC"
     },
     {
@@ -97,7 +97,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:50.637456Z",
+      "updatedAt": "2026-07-10T04:28:28.014288Z",
       "url": "https://finance.yahoo.com/quote/SPY"
     }
   ],
@@ -147,7 +147,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:51.138274Z",
+      "updatedAt": "2026-07-10T04:28:28.686142Z",
       "url": "https://finance.yahoo.com/quote/NVDA"
     },
     {
@@ -195,7 +195,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:51.813895Z",
+      "updatedAt": "2026-07-10T04:28:29.204050Z",
       "url": "https://finance.yahoo.com/quote/MSFT"
     },
     {
@@ -243,7 +243,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:52.493298Z",
+      "updatedAt": "2026-07-10T04:28:29.660950Z",
       "url": "https://finance.yahoo.com/quote/AMD"
     },
     {
@@ -291,7 +291,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:53.262703Z",
+      "updatedAt": "2026-07-10T04:28:30.544111Z",
       "url": "https://finance.yahoo.com/quote/SONY"
     },
     {
@@ -339,7 +339,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:54.017702Z",
+      "updatedAt": "2026-07-10T04:28:31.019522Z",
       "url": "https://finance.yahoo.com/quote/EA"
     },
     {
@@ -387,7 +387,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:54.660521Z",
+      "updatedAt": "2026-07-10T04:28:31.457518Z",
       "url": "https://finance.yahoo.com/quote/TTWO"
     },
     {
@@ -435,7 +435,7 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:55.373399Z",
+      "updatedAt": "2026-07-10T04:28:32.067189Z",
       "url": "https://finance.yahoo.com/quote/RBLX"
     },
     {
@@ -483,8 +483,580 @@
         }
       ],
       "chartLabel": "1W",
-      "updatedAt": "2026-07-09T23:59:55.828269Z",
+      "updatedAt": "2026-07-10T04:28:32.668738Z",
       "url": "https://finance.yahoo.com/quote/CRWD"
+    },
+    {
+      "symbol": "META",
+      "name": "Meta",
+      "sector": "AI / Social / VR",
+      "price": "USD 631.48",
+      "change": "+27.98 (+4.64%)",
+      "priceValue": 631.47998046875,
+      "changeValue": 27.97998046875,
+      "changePercent": 4.636285081814416,
+      "trend": "up",
+      "signal": "Momentum watch",
+      "reason": "Meta is moving strongly today. Research whether the move is backed by earnings, product news, or wider market momentum before chasing it.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 563.2899780273438
+        },
+        {
+          "date": "2026-07-01",
+          "close": 612.9099731445312
+        },
+        {
+          "date": "2026-07-02",
+          "close": 582.9000244140625
+        },
+        {
+          "date": "2026-07-06",
+          "close": 600.2899780273438
+        },
+        {
+          "date": "2026-07-07",
+          "close": 615.5800170898438
+        },
+        {
+          "date": "2026-07-08",
+          "close": 603.1199951171875
+        },
+        {
+          "date": "2026-07-09",
+          "close": 631.47998046875
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:33.188753Z",
+      "url": "https://finance.yahoo.com/quote/META"
+    },
+    {
+      "symbol": "GOOGL",
+      "name": "Alphabet",
+      "sector": "AI / Cloud / Search",
+      "price": "USD 358.89",
+      "change": "-3.01 (-0.83%)",
+      "priceValue": 358.8900146484375,
+      "changeValue": -3.0099853515624773,
+      "changePercent": -0.8317174223715051,
+      "trend": "down",
+      "signal": "Research buy case",
+      "reason": "Alphabet sits in a high-attention tech theme. Look for revenue growth, margins, guidance, and valuation before calling it attractive.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 357.3699951171875
+        },
+        {
+          "date": "2026-07-01",
+          "close": 361.2099914550781
+        },
+        {
+          "date": "2026-07-02",
+          "close": 359.9100036621094
+        },
+        {
+          "date": "2026-07-06",
+          "close": 366.4599914550781
+        },
+        {
+          "date": "2026-07-07",
+          "close": 367.0299987792969
+        },
+        {
+          "date": "2026-07-08",
+          "close": 361.9200134277344
+        },
+        {
+          "date": "2026-07-09",
+          "close": 358.8900146484375
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:33.805436Z",
+      "url": "https://finance.yahoo.com/quote/GOOGL"
+    },
+    {
+      "symbol": "AAPL",
+      "name": "Apple",
+      "sector": "Consumer Tech / Gaming Hardware",
+      "price": "USD 316.22",
+      "change": "+3.06 (+0.98%)",
+      "priceValue": 316.2200012207031,
+      "changeValue": 3.0600012207031,
+      "changePercent": 0.9771366779611381,
+      "trend": "up",
+      "signal": "Catalyst watch",
+      "reason": "Apple depends on release cycles, platform demand, and gaming sentiment. Watch upcoming launches and earnings commentary.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 289.3599853515625
+        },
+        {
+          "date": "2026-07-01",
+          "close": 294.3800048828125
+        },
+        {
+          "date": "2026-07-02",
+          "close": 308.6300048828125
+        },
+        {
+          "date": "2026-07-06",
+          "close": 312.6600036621094
+        },
+        {
+          "date": "2026-07-07",
+          "close": 310.6600036621094
+        },
+        {
+          "date": "2026-07-08",
+          "close": 313.3900146484375
+        },
+        {
+          "date": "2026-07-09",
+          "close": 316.2200012207031
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:34.693072Z",
+      "url": "https://finance.yahoo.com/quote/AAPL"
+    },
+    {
+      "symbol": "AMZN",
+      "name": "Amazon",
+      "sector": "Cloud / Twitch / AI",
+      "price": "USD 247.04",
+      "change": "+3.96 (+1.63%)",
+      "priceValue": 247.0399932861328,
+      "changeValue": 3.9600932861328033,
+      "changePercent": 1.629132349541366,
+      "trend": "up",
+      "signal": "Research buy case",
+      "reason": "Amazon sits in a high-attention tech theme. Look for revenue growth, margins, guidance, and valuation before calling it attractive.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 238.33999633789062
+        },
+        {
+          "date": "2026-07-01",
+          "close": 241.6999969482422
+        },
+        {
+          "date": "2026-07-02",
+          "close": 242.6699981689453
+        },
+        {
+          "date": "2026-07-06",
+          "close": 244.16000366210938
+        },
+        {
+          "date": "2026-07-07",
+          "close": 245.97999572753906
+        },
+        {
+          "date": "2026-07-08",
+          "close": 243.6199951171875
+        },
+        {
+          "date": "2026-07-09",
+          "close": 247.0399932861328
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:35.300009Z",
+      "url": "https://finance.yahoo.com/quote/AMZN"
+    },
+    {
+      "symbol": "NFLX",
+      "name": "Netflix",
+      "sector": "Streaming / Games",
+      "price": "USD 75.47",
+      "change": "-0.14 (-0.18%)",
+      "priceValue": 75.47000122070312,
+      "changeValue": -0.13959877929687536,
+      "changePercent": -0.18463102475991855,
+      "trend": "down",
+      "signal": "Watch",
+      "reason": "Netflix is stable enough for watchlist tracking. Compare it against the S&P 500 before deciding whether it is leading or lagging.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 71.4000015258789
+        },
+        {
+          "date": "2026-07-01",
+          "close": 74.19000244140625
+        },
+        {
+          "date": "2026-07-02",
+          "close": 77.6500015258789
+        },
+        {
+          "date": "2026-07-06",
+          "close": 76.0199966430664
+        },
+        {
+          "date": "2026-07-07",
+          "close": 76.18000030517578
+        },
+        {
+          "date": "2026-07-08",
+          "close": 75.58999633789062
+        },
+        {
+          "date": "2026-07-09",
+          "close": 75.47000122070312
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:35.888554Z",
+      "url": "https://finance.yahoo.com/quote/NFLX"
+    },
+    {
+      "symbol": "U",
+      "name": "Unity",
+      "sector": "Game Engine / Tools",
+      "price": "USD 30.73",
+      "change": "+1.46 (+4.99%)",
+      "priceValue": 30.729999542236328,
+      "changeValue": 1.4599995422363286,
+      "changePercent": 4.988040800260774,
+      "trend": "up",
+      "signal": "Momentum watch",
+      "reason": "Unity is moving strongly today. Research whether the move is backed by earnings, product news, or wider market momentum before chasing it.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 28.579999923706055
+        },
+        {
+          "date": "2026-07-01",
+          "close": 30.190000534057617
+        },
+        {
+          "date": "2026-07-02",
+          "close": 29.31999969482422
+        },
+        {
+          "date": "2026-07-06",
+          "close": 29.649999618530273
+        },
+        {
+          "date": "2026-07-07",
+          "close": 29.65999984741211
+        },
+        {
+          "date": "2026-07-08",
+          "close": 29.459999084472656
+        },
+        {
+          "date": "2026-07-09",
+          "close": 30.729999542236328
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:36.626573Z",
+      "url": "https://finance.yahoo.com/quote/U"
+    },
+    {
+      "symbol": "PLTR",
+      "name": "Palantir",
+      "sector": "AI / Data Platforms",
+      "price": "USD 129.04",
+      "change": "-2.45 (-1.86%)",
+      "priceValue": 129.0399932861328,
+      "changeValue": -2.451706713867196,
+      "changePercent": -1.8645334373707207,
+      "trend": "down",
+      "signal": "Research buy case",
+      "reason": "Palantir sits in a high-attention tech theme. Look for revenue growth, margins, guidance, and valuation before calling it attractive.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 116.66999816894531
+        },
+        {
+          "date": "2026-07-01",
+          "close": 125.7300033569336
+        },
+        {
+          "date": "2026-07-02",
+          "close": 129.3000030517578
+        },
+        {
+          "date": "2026-07-06",
+          "close": 132.5399932861328
+        },
+        {
+          "date": "2026-07-07",
+          "close": 134.3699951171875
+        },
+        {
+          "date": "2026-07-08",
+          "close": 132.22000122070312
+        },
+        {
+          "date": "2026-07-09",
+          "close": 129.0399932861328
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:37.334192Z",
+      "url": "https://finance.yahoo.com/quote/PLTR"
+    },
+    {
+      "symbol": "NET",
+      "name": "Cloudflare",
+      "sector": "Edge / Cyber Security",
+      "price": "USD 275.80",
+      "change": "+2.86 (+1.05%)",
+      "priceValue": 275.79998779296875,
+      "changeValue": 2.8599877929687523,
+      "changePercent": 1.04784487175524,
+      "trend": "up",
+      "signal": "Research buy case",
+      "reason": "Cloudflare sits in a high-attention tech theme. Look for revenue growth, margins, guidance, and valuation before calling it attractive.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 245.27999877929688
+        },
+        {
+          "date": "2026-07-01",
+          "close": 246.30999755859375
+        },
+        {
+          "date": "2026-07-02",
+          "close": 242.41000366210938
+        },
+        {
+          "date": "2026-07-06",
+          "close": 247.5500030517578
+        },
+        {
+          "date": "2026-07-07",
+          "close": 268.8299865722656
+        },
+        {
+          "date": "2026-07-08",
+          "close": 273.3999938964844
+        },
+        {
+          "date": "2026-07-09",
+          "close": 275.79998779296875
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:38.093824Z",
+      "url": "https://finance.yahoo.com/quote/NET"
+    },
+    {
+      "symbol": "PANW",
+      "name": "Palo Alto Networks",
+      "sector": "Cyber Security",
+      "price": "USD 338.31",
+      "change": "+17.18 (+5.35%)",
+      "priceValue": 338.30999755859375,
+      "changeValue": 17.18129755859377,
+      "changePercent": 5.350284032101077,
+      "trend": "up",
+      "signal": "Momentum watch",
+      "reason": "Palo Alto Networks is moving strongly today. Research whether the move is backed by earnings, product news, or wider market momentum before chasing it.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 341.0199890136719
+        },
+        {
+          "date": "2026-07-01",
+          "close": 352.0400085449219
+        },
+        {
+          "date": "2026-07-02",
+          "close": 348.05999755859375
+        },
+        {
+          "date": "2026-07-06",
+          "close": 357.5299987792969
+        },
+        {
+          "date": "2026-07-07",
+          "close": 337.0400085449219
+        },
+        {
+          "date": "2026-07-08",
+          "close": 320.5899963378906
+        },
+        {
+          "date": "2026-07-09",
+          "close": 338.30999755859375
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:38.900957Z",
+      "url": "https://finance.yahoo.com/quote/PANW"
+    },
+    {
+      "symbol": "TSM",
+      "name": "TSMC",
+      "sector": "Semiconductors",
+      "price": "USD 436.96",
+      "change": "-1.49 (-0.34%)",
+      "priceValue": 436.9599914550781,
+      "changeValue": -1.4907085449218584,
+      "changePercent": -0.3399945637951675,
+      "trend": "down",
+      "signal": "Watch",
+      "reason": "TSMC is stable enough for watchlist tracking. Compare it against the S&P 500 before deciding whether it is leading or lagging.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-06-30",
+          "close": 477.57000732421875
+        },
+        {
+          "date": "2026-07-01",
+          "close": 444.2300109863281
+        },
+        {
+          "date": "2026-07-02",
+          "close": 434.1600036621094
+        },
+        {
+          "date": "2026-07-06",
+          "close": 451.7900085449219
+        },
+        {
+          "date": "2026-07-07",
+          "close": 432.57000732421875
+        },
+        {
+          "date": "2026-07-08",
+          "close": 436.9800109863281
+        },
+        {
+          "date": "2026-07-09",
+          "close": 436.9599914550781
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:39.624692Z",
+      "url": "https://finance.yahoo.com/quote/TSM"
+    },
+    {
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "sector": "Crypto / Risk Sentiment",
+      "price": "USD 63,868",
+      "change": "+692.47 (+1.10%)",
+      "priceValue": 63867.71875,
+      "changeValue": 692.46875,
+      "changePercent": 1.0961076529178753,
+      "trend": "up",
+      "signal": "Watch",
+      "reason": "Bitcoin is stable enough for watchlist tracking. Compare it against the S&P 500 before deciding whether it is leading or lagging.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-07-04",
+          "close": 63088.3046875
+        },
+        {
+          "date": "2026-07-05",
+          "close": 63547.8828125
+        },
+        {
+          "date": "2026-07-06",
+          "close": 63995.015625
+        },
+        {
+          "date": "2026-07-07",
+          "close": 63297.39453125
+        },
+        {
+          "date": "2026-07-08",
+          "close": 62257.57421875
+        },
+        {
+          "date": "2026-07-10",
+          "close": 63863.1796875
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:40.566682Z",
+      "url": "https://finance.yahoo.com/quote/BTC-USD"
+    },
+    {
+      "symbol": "AUD/USD",
+      "name": "Australian Dollar",
+      "sector": "FX / Australia",
+      "price": "AUD/USD 0.6960",
+      "change": "+0.0016 (+0.24%)",
+      "priceValue": 0.6959910988807678,
+      "changeValue": 0.001643061637878418,
+      "changePercent": 0.23663372685586778,
+      "trend": "up",
+      "signal": "Watch",
+      "reason": "Australian Dollar is stable enough for watchlist tracking. Compare it against the S&P 500 before deciding whether it is leading or lagging.",
+      "source": "yfinance",
+      "crossReference": "Single source or pending data.",
+      "history": [
+        {
+          "date": "2026-07-02",
+          "close": 0.6892097592353821
+        },
+        {
+          "date": "2026-07-03",
+          "close": 0.6916002035140991
+        },
+        {
+          "date": "2026-07-06",
+          "close": 0.6937001347541809
+        },
+        {
+          "date": "2026-07-07",
+          "close": 0.6955297589302063
+        },
+        {
+          "date": "2026-07-08",
+          "close": 0.6922600269317627
+        },
+        {
+          "date": "2026-07-09",
+          "close": 0.6936299204826355
+        },
+        {
+          "date": "2026-07-10",
+          "close": 0.6959910988807678
+        }
+      ],
+      "chartLabel": "1W",
+      "updatedAt": "2026-07-10T04:28:41.321699Z",
+      "url": "https://finance.yahoo.com/quote/AUDUSD%3DX"
     }
   ],
   "signals": [
@@ -504,10 +1076,10 @@
     {
       "stance": "Strong mover",
       "tone": "positive",
-      "symbol": "CRWD",
-      "change": "+4.14% today",
-      "title": "CrowdStrike is showing strength",
-      "why": "CrowdStrike is up 4.14%. The broad market is supportive, so this momentum is cleaner to research. Check news, earnings, and valuation before acting.",
+      "symbol": "PANW",
+      "change": "+5.35% today",
+      "title": "Palo Alto Networks is showing strength",
+      "why": "Palo Alto Networks is up 5.35%. The broad market is supportive, so this momentum is cleaner to research. Check news, earnings, and valuation before acting.",
       "drivers": [
         "Relative strength",
         "Catalyst check",
@@ -515,12 +1087,12 @@
       ]
     },
     {
-      "stance": "Doing well",
+      "stance": "Strong mover",
       "tone": "positive",
-      "symbol": "RBLX",
-      "change": "+2.67% today",
-      "title": "Roblox is showing strength",
-      "why": "Roblox is up 2.67%. The broad market is supportive, so this momentum is cleaner to research. Check news, earnings, and valuation before acting.",
+      "symbol": "U",
+      "change": "+4.99% today",
+      "title": "Unity is showing strength",
+      "why": "Unity is up 4.99%. The broad market is supportive, so this momentum is cleaner to research. Check news, earnings, and valuation before acting.",
       "drivers": [
         "Relative strength",
         "Catalyst check",

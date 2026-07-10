@@ -2156,16 +2156,14 @@
     parent.append(link);
   }
 
-  function githubLanguageStats(repos) {
-    const totals = new Map();
-    const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
+  function addLanguageTotal(totals, language, value) {
+    const label = language || "Other";
+    const amount = Number(value);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    totals.set(label, (totals.get(label) || 0) + amount);
+  }
 
-    sourceRepos.forEach((repo) => {
-      const language = repo.language || "Other";
-      const weight = Math.max(Number(repo.size || 0), 1);
-      totals.set(language, (totals.get(language) || 0) + weight);
-    });
-
+  function totalsToLanguageStats(totals) {
     const total = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
     return Array.from(totals.entries())
       .map(([language, value]) => ({
@@ -2174,6 +2172,54 @@
         percent: total ? (value / total) * 100 : 0
       }))
       .sort((a, b) => b.value - a.value);
+  }
+
+  function githubPrimaryLanguageStats(repos) {
+    const totals = new Map();
+    const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
+
+    sourceRepos.forEach((repo) => {
+      const language = repo.language || "Other";
+      const weight = Math.max(Number(repo.size || 0), 1);
+      addLanguageTotal(totals, language, weight);
+    });
+
+    return totalsToLanguageStats(totals);
+  }
+
+  async function loadGitHubLanguageStats(repos, headers) {
+    const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
+    const totals = new Map();
+
+    const languageResults = await Promise.all(sourceRepos.map(async (repo) => {
+      if (!repo.languages_url) return null;
+
+      try {
+        const response = await fetch(repo.languages_url, {
+          headers,
+          referrerPolicy: "no-referrer"
+        });
+
+        if (!response.ok) return null;
+        const languages = await response.json();
+        return languages && typeof languages === "object" ? { repo, languages } : null;
+      } catch (error) {
+        return null;
+      }
+    }));
+
+    languageResults.forEach((result, index) => {
+      const entries = Object.entries(result?.languages || {});
+      if (entries.length) {
+        entries.forEach(([language, bytes]) => addLanguageTotal(totals, language, bytes));
+        return;
+      }
+
+      const repo = sourceRepos[index];
+      addLanguageTotal(totals, repo?.language || "Other", Math.max(Number(repo?.size || 0), 1));
+    });
+
+    return totals.size ? totalsToLanguageStats(totals) : githubPrimaryLanguageStats(sourceRepos);
   }
 
   function dateKey(value) {
@@ -2196,8 +2242,8 @@
     return 1;
   }
 
-  function renderGitHubLanguageMix(parent, repos) {
-    const stats = githubLanguageStats(repos).slice(0, 6);
+  function renderGitHubLanguageMix(parent, languageStats) {
+    const stats = (Array.isArray(languageStats) ? languageStats : []).slice(0, 8);
     const card = createElement("article", "github-insight-card");
     const title = createElement("div", "github-insight-heading");
     title.append(createElement("span", "repo-badge", "Language mix"));
@@ -2228,7 +2274,7 @@
     });
 
     card.append(bar, list);
-    card.append(createElement("p", "github-insight-note", "Based on public non-fork repositories and their primary language/size metadata."));
+    card.append(createElement("p", "github-insight-note", "Based on GitHub's public languages endpoint for each non-fork repository, summed across the account."));
     parent.append(card);
   }
 
@@ -2303,10 +2349,10 @@
     parent.append(card);
   }
 
-  function renderGitHubInsights(container, username, repos, events) {
+  function renderGitHubInsights(container, username, repos, events, languageStats) {
     if (!container) return;
     container.replaceChildren();
-    renderGitHubLanguageMix(container, repos);
+    renderGitHubLanguageMix(container, languageStats);
     renderGitHubActivity(container, events, username);
   }
 
@@ -2347,6 +2393,7 @@
       const repos = await response.json();
       const events = eventsResponse?.ok ? await eventsResponse.json() : [];
       const publicRepos = repos.filter((repo) => !repo.fork);
+      const languageStats = await loadGitHubLanguageStats(publicRepos, headers);
       const visibleRepos = repos
         .filter((repo) => !repo.fork)
         .sort((a, b) => {
@@ -2367,7 +2414,7 @@
         ? `Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest update ${formatDate(latestUpdate)}. Public GitHub API only, no token exposed.`
         : `No non-fork public repositories found for ${username}.`;
 
-      renderGitHubInsights(insights, username, publicRepos, events);
+      renderGitHubInsights(insights, username, publicRepos, events, languageStats);
 
       visibleRepos.forEach((repo) => {
         const featured = isFeaturedRepo(repo);
