@@ -1678,7 +1678,8 @@ h3 {
 }
 
 .tag-list li,
-.repo-meta span {
+.repo-meta span,
+.repo-language-stack span {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
@@ -1925,6 +1926,30 @@ h3 {
 
 .repo-description {
   margin-top: 12px;
+}
+
+.repo-language-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.repo-language-stack .is-language {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.repo-language-stack .is-language::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
 }
 
 .repo-meta {

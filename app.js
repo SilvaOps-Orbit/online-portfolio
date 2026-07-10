@@ -2454,8 +2454,9 @@
         }
 
         const description = createElement("p", "repo-description", repo.description || "Public repository");
+        const languages = createElement("div", "repo-language-stack");
+        repoLanguageChips(repo, languageData.byRepo).forEach((language) => appendRepoChip(languages, language, "is-language"));
         const meta = createElement("div", "repo-meta");
-        repoLanguageChips(repo, languageData.byRepo).forEach((language) => appendRepoChip(meta, language, "is-language"));
         appendRepoChip(meta, `${Number(repo.stargazers_count || 0)} stars`);
         appendRepoChip(meta, `${Number(repo.forks_count || 0)} forks`);
         appendRepoChip(meta, `${Number(repo.open_issues_count || 0)} open issues`);
@@ -2479,7 +2480,11 @@
           appendRepoLink(links, "Issues", `${repo.html_url}/issues`);
         }
 
-        card.append(header, description, meta);
+        card.append(header, description);
+        if (languages.children.length) {
+          card.append(languages);
+        }
+        card.append(meta);
         if (topics.children.length) {
           card.append(topics);
         }
