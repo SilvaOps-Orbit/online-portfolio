@@ -39,6 +39,16 @@ jobs:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
           PRESERVE_DATA_FILES: "steam.json"
 
+      - name: Refresh full Steam data
+        run: node scripts/update-steam-data.mjs
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
+          STEAM_ACCOUNT_VALUE: ${{ vars.STEAM_ACCOUNT_VALUE }}
+          STEAMDB_ACCOUNT_VALUE: ${{ vars.STEAMDB_ACCOUNT_VALUE }}
+          STEAM_ACHIEVEMENT_SCAN_LIMIT: "60"
+          STEAM_ACHIEVEMENT_OUTPUT_LIMIT: "24"
+
       - name: Refresh Steam activity
         run: node scripts/update-steam-activity.mjs
         env:

@@ -680,6 +680,103 @@
     return `${path}?v=${Date.now()}`;
   }
 
+  function dataKind(path) {
+    return String(path || "").split("/").pop()?.replace(/\.json$/i, "") || "dynamic";
+  }
+
+  function dataCacheKey(path) {
+    return `echoops:last-good:${dataKind(path)}`;
+  }
+
+  function isPlaceholderText(value) {
+    return /pending|not connected|needs key|api refresh|connect market data|fallback|tbc/i.test(String(value || ""));
+  }
+
+  function isUsefulSteamItem(item) {
+    if (!item || typeof item !== "object") return false;
+    const title = String(item.title || item.name || "");
+    return Boolean(title) && !isPlaceholderText(`${title} ${item.meta || ""} ${item.note || ""} ${item.price || ""}`);
+  }
+
+  function isUsefulMarketItem(item) {
+    if (!item || typeof item !== "object") return false;
+    return Boolean(item.symbol) && !isPlaceholderText(`${item.price || ""} ${item.change || ""} ${item.reason || ""}`);
+  }
+
+  function isUsefulNewsItem(item) {
+    if (!item || typeof item !== "object") return false;
+    return Boolean(item.title && item.url) && !isPlaceholderText(`${item.title} ${item.snippet || ""}`);
+  }
+
+  function isUsefulSpotifyData(data) {
+    const current = data?.current || {};
+    const currentUseful = Boolean(current.title) && !isPlaceholderText(`${current.title} ${current.meta || ""} ${current.note || ""}`);
+    const playlistsUseful = Array.isArray(data?.playlists) && data.playlists.some((item) => item?.title && !isPlaceholderText(item.title));
+    return currentUseful || playlistsUseful;
+  }
+
+  function hasUsefulDynamicData(path, data) {
+    if (!data || typeof data !== "object") return false;
+    const kind = dataKind(path);
+
+    if (kind === "steam") {
+      return ["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "preorderWatch"]
+        .some((key) => Array.isArray(data[key]) && data[key].some(isUsefulSteamItem));
+    }
+
+    if (kind === "spotify") {
+      return isUsefulSpotifyData(data);
+    }
+
+    if (kind === "market") {
+      return ["indexes", "stocks"].some((key) => Array.isArray(data[key]) && data[key].some(isUsefulMarketItem));
+    }
+
+    if (kind === "news") {
+      return Array.isArray(data.items) && data.items.some(isUsefulNewsItem);
+    }
+
+    return true;
+  }
+
+  function readCachedDataFile(path, liveStatus = "") {
+    if (!("localStorage" in window)) return null;
+
+    try {
+      const cached = JSON.parse(window.localStorage.getItem(dataCacheKey(path)) || "null");
+      if (!cached?.data || !hasUsefulDynamicData(path, cached.data)) {
+        return null;
+      }
+
+      const cachedAt = cached.cachedAt || cached.data.generatedAt || new Date().toISOString();
+      const kind = dataKind(path);
+      return {
+        ...cached.data,
+        cachedSnapshot: true,
+        stale: true,
+        lastGoodAt: cached.data.lastGoodAt || cached.data.generatedAt || cachedAt,
+        status: liveStatus
+          ? `${liveStatus} Showing last saved ${kind} snapshot while GitHub refresh catches up.`
+          : `Showing last saved ${kind} snapshot while GitHub refresh catches up.`
+      };
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeCachedDataFile(path, data) {
+    if (!("localStorage" in window) || !hasUsefulDynamicData(path, data)) return;
+
+    try {
+      window.localStorage.setItem(dataCacheKey(path), JSON.stringify({
+        cachedAt: new Date().toISOString(),
+        data
+      }));
+    } catch (error) {
+      return;
+    }
+  }
+
   async function fetchDataFile(path, timeoutMs = 6500) {
     const controller = "AbortController" in window ? new AbortController() : null;
     const timeoutId = controller ? window.setTimeout(() => controller.abort(), timeoutMs) : 0;
@@ -692,12 +789,18 @@
       });
 
       if (!response.ok) {
-        return null;
+        return readCachedDataFile(path);
       }
 
-      return response.json();
+      const data = await response.json();
+      if (hasUsefulDynamicData(path, data)) {
+        writeCachedDataFile(path, data);
+        return data;
+      }
+
+      return readCachedDataFile(path, data?.status) || data;
     } catch (error) {
-      return null;
+      return readCachedDataFile(path);
     } finally {
       if (timeoutId) {
         window.clearTimeout(timeoutId);
@@ -2053,30 +2156,197 @@
     parent.append(link);
   }
 
+  function githubLanguageStats(repos) {
+    const totals = new Map();
+    const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
+
+    sourceRepos.forEach((repo) => {
+      const language = repo.language || "Other";
+      const weight = Math.max(Number(repo.size || 0), 1);
+      totals.set(language, (totals.get(language) || 0) + weight);
+    });
+
+    const total = Array.from(totals.values()).reduce((sum, value) => sum + value, 0);
+    return Array.from(totals.entries())
+      .map(([language, value]) => ({
+        language,
+        value,
+        percent: total ? (value / total) * 100 : 0
+      }))
+      .sort((a, b) => b.value - a.value);
+  }
+
+  function dateKey(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+  }
+
+  function activityLevel(count, max) {
+    if (!count) return 0;
+    if (max <= 1) return 1;
+    const ratio = count / max;
+    if (ratio >= 0.76) return 4;
+    if (ratio >= 0.5) return 3;
+    if (ratio >= 0.25) return 2;
+    return 1;
+  }
+
+  function renderGitHubLanguageMix(parent, repos) {
+    const stats = githubLanguageStats(repos).slice(0, 6);
+    const card = createElement("article", "github-insight-card");
+    const title = createElement("div", "github-insight-heading");
+    title.append(createElement("span", "repo-badge", "Language mix"));
+    title.append(createElement("h3", "", "Code I keep reaching for"));
+    card.append(title);
+
+    if (!stats.length) {
+      card.append(createElement("p", "github-insight-note", "No public language data returned yet."));
+      parent.append(card);
+      return;
+    }
+
+    const bar = createElement("div", "language-mix-bar");
+    stats.forEach((item, index) => {
+      const segment = createElement("span", `language-segment language-${index + 1}`);
+      segment.style.width = `${Math.max(item.percent, 2).toFixed(2)}%`;
+      segment.title = `${item.language}: ${item.percent.toFixed(1)}%`;
+      bar.append(segment);
+    });
+
+    const list = createElement("div", "language-mix-list");
+    stats.forEach((item, index) => {
+      const row = createElement("div", "language-row");
+      row.append(createElement("span", `language-dot language-${index + 1}`));
+      row.append(createElement("span", "language-name", item.language));
+      row.append(createElement("strong", "", `${item.percent.toFixed(1)}%`));
+      list.append(row);
+    });
+
+    card.append(bar, list);
+    card.append(createElement("p", "github-insight-note", "Based on public non-fork repositories and their primary language/size metadata."));
+    parent.append(card);
+  }
+
+  function renderGitHubActivity(parent, events, username) {
+    const card = createElement("article", "github-insight-card github-activity-card");
+    const title = createElement("div", "github-insight-heading");
+    title.append(createElement("span", "repo-badge", "Public activity"));
+    title.append(createElement("h3", "", "Contribution pulse"));
+    card.append(title);
+
+    const counts = new Map();
+    (Array.isArray(events) ? events : []).forEach((event) => {
+      const key = dateKey(event.created_at);
+      if (key) {
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+    });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(today);
+    start.setDate(start.getDate() - 364);
+    start.setDate(start.getDate() - start.getDay());
+
+    const days = [];
+    for (let cursor = new Date(start); cursor <= today; cursor.setDate(cursor.getDate() + 1)) {
+      days.push(new Date(cursor));
+    }
+
+    const max = Math.max(1, ...Array.from(counts.values()));
+    const weeks = Math.ceil(days.length / 7);
+    const months = createElement("div", "activity-months");
+    months.style.setProperty("--github-weeks", weeks);
+
+    let previousMonth = "";
+    days.forEach((day, index) => {
+      const month = day.toLocaleString(undefined, { month: "short" });
+      if (month !== previousMonth && day.getDate() <= 7) {
+        const label = createElement("span", "", month);
+        label.style.gridColumn = String(Math.floor(index / 7) + 1);
+        months.append(label);
+        previousMonth = month;
+      }
+    });
+
+    const grid = createElement("div", "activity-grid");
+    grid.style.setProperty("--github-weeks", weeks);
+    days.forEach((day, index) => {
+      const key = dateKey(day);
+      const count = counts.get(key) || 0;
+      const cell = createElement("span", `activity-cell level-${activityLevel(count, max)}`);
+      cell.style.gridColumn = String(Math.floor(index / 7) + 1);
+      cell.style.gridRow = String(day.getDay() + 1);
+      cell.title = `${count} public GitHub event${count === 1 ? "" : "s"} on ${day.toLocaleDateString()}`;
+      cell.setAttribute("aria-label", cell.title);
+      grid.append(cell);
+    });
+
+    const legend = createElement("div", "activity-legend");
+    legend.append(createElement("span", "", "Less"));
+    [0, 1, 2, 3, 4].forEach((level) => legend.append(createElement("span", `activity-cell level-${level}`)));
+    legend.append(createElement("span", "", "More"));
+
+    const profileLink = createElement("a", "text-link", "Open GitHub contribution graph");
+    profileLink.href = githubProfileUrl(username);
+    profileLink.target = "_blank";
+    profileLink.rel = "noopener noreferrer";
+
+    card.append(months, grid, legend);
+    card.append(createElement("p", "github-insight-note", "Uses public GitHub events only, so private commits and older hidden activity are not requested."));
+    card.append(profileLink);
+    parent.append(card);
+  }
+
+  function renderGitHubInsights(container, username, repos, events) {
+    if (!container) return;
+    container.replaceChildren();
+    renderGitHubLanguageMix(container, repos);
+    renderGitHubActivity(container, events, username);
+  }
+
   async function loadGitHubRepos() {
     const profile = config.profile || {};
     const username = profile.githubUsername;
     const status = document.getElementById("github-status");
     const grid = document.getElementById("repo-grid");
+    const insights = document.getElementById("github-insights");
 
     if (!status || !grid || !username || username === "your-github-username") {
       return;
     }
 
-    status.textContent = `Loading public repositories for ${username}...`;
+    status.textContent = `Loading public GitHub data for ${username}...`;
     grid.replaceChildren();
+    if (insights) {
+      insights.replaceChildren();
+    }
 
     try {
-      const response = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=6`, {
-        headers: { Accept: "application/vnd.github+json" },
-        referrerPolicy: "no-referrer"
-      });
+      const headers = { Accept: "application/vnd.github+json" };
+      const [response, eventsResponse] = await Promise.all([
+        fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100`, {
+          headers,
+          referrerPolicy: "no-referrer"
+        }),
+        fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=100`, {
+          headers,
+          referrerPolicy: "no-referrer"
+        }).catch(() => null)
+      ]);
 
       if (!response.ok) {
         throw new Error(`GitHub API returned ${response.status}`);
       }
 
       const repos = await response.json();
+      const events = eventsResponse?.ok ? await eventsResponse.json() : [];
+      const publicRepos = repos.filter((repo) => !repo.fork);
       const visibleRepos = repos
         .filter((repo) => !repo.fork)
         .sort((a, b) => {
@@ -2094,8 +2364,10 @@
         .sort((a, b) => b - a)[0];
 
       status.textContent = visibleRepos.length
-        ? `Showing ${visibleRepos.length} public repositories from ${username}. ${totalStars} stars, ${totalForks} forks, latest update ${formatDate(latestUpdate)}. Public GitHub API only, no token exposed.`
+        ? `Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest update ${formatDate(latestUpdate)}. Public GitHub API only, no token exposed.`
         : `No non-fork public repositories found for ${username}.`;
+
+      renderGitHubInsights(insights, username, publicRepos, events);
 
       visibleRepos.forEach((repo) => {
         const featured = isFeaturedRepo(repo);

@@ -139,6 +139,30 @@ const conflictTerms = [
   "hezbollah"
 ];
 
+function articleSearchText(item) {
+  return ` ${item?.title || ""} ${item?.snippet || ""} ${item?.source || ""} `.toLowerCase();
+}
+
+function isWarArticle(item) {
+  const text = articleSearchText(item);
+  return conflictTerms.some((term) => text.includes(term));
+}
+
+function inferAffectedRegion(item) {
+  if (item?.affectedRegion) return cleanText(item.affectedRegion);
+
+  const country = cleanText(item?.country || "").toLowerCase();
+  if (countryCodeNames[country]) return countryCodeNames[country];
+  if (item?.regionalScope === "Australia" || item?.regionPriority) return "Australia";
+
+  const text = articleSearchText(item);
+  const matches = affectedPlacePatterns
+    .filter((place) => place.patterns.some((pattern) => text.includes(pattern)))
+    .map((place) => place.label);
+
+  return uniqueStrings(matches).slice(0, 3).join(" / ") || "Worldwide";
+}
+
 function feedEnvName(name) {
   return String(name || "").toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_+|_+$/g, "");
 }
@@ -217,6 +241,14 @@ function compact(value, maxLength = 180) {
   const text = cleanText(value || "");
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 1).replace(/\s+\S*$/, "")}...`;
+}
+
+function unwrapCdata(value) {
+  return String(value || "").replace(/^\s*<!\[CDATA\[/, "").replace(/\]\]>\s*$/g, "");
+}
+
+function cleanUrl(value) {
+  return cleanText(unwrapCdata(value)).replace(/\s+/g, "");
 }
 
 function formatMoney(value, currency = "USD") {
@@ -507,7 +539,7 @@ function buildMarketSignals(indexes, stocks) {
 function tagValue(block, tag) {
   const match = block.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
   if (!match) return "";
-  return match[1].replace(/^<!\[CDATA\[/, "").replace(/\]\]>$/, "");
+  return unwrapCdata(match[1]);
 }
 
 function attrValue(block, tagName, attrName) {
@@ -521,7 +553,7 @@ function htmlImage(block) {
 }
 
 function rssImage(block) {
-  return cleanText(
+  return cleanUrl(
     attrValue(block, "media:content", "url")
       || attrValue(block, "media:thumbnail", "url")
       || attrValue(block, "enclosure", "url")
@@ -553,7 +585,7 @@ function parseRssItems(xml, category, sourceName) {
   const itemBlocks = text.match(/<item[\s\S]*?<\/item>/gi) || [];
   const entryBlocks = text.match(/<entry[\s\S]*?<\/entry>/gi) || [];
   return [...itemBlocks, ...entryBlocks].map((block) => {
-    const url = cleanText(tagValue(block, "link") || attrValue(block, "link", "href"));
+    const url = cleanUrl(tagValue(block, "link") || attrValue(block, "link", "href"));
     return {
       category,
       title: cleanText(tagValue(block, "title")),
@@ -697,13 +729,13 @@ function mapNewsApiArticles(category, articles, regionalScope) {
     category,
     title: cleanText(item.title),
     snippet: compact(item.description || item.content, 190),
-    url: cleanText(item.url),
+    url: cleanUrl(item.url),
     source: cleanText(item.source?.name || "NewsAPI source"),
     sourceApi: "NewsAPI",
     sourceApis: ["NewsAPI"],
     sourceGroup: "NewsAPI",
     sourceGroups: ["NewsAPI"],
-    image: cleanText(item.urlToImage),
+    image: cleanUrl(item.urlToImage),
     language: "en",
     regionalScope,
     regionPriority: regionalScope === "Australia",
@@ -771,13 +803,13 @@ function mapMediastackArticles(category, articles, regionalScope) {
     category,
     title: cleanText(item.title),
     snippet: compact(item.description, 190),
-    url: cleanText(item.url),
+    url: cleanUrl(item.url),
     source: cleanText(item.source || "Mediastack source"),
     sourceApi: "Mediastack",
     sourceApis: ["Mediastack"],
     sourceGroup: "Mediastack",
     sourceGroups: ["Mediastack"],
-    image: cleanText(item.image),
+    image: cleanUrl(item.image),
     country: cleanText(item.country),
     language: cleanText(item.language || "en"),
     regionalScope,
@@ -965,7 +997,13 @@ async function main() {
   const indexes = quoteItems.filter((item, index) => item && quoteTargets[index].type === "index");
   const stocks = quoteItems.filter((item, index) => item && quoteTargets[index].type === "stock");
   const signals = buildMarketSignals(indexes, stocks);
-  const newsItems = await buildNewsItems().catch(() => fallbackNewsItems(previousNews));
+  const newsItems = await buildNewsItems().catch((error) => {
+    console.warn(`News refresh failed before fallback: ${cleanText(error.message || "unknown error")}`);
+    return fallbackNewsItems(previousNews);
+  });
+  const previousNewsItems = fallbackNewsItems(previousNews);
+  const outputNewsItems = newsItems.length ? newsItems : previousNewsItems;
+  const newsUsingSnapshot = !newsItems.length && outputNewsItems.length;
 
   const marketOutput = {
     generatedAt,
@@ -988,10 +1026,14 @@ async function main() {
       mediastackApiKey ? "Mediastack" : "",
       "RSS"
     ].filter(Boolean).join(" + "),
+    stale: newsUsingSnapshot,
+    lastGoodAt: newsItems.length ? generatedAt : previousNews.lastGoodAt || previousNews.generatedAt || null,
     status: newsItems.length
       ? "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, finance, and Australia rows."
-      : "News refresh did not return articles. Showing saved values when available.",
-    items: newsItems.length ? newsItems : fallbackNewsItems(previousNews)
+      : newsUsingSnapshot
+        ? "News refresh did not return articles. Showing the last saved RSS/API snapshot while GitHub refresh catches up."
+        : "News refresh did not return articles. Showing saved values when available.",
+    items: outputNewsItems
   };
 
   await Promise.all([

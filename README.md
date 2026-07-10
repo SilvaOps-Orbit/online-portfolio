@@ -237,6 +237,40 @@ On GitHub:
 
 The main deploy workflow keeps deploys faster by preserving the last generated Steam, Spotify, market, and news JSON instead of regenerating every API feed every time I push a small visual change.
 
+The browser also keeps a tiny last-good snapshot in `localStorage`. If GitHub Pages serves a temporary 404, empty fallback JSON, or placeholder data while Actions is queued, returning visitors still see the last useful Steam Store, RSS/news, market, and Spotify rows until the next good refresh lands.
+
+## If the live API sections look broken
+
+Check the JSON files first:
+
+```text
+data/steam.json
+data/spotify.json
+data/market.json
+data/news.json
+```
+
+If they say `fallback`, `missing secrets`, or `not connected`, the page is doing what it was told and the generated data did not refresh properly.
+
+Fast recovery steps:
+
+1. Go to GitHub -> Actions.
+2. Run `Refresh All Portfolio Data` manually.
+3. Check that the needed secrets are set:
+
+```text
+STEAM_API_KEY
+SPOTIFY_CLIENT_ID
+SPOTIFY_CLIENT_SECRET
+SPOTIFY_REFRESH_TOKEN
+FINNHUB_API_KEY
+NEWSAPI_KEY
+MEDIASTACK_API_KEY
+GENIUS_ACCESS_TOKEN
+```
+
+RSS, Steam Store, and yfinance can still work without private keys, but Spotify live listening and Steam active game detection need their secrets.
+
 ## Security choices
 
 Stuff I want to keep doing right:

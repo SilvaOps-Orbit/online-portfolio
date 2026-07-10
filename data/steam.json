@@ -1,7 +1,6 @@
 {
-  "generatedAt": "2026-07-08T00:00:00.000Z",
-  "source": "fallback",
-  "status": "Steam is ready for API secrets. Add STEAM_API_KEY to publish owned games, achievements, and 100% games.",
+  "generatedAt": "2026-07-09T23:57:50.263Z",
+  "source": "steam-store",
   "steamId": "76561199192411740",
   "profileUrl": "https://steamcommunity.com/profiles/76561199192411740",
   "steamDbUrl": "https://steamdb.info/calculator/76561199192411740/",
@@ -20,6 +19,518 @@
       "note": "Add STEAM_API_KEY as a GitHub secret."
     }
   ],
+  "storeHighlights": [
+    {
+      "appid": 1623730,
+      "title": "Palworld",
+      "category": "Special",
+      "price": "$30.76",
+      "originalPrice": "$43.95",
+      "discount": 30,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1623730/058bd87dc17a7179e07c446aa64d0574ca43ab9d/header.jpg?t=1782406665",
+      "url": "https://store.steampowered.com/app/1623730/"
+    },
+    {
+      "appid": 4380490,
+      "title": "Cat Mail Co.",
+      "category": "Special",
+      "price": "$17.80",
+      "originalPrice": "$20.95",
+      "discount": 15,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4380490/9c206d8a7c8a6133230628b6326f4f08a683b40e/header.jpg?t=1783610189",
+      "url": "https://store.steampowered.com/app/4380490/"
+    },
+    {
+      "appid": 3240220,
+      "title": "Grand Theft Auto V Enhanced",
+      "category": "Special",
+      "price": "$29.89",
+      "originalPrice": "$67.95",
+      "discount": 56,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3240220/header.jpg?t=1781187782",
+      "url": "https://store.steampowered.com/app/3240220/"
+    },
+    {
+      "appid": 1174180,
+      "title": "Red Dead Redemption 2",
+      "category": "Special",
+      "price": "$22.48",
+      "originalPrice": "$89.95",
+      "discount": 75,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1174180/header.jpg?t=1759502961",
+      "url": "https://store.steampowered.com/app/1174180/"
+    },
+    {
+      "appid": 1771300,
+      "title": "Kingdom Come: Deliverance II",
+      "category": "Special",
+      "price": "$35.98",
+      "originalPrice": "$89.95",
+      "discount": 60,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1771300/header.jpg?t=1777975568",
+      "url": "https://store.steampowered.com/app/1771300/"
+    },
+    {
+      "appid": 2209900,
+      "title": "Moonlight Peaks",
+      "category": "Special",
+      "price": "$46.70",
+      "originalPrice": "$54.95",
+      "discount": 15,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2209900/9a9b199531ec49be95ea2d34e67dfab47106584b/header.jpg?t=1783444081",
+      "url": "https://store.steampowered.com/app/2209900/"
+    },
+    {
+      "appid": 1332010,
+      "title": "Stray",
+      "category": "Special",
+      "price": "$22.49",
+      "originalPrice": "$44.99",
+      "discount": 50,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1332010/71daca1910d664d31240b9623a495e0c0828807f/header.jpg?t=1779927784",
+      "url": "https://store.steampowered.com/app/1332010/"
+    },
+    {
+      "appid": 1984270,
+      "title": "Digimon Story Time Stranger",
+      "category": "Special",
+      "price": "$56.97",
+      "originalPrice": "$99.95",
+      "discount": 43,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1984270/723bccb3bf302c7c065201b578fbc7030b4e3c41/header.jpg?t=1783566003",
+      "url": "https://store.steampowered.com/app/1984270/"
+    },
+    {
+      "appid": 817628,
+      "title": "Grand Theft Auto: The Trilogy – The Definitive Edition",
+      "category": "Special",
+      "price": "$29.68",
+      "originalPrice": "$89.95",
+      "discount": 67,
+      "tag": "Special",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/subs/817628/header_ratio.jpg?t=1752520763",
+      "url": "https://store.steampowered.com/app/817628/"
+    },
+    {
+      "appid": 3216460,
+      "title": "OCTOPinbs - COSTUME4",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3216460/4996d960b890b005426baec4c1ac0477c2edbf71/header.jpg?t=1783039826",
+      "url": "https://store.steampowered.com/app/3216460/"
+    },
+    {
+      "appid": 3668890,
+      "title": "The Legend of Abdal",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3668890/5ac7f1713c1a544fffc81b4b49ccc593cff9d7da/header.jpg?t=1783637092",
+      "url": "https://store.steampowered.com/app/3668890/"
+    },
+    {
+      "appid": 4871750,
+      "title": "1/16384",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4871750/de3896b0af3f464481d6d1f34fa970efb26b34de/header.jpg?t=1782186609",
+      "url": "https://store.steampowered.com/app/4871750/"
+    },
+    {
+      "appid": 4785810,
+      "title": "I Am the Demon King: Stop Sun Wukong",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4785810/ba73659ecb97e0239960100fccadb5cd6747e798/header.jpg?t=1783407633",
+      "url": "https://store.steampowered.com/app/4785810/"
+    },
+    {
+      "appid": 4560290,
+      "title": "Sweet Dance",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4560290/e9a6b53aa8168467e0bf6c6d02935332821ff07a/header.jpg?t=1782488770",
+      "url": "https://store.steampowered.com/app/4560290/"
+    },
+    {
+      "appid": 4877890,
+      "title": "Touhou Russian Roulette",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4877890/cb32067b3be69453f4c27e3cf251e18795933a69/header.jpg?t=1783153104",
+      "url": "https://store.steampowered.com/app/4877890/"
+    },
+    {
+      "appid": 4042330,
+      "title": "Be Missed and Remembered: The Letter from Mayoiga",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4042330/b95bdb77365014d3c23e3c1cc5f0a928b6b69a14/header.jpg?t=1782442778",
+      "url": "https://store.steampowered.com/app/4042330/"
+    },
+    {
+      "appid": 4111600,
+      "title": "8AM: The Subway",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4111600/3385ffab5e52a5b6f6bd13e69c228849e7ee875c/header.jpg?t=1781547137",
+      "url": "https://store.steampowered.com/app/4111600/"
+    },
+    {
+      "appid": 3967710,
+      "title": "Walrus Fly",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3967710/2509515013933ae89f846bb2b8eb7d3915afb363/header.jpg?t=1779900274",
+      "url": "https://store.steampowered.com/app/3967710/"
+    },
+    {
+      "appid": 4833000,
+      "title": "Red Rooms",
+      "category": "Coming Soon",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Coming Soon",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4833000/f5e2da01c831877560175b004db472c9f94f4285/header.jpg?t=1783627232",
+      "url": "https://store.steampowered.com/app/4833000/"
+    },
+    {
+      "appid": 4165910,
+      "title": "Steam Machine",
+      "category": "Top Seller",
+      "price": "$1,609.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top Seller",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4165910/6e3f2fedcd1e7faa80fe3b5c349a62a73dde5d10/header.jpg?t=1782171053",
+      "url": "https://store.steampowered.com/app/4165910/"
+    },
+    {
+      "appid": 3751950,
+      "title": "Assassin's Creed Black Flag Resynced",
+      "category": "Top Seller",
+      "price": "$99.95",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top Seller",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3751950/9b046115b1663a4be2b252712328e4f6c162da68/header.jpg?t=1783617053",
+      "url": "https://store.steampowered.com/app/3751950/"
+    },
+    {
+      "appid": 4165870,
+      "title": "Steam Controller",
+      "category": "Top Seller",
+      "price": "$149.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top Seller",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4165870/92216652a0db709183f802117b47323c3a249433/header.jpg?t=1777592825",
+      "url": "https://store.steampowered.com/app/4165870/"
+    },
+    {
+      "appid": 1675200,
+      "title": "Steam Deck",
+      "category": "Top Seller",
+      "price": "$649.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top Seller",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1675200/4c51ecfd17183d45c466ad78f5fdb92920e6224d/header.jpg?t=1781214136",
+      "url": "https://store.steampowered.com/app/1675200/"
+    },
+    {
+      "appid": 3186990,
+      "title": "Carrot Catcher",
+      "category": "New Release",
+      "price": "$6.80",
+      "originalPrice": "$8.50",
+      "discount": 20,
+      "tag": "New Release",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3186990/header.jpg?t=1783637697",
+      "url": "https://store.steampowered.com/app/3186990/"
+    }
+  ],
+  "preorderWatch": [
+    {
+      "appid": 3216460,
+      "title": "OCTOPinbs - COSTUME4",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3216460/4996d960b890b005426baec4c1ac0477c2edbf71/header.jpg?t=1783039826",
+      "url": "https://store.steampowered.com/app/3216460/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4560290,
+      "title": "Sweet Dance",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4560290/e9a6b53aa8168467e0bf6c6d02935332821ff07a/header.jpg?t=1782488770",
+      "url": "https://store.steampowered.com/app/4560290/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4785810,
+      "title": "I Am the Demon King: Stop Sun Wukong",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4785810/ba73659ecb97e0239960100fccadb5cd6747e798/header.jpg?t=1783407633",
+      "url": "https://store.steampowered.com/app/4785810/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 1675200,
+      "title": "Steam Deck",
+      "category": "Top 20",
+      "price": "A$ 649.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top 20",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1675200/4c51ecfd17183d45c466ad78f5fdb92920e6224d/header.jpg?t=1781214136",
+      "url": "https://store.steampowered.com/app/1675200/",
+      "meta": "Top 20",
+      "note": "Store page lists 4 editions.",
+      "editions": [
+        {
+          "label": "Steam Deck 256 GB",
+          "price": "$649.00"
+        },
+        {
+          "label": "Steam Deck 256 GB w/o PSU",
+          "price": "$649.00"
+        },
+        {
+          "label": "Steam Deck 512 GB OLED",
+          "price": "$1,199.00"
+        },
+        {
+          "label": "Steam Deck 512 GB OLED w/o PSU",
+          "price": "$1,199.00"
+        }
+      ]
+    },
+    {
+      "appid": 4871750,
+      "title": "1/16384",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4871750/de3896b0af3f464481d6d1f34fa970efb26b34de/header.jpg?t=1782186609",
+      "url": "https://store.steampowered.com/app/4871750/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4042330,
+      "title": "Be Missed and Remembered: The Letter from Mayoiga",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4042330/b95bdb77365014d3c23e3c1cc5f0a928b6b69a14/header.jpg?t=1782442778",
+      "url": "https://store.steampowered.com/app/4042330/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 3751950,
+      "title": "Assassin's Creed Black Flag Resynced",
+      "category": "Top 20",
+      "price": "A$ 99.95",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top 20",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3751950/9b046115b1663a4be2b252712328e4f6c162da68/header.jpg?t=1783617053",
+      "url": "https://store.steampowered.com/app/3751950/",
+      "meta": "Top 20",
+      "note": "Store page lists 2 editions.",
+      "editions": [
+        {
+          "label": "Assassin's Creed Black Flag Resynced",
+          "price": "$99.95"
+        },
+        {
+          "label": "Assassin's Creed Black Flag Resynced Deluxe Edition",
+          "price": "$104.95"
+        }
+      ]
+    },
+    {
+      "appid": 4165910,
+      "title": "Steam Machine",
+      "category": "Top 20",
+      "price": "A$ 1,609.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top 20",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4165910/6e3f2fedcd1e7faa80fe3b5c349a62a73dde5d10/header.jpg?t=1782171053",
+      "url": "https://store.steampowered.com/app/4165910/",
+      "meta": "Top 20",
+      "note": "Store page lists 4 editions.",
+      "editions": [
+        {
+          "label": "Steam Machine 512GB",
+          "price": "$1,609.00"
+        },
+        {
+          "label": "Steam Machine 512GB with Controller",
+          "price": "$1,728.00"
+        },
+        {
+          "label": "Steam Machine 2TB",
+          "price": "$2,109.00"
+        },
+        {
+          "label": "Steam Machine 2TB with Controller",
+          "price": "$2,228.00"
+        }
+      ]
+    },
+    {
+      "appid": 3967710,
+      "title": "Walrus Fly",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3967710/2509515013933ae89f846bb2b8eb7d3915afb363/header.jpg?t=1779900274",
+      "url": "https://store.steampowered.com/app/3967710/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4111600,
+      "title": "8AM: The Subway",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4111600/3385ffab5e52a5b6f6bd13e69c228849e7ee875c/header.jpg?t=1781547137",
+      "url": "https://store.steampowered.com/app/4111600/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 3668890,
+      "title": "The Legend of Abdal",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3668890/5ac7f1713c1a544fffc81b4b49ccc593cff9d7da/header.jpg?t=1783637092",
+      "url": "https://store.steampowered.com/app/3668890/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4165870,
+      "title": "Steam Controller",
+      "category": "Top 20",
+      "price": "A$ 149.00",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Top 20",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4165870/92216652a0db709183f802117b47323c3a249433/header.jpg?t=1777592825",
+      "url": "https://store.steampowered.com/app/4165870/",
+      "meta": "Top 20",
+      "note": "Store page lists 1 edition.",
+      "editions": [
+        {
+          "label": "Steam Controller",
+          "price": "$149.00"
+        }
+      ]
+    },
+    {
+      "appid": 4877890,
+      "title": "Touhou Russian Roulette",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4877890/cb32067b3be69453f4c27e3cf251e18795933a69/header.jpg?t=1783153104",
+      "url": "https://store.steampowered.com/app/4877890/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    },
+    {
+      "appid": 4833000,
+      "title": "Red Rooms",
+      "category": "Pre-order",
+      "price": "Free",
+      "originalPrice": "",
+      "discount": 0,
+      "tag": "Pre-order",
+      "image": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4833000/f5e2da01c831877560175b004db472c9f94f4285/header.jpg?t=1783627232",
+      "url": "https://store.steampowered.com/app/4833000/",
+      "meta": "Pre-order",
+      "note": "Upcoming on Steam. Open the store page for release/pre-order details.",
+      "editions": []
+    }
+  ],
   "completedGames": [
     {
       "title": "100% games pending",
@@ -27,22 +538,7 @@
       "note": "This fills from achievement data when the Steam API refresh succeeds."
     }
   ],
-  "storeHighlights": [
-    {
-      "title": "Steam Store feed pending",
-      "category": "Steam",
-      "tag": "Store",
-      "price": "API refresh",
-      "note": "The deployment workflow fills this with sales, popular games, new releases, and coming soon titles."
-    }
-  ],
-  "preorderWatch": [
-    {
-      "title": "Pre-order / Top 20 feed pending",
-      "meta": "Steam Store",
-      "price": "API refresh",
-      "note": "Shows one randomized upcoming/pre-order or top 20 Steam game at a time after the store refresh runs.",
-      "url": "https://store.steampowered.com/"
-    }
-  ]
+  "stale": true,
+  "lastGoodAt": "2026-07-08T00:00:00.000Z",
+  "status": "Showing last saved Steam values from 2026-07-08T00:00:00.000Z."
 }

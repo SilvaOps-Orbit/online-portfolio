@@ -1,6 +1,1154 @@
 {
-  "generatedAt": null,
-  "source": "fallback",
-  "status": "News refresh is not connected yet. Showing safe placeholder stories.",
-  "items": []
+  "generatedAt": "2026-07-09T23:59:47.390Z",
+  "source": "RSS",
+  "stale": false,
+  "lastGoodAt": "2026-07-09T23:59:47.390Z",
+  "status": "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, finance, and Australia rows.",
+  "items": [
+    {
+      "category": "Breaking Worldwide",
+      "title": "Palestinians mourn Gaza World Cup screenings organiser killed in Israeli strike",
+      "snippet": "Aid worker Mohammed al-Wahidi had become a prominent humanitarian figure during the Israel-Hamas war.",
+      "url": "https://www.bbc.co.uk/news/articles/cwylznzjk04o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/52c1/live/a90ff130-7bd9-11f1-a606-4508f5fb0e83.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 21:04:09 GMT",
+      "importance": "War / conflict",
+      "importanceScore": 6,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Israel / Gaza / Palestine.",
+      "affectedRegion": "Israel / Gaza / Palestine",
+      "isBreaking": true,
+      "isWar": true,
+      "tags": [
+        "Breaking",
+        "War"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Nato allies announce £37bn for new missile project",
+      "snippet": "Prime Minister Sir Keir Starmer will convene around a dozen leaders to discuss the programme in Ankara.",
+      "url": "https://www.bbc.co.uk/news/articles/ckg4e3lwzqzo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/4b9c/live/d6af33b0-7a73-11f1-b49c-fd67f645cd09.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 05:57:53 GMT",
+      "importance": "War / conflict",
+      "importanceScore": 6,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Europe.",
+      "affectedRegion": "Europe",
+      "isBreaking": true,
+      "isWar": true,
+      "tags": [
+        "Breaking",
+        "War"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "International court tells BBC of breakthrough in Sudan war crimes probe",
+      "snippet": "The ICC has been looking into atrocities committed in Darfur over the past three years.",
+      "url": "https://www.bbc.co.uk/news/articles/c9928zr2m5xo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/6422/live/570d66a0-7b67-11f1-bee8-53ce494e1abc.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 08:49:45 GMT",
+      "importance": "War / conflict",
+      "importanceScore": 6,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": true,
+      "tags": [
+        "Breaking",
+        "War"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Ukraine to get licence to produce Patriot missiles, Trump says",
+      "snippet": "Although the Patriots are highly effective against Russia's ballistic missiles, they also have lengthy production times.",
+      "url": "https://www.bbc.co.uk/news/articles/ce8klree690o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/9ca1/live/ce2ce8c0-7af2-11f1-94d8-c95634a95d3e.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 17:18:14 GMT",
+      "importance": "War / conflict",
+      "importanceScore": 6,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
+      "affectedRegion": "Ukraine / Russia",
+      "isBreaking": true,
+      "isWar": true,
+      "tags": [
+        "Breaking",
+        "War"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Motherhood not all warm and fuzzy: Bollywood actor's play spotlights messier side",
+      "snippet": "As a society, we take mothers for granted and raising children is a thankless job, says actor Kalki Koechlin.",
+      "url": "https://www.bbc.co.uk/news/articles/c04yxnlkdxzo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/5f9c/live/53967ec0-79fb-11f1-bee8-53ce494e1abc.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 22:41:08 GMT",
+      "importance": "War / conflict",
+      "importanceScore": 6,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": true,
+      "tags": [
+        "Breaking",
+        "War"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "US and Iran trade attacks as Khamenei is buried",
+      "snippet": "Centcom says it hit 90 Iranian targets in the latest round of strikes, with the Iranian health ministry saying 14 people were killed since Tuesday.",
+      "url": "https://www.bbc.co.uk/news/articles/cz75zjj5wp8o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/066e/live/c9c79920-7bbe-11f1-8b3b-4de03d5aab17.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 23:02:18 GMT",
+      "importance": "Developing",
+      "importanceScore": 4,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Iran.",
+      "affectedRegion": "Iran",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Ukraine strikes Russian ships near Crimea, escalating attacks on fuel supplies",
+      "snippet": "The attacks appear to be the latest phase of Ukraine's bid to choke off supplies and routes into and out of occupied Crimea.",
+      "url": "https://www.bbc.co.uk/news/articles/c70yd1g67z5o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/db10/live/4259e690-7ac5-11f1-b541-536d253827b8.png",
+      "publishedAt": "Thu, 09 Jul 2026 15:21:17 GMT",
+      "importance": "Developing",
+      "importanceScore": 4,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
+      "affectedRegion": "Ukraine / Russia",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Big fall in oil, gas and cargo ships taking US-backed Hormuz route after new strikes",
+      "snippet": "Data shows a decline in the number of ships - many carrying oil and gas - going through the waterway after attacks this week.",
+      "url": "https://www.bbc.co.uk/news/articles/c621k5r8764o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/10e5/live/1177ac50-7ba2-11f1-bee8-53ce494e1abc.png",
+      "publishedAt": "Thu, 09 Jul 2026 14:41:54 GMT",
+      "importance": "Developing",
+      "importanceScore": 4,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Teenager arrested after two girls, 13, seriously injured in German school attack",
+      "snippet": "Police said a major operation was under way in the area of Welfen-Gymnasium secondary school in Schongau, Bavaria.",
+      "url": "https://www.bbc.co.uk/news/articles/c0qyvkgndzpo?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/06e6/live/ba4f3b90-7ada-11f1-9c5e-418249f4ce83.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 15:09:08 GMT",
+      "importance": "Developing",
+      "importanceScore": 4,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Ukrainian agent accused of murdering Monaco bomb suspect changes story",
+      "snippet": "Two men with links to Ukraine's security services are accused of killing Anastasiia Berezovska and dumping her body in woods.",
+      "url": "https://www.bbc.co.uk/news/articles/cpv3e8y39j7o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/776a/live/6ba45870-7bd1-11f1-b543-9988255dfa81.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 20:47:41 GMT",
+      "importance": "Developing",
+      "importanceScore": 2,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine.",
+      "affectedRegion": "Ukraine",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Tensions erupt in Indian state after 11-year-old raped and murdered",
+      "snippet": "The girl's body was fished out from a pond on Sunday - a day after her family reported her missing.",
+      "url": "https://www.bbc.co.uk/news/articles/cze9zd8drzro?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/ed61/live/dd1b5570-7b8c-11f1-bee8-53ce494e1abc.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 11:09:17 GMT",
+      "importance": "Developing",
+      "importanceScore": 2,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: India.",
+      "affectedRegion": "India",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Breaking Worldwide",
+      "title": "Democrat Graham Platner suspends campaign for key US Senate race after assault allegation",
+      "snippet": "The decision came days after a woman accused him of sexual assault, an accusation he says is \"categorically false\".",
+      "url": "https://www.bbc.co.uk/news/articles/c9v229434p2o?at_medium=RSS&at_campaign=rss",
+      "source": "BBC News",
+      "sourceApi": "BBC News",
+      "sourceApis": [
+        "BBC News"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/e675/live/2d7ced30-7b2e-11f1-8a1e-d1fe57c2b5bf.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 14:37:19 GMT",
+      "importance": "Developing",
+      "importanceScore": 2,
+      "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
+      "affectedRegion": "Worldwide",
+      "isBreaking": true,
+      "isWar": false,
+      "tags": [
+        "Breaking"
+      ]
+    },
+    {
+      "category": "Gaming",
+      "title": "The Elder Scrolls 6 Will Suffer Because of Xbox Layoffs, Bethesda Staff Say, Fearing Delays, Crunch, and Generational Talent Being Replaced by Contractors",
+      "snippet": "This week's devastating Xbox layoffs will have a \"substantial and cascading effect\" on Bethesda's development of The Elder Scrolls 6, multiple staff at the studio have told IGN.",
+      "url": "https://www.ign.com/articles/the-elder-scrolls-6-will-suffer-because-of-xbox-layoffs-bethesda-staff-say-fearing-delays-crunch-and-generational-talent-being-replaced-by-contractors",
+      "source": "IGN",
+      "sourceApi": "IGN",
+      "sourceApis": [
+        "IGN"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://assets-prd.ignimgs.com/2026/07/09/skyrim-shouts-1783596573641.jpg",
+      "publishedAt": "Thu, 9 Jul 2026 11:30:58 +0000",
+      "importance": "High impact",
+      "importanceScore": 10,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Obsidian is reportedly making a new Fallout game headed by Josh Sawyer after Microsoft pulled the plug on an Avowed sequel",
+      "snippet": "25% of the studio's workforce was let go in the sweeping Xbox layoffs, and multiple games in development were cancelled.",
+      "url": "https://www.pcgamer.com/games/fallout/obsidian-is-reportedly-making-a-new-fallout-game-headed-by-josh-sawyer-after-microsoft-pulled-the-plug-on-an-avowed-sequel/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/emMNB4JSxUjoJCd2NYw8Vm-1280-80.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 19:15:24 +0000",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "id Software Was Reportedly 'Toying With' Pitches for a New Perfect Dark, a John Wick-Inspired Game, and More Before Layoffs",
+      "snippet": "id Software was reportedly toying with a bunch of ideas for future game projects when Microsoft laid off more than half of the studio.",
+      "url": "https://www.ign.com/articles/id-software-was-reportedly-toying-with-pitches-for-a-new-perfect-dark-a-john-wick-inspired-game-and-more-before-layoffs",
+      "source": "IGN",
+      "sourceApi": "IGN",
+      "sourceApis": [
+        "IGN"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://assets-prd.ignimgs.com/2026/07/08/doomthumb-1783524521667.png",
+      "publishedAt": "Thu, 9 Jul 2026 00:08:14 +0000",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Microsoft filing shows total ZeniMax layoffs at 379, with over half coming from Elder Scrolls Online studio that's lost at least 60% of its staff in the past year",
+      "snippet": "213 from ZeniMax Online Studios, 166 from ZeniMax Media (which includes the layoffs at Bethesda Game Studios).",
+      "url": "https://www.pcgamer.com/gaming-industry/microsoft-filing-shows-total-zenimax-layoffs-at-379-with-over-half-coming-from-elder-scrolls-online-studio-thats-lost-at-least-60-percent-of-its-staff-in-the-past-year/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/bnrV5SMzXEnpc5WVECrFn8-1280-80.png",
+      "publishedAt": "Thu, 09 Jul 2026 18:05:16 +0000",
+      "importance": "Important",
+      "importanceScore": 6,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Laid-Off MindsEye Developers Plan Protest Outside Company Office Over 'All-Expenses-Paid Playtest Day'",
+      "snippet": "MindsEye developers who have lost their jobs will protest outside the studio’s office over what they have described as an “all-expenses-paid playtest day.”",
+      "url": "https://www.ign.com/articles/laid-off-mindseye-developers-plan-protest-outside-company-office-over-all-expenses-paid-playtest-day",
+      "source": "IGN",
+      "sourceApi": "IGN",
+      "sourceApis": [
+        "IGN"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://assets-prd.ignimgs.com/2025/06/05/ss-c161f11c9eb64b673ec976f95383f924991cecb5-1920x1080-1749122336673.jpg",
+      "publishedAt": "Thu, 9 Jul 2026 11:51:31 +0000",
+      "importance": "Important",
+      "importanceScore": 6,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Steam was showing a 'too many requests' error, but it's back",
+      "snippet": "If Steam said \"You've made too many requests recently,\" don't worry: it's wasn't just you.",
+      "url": "https://www.pcgamer.com/games/steam-is-down-july-9-2026/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/ocyiDF76QwDQKRvvKB2hRQ-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 23:16:19 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "US Federal Reserve taps Xbox CEO Asha Sharma, who just laid off 3,200 employees, to lead task force on jobs",
+      "snippet": "The Federal Reserve says its newly-announced task forces represent a \"commitment to price stability and maximum employment.\"",
+      "url": "https://www.pcgamer.com/gaming-industry/us-federal-reserve-taps-xbox-ceo-asha-sharma-who-just-laid-off-3-200-employees-to-lead-task-force-on-jobs/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/fZ7TQ2ESwMUYXbS8QFfaML-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 21:11:00 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Palworld studio says delete your old mods before the 1.0 release: 'Disabling them is not enough'",
+      "snippet": "Old mod data could cause real trouble with all the changes made for the big launch.",
+      "url": "https://www.pcgamer.com/games/survival-crafting/palworld-studio-says-delete-your-old-mods-before-the-1-0-release-disabling-them-is-not-enough/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/pqaMAMqJoEsFDjJ9EobqG5-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 18:23:30 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Palworld won't raise its price for 1.0 as 'a small way of saying thank you'",
+      "snippet": "One less thing to worry about ahead of the 1.0 release.",
+      "url": "https://www.pcgamer.com/games/survival-crafting/palworld-wont-raise-its-price-for-1-0-as-a-small-way-of-saying-thank-you/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/pMwe89CAykJMFJyYrfJjmS-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 15:48:06 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Xbox layoffs have likely killed another Perfect Dark reboot from the hollowed-out id Software, as well as a John Wick-style gun fu game",
+      "snippet": "It's not even clear what kind of games the newly-carved up id Software can make.",
+      "url": "https://www.pcgamer.com/gaming-industry/xbox-layoffs-have-likely-killed-another-perfect-dark-reboot-from-the-hollowed-out-id-software-as-well-as-a-john-wick-style-gun-fu-game/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/iX6AVXqZwfR7jQpuyjaH2C-1280-80.jpg",
+      "publishedAt": "Thu, 09 Jul 2026 13:53:33 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "MindsEye developers protest against a fan event their own studio is hosting",
+      "snippet": "Another bizarre twist in the Build a Rocket Boy saga.",
+      "url": "https://www.pcgamer.com/games/action/mindseye-developers-protest-against-a-fan-event-their-own-studio-is-hosting/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/mc6nhxjANhSfqrVhxKnUam-1280-80.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 22:34:46 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Gaming",
+      "title": "Laid-off id Software artist says Microsoft is 'nuking the team into the dirt' and is now the size of a 'support studio'",
+      "snippet": "\"This is what insanity and despicable corporate greed looks like,\" said another artist.",
+      "url": "https://www.pcgamer.com/gaming-industry/laid-off-id-software-artist-says-microsoft-is-nuking-the-team-into-the-dirt-and-is-now-the-size-of-a-support-studio/",
+      "source": "PC Gamer",
+      "sourceApi": "PC Gamer",
+      "sourceApis": [
+        "PC Gamer"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://cdn.mos.cms.futurecdn.net/YMYMJmh7R828SpDfLXPfXd-1280-80.jpg",
+      "publishedAt": "Wed, 08 Jul 2026 21:11:11 +0000",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Gaming updates keep the portfolio tied to releases, platforms, studios, and the culture around your Steam section.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Kalshi traders see roughly 50% odds of a rate hike in 2026 as Fed is split on policy",
+      "snippet": "Wednesday's Fed minutes showed a divided outlook on where interest rates are headed this year. Traders on Kalshi see a 54% likelihood of a hike before 2027.",
+      "url": "https://www.cnbc.com/2026/07/09/kalshi-traders-see-roughly-50percent-odds-of-a-rate-hike-in-2026-as-fed-is-split-on-policy.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 19:24:21 GMT",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Kevin Warsh names members of his Federal Reserve task forces, including Marc Andreessen, Doug McMillon",
+      "snippet": "Federal Reserve Chairman Kevin Warsh on Thursday released names of the experts who will comprise five task forces to examine the institution's operations.",
+      "url": "https://www.cnbc.com/2026/07/09/kevin-warsh-names-members-of-his-federal-reserve-task-forces-including-marc-andreessen-doug-mcmillon.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 19:53:20 GMT",
+      "importance": "Market impact",
+      "importanceScore": 6,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Revenue and Growth Outlook Affirm Why Taiwan Semiconductor Manufacturing Co. (TSM) is a Top AI Stock on Wall Street’s Radar",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/technology/ai/articles/revenue-growth-outlook-affirm-why-153912617.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://media.zenfs.com/en/insidermonkey.com/a99fb68631ca24eb25c6859d7e68279b",
+      "publishedAt": "2026-07-08T15:39:12Z",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "New Fed task force members share Chairman Kevin Warsh's embrace of AI",
+      "snippet": "The three members of a task force advising the Fed on artificial intelligence are strong proponents of the technology.",
+      "url": "https://www.cnbc.com/2026/07/09/fed-task-force-member-chairman-kevin-warsh-ai.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 23:00:10 GMT",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "June home sales disappoint as prices reach an all-time high",
+      "snippet": "Home sales dropped in June month over month as mortgage rates remain stubbornly high. Prices hit an all-time high.",
+      "url": "https://www.cnbc.com/2026/07/09/june-home-sales-prices.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 14:44:29 GMT",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Meta jumps into AI coding market in effort to chase Anthropic and OpenAI",
+      "snippet": "Meta is upgrading its Muse Spark artificial intelligence model under the leadership of AI chief Alexandr Wang.",
+      "url": "https://www.cnbc.com/2026/07/09/meta-jumps-into-ai-coding-market-to-chase-anthropic-and-openai.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 14:00:01 GMT",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Anthropic appoints former Fed Chair Ben Bernanke to its independent trust",
+      "snippet": "Members of the trust advise Anthropic leadership and do not hold any equity in the company.",
+      "url": "https://www.cnbc.com/2026/07/09/anthropic-fed-chair-bernanke-independent-trust.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 17:23:40 GMT",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Action-starved traders look to small-cap stocks for the next big move",
+      "snippet": "One of the biggest options trades in the entire market Thursday seems to suggest small caps might lead the next move up or down.",
+      "url": "https://www.cnbc.com/2026/07/09/action-starved-traders-look-to-small-cap-stocks-for-the-next-big-move.html",
+      "source": "CNBC",
+      "sourceApi": "CNBC",
+      "sourceApis": [
+        "CNBC"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thu, 09 Jul 2026 17:58:07 GMT",
+      "importance": "Market impact",
+      "importanceScore": 5,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Samsung's profits jumped 1,800% and beat Apple and Nvidia — and investors dumped the stock anyway",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/samsungs-profits-jumped-1-800-163500674.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://media.zenfs.com/en/moneywise_327/0b3333e57a0f18ffbdbf3da67248b715",
+      "publishedAt": "2026-07-08T16:35:00Z",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "U.S. Dollar Gains Ground Amid Rally In The Oil Markets: Analysis For EUR/USD, GBP/USD, USD/CAD, USD/JPY",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/markets/currencies/articles/u-dollar-gains-ground-amid-164043184.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://media.zenfs.com/en/fx_empire_176/5cdccc968b7be2c58e956672727ee865",
+      "publishedAt": "2026-07-08T16:40:43Z",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Tech stocks live: Tech stocks buffeted by AI bubble concerns, dip-buying",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/technology/live/tech-stocks-live-tech-stocks-buffeted-by-ai-bubble-concerns-dip-buying-131003284.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://s.yimg.com/uu/api/res/1.2/3gsOJJ8Ez13ZKpEiUSdu0Q--~B/aD0yMDgwO3c9MzEyMDthcHBpZD15dGFjaHlvbg--/https://d29szjachogqwa.cloudfront.net/images/2026-07/d4381404-64f8-4bb7-bf6d-8920b09f97f0",
+      "publishedAt": "2026-07-06T13:10:03Z",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Finance",
+      "title": "Nvidia Is Allegedly Delaying Its Kyber Rack-Scale Architecture by More Than 12 Months. What This Means for NVDA Stock.",
+      "snippet": "",
+      "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-allegedly-delaying-kyber-rack-155030298.html",
+      "source": "Yahoo Finance",
+      "sourceApi": "Yahoo Finance",
+      "sourceApis": [
+        "Yahoo Finance"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "https://media.zenfs.com/en/barchart_com_477/e6f9cbf762054b4a83941a8757d2d9f9",
+      "publishedAt": "2026-07-08T15:50:30Z",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Finance headlines can explain stock moves and help visitors understand the watchlist context.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Strengthening cooperation on defence and security with India",
+      "snippet": "Australia and India will strengthen cooperation on defence and security to support our shared vision for a peaceful, stable and prosperous Indo-Pacific. &nbsp;Prime Minister Anthony...",
+      "url": "https://www.pm.gov.au/media/strengthening-cooperation-defence-and-security-india",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Australia-India Joint Declaration on Defence and Security Cooperation (2026)",
+      "snippet": "We, the Prime Ministers of India and Australia, drawn together by our ever closer bilateral ties, united in our determination to strengthen our nations’ strategic partnership and motivated...",
+      "url": "https://www.pm.gov.au/media/australia-india-joint-declaration-defence-security-cooperation",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Australian-made electric trucks to keep Australia moving",
+      "snippet": "The Albanese Labor Government is backing local jobs and manufacturing through its investments in Australian-made electric trucks – with the first locally built Volvo electric truck rolling...",
+      "url": "https://www.pm.gov.au/media/australian-made-electric-trucks-keep-australia-moving",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Wednesday 8 July 2026",
+      "importance": "High impact",
+      "importanceScore": 8,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Building stronger cultural ties between Australia and India",
+      "snippet": "The Australian Government is deepening cultural cooperation with India, building on our strong relationship and people-to-people links.Prime Minister Albanese has welcomed progress to...",
+      "url": "https://www.pm.gov.au/media/building-stronger-cultural-ties-between-australia-and-india",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Important",
+      "importanceScore": 6,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Collaborating with India on energy and resources",
+      "snippet": "Australia and India are working together to strengthen cooperation on energy security and supply chain resilience.Prime Minister Anthony Albanese and Prime Minister Shri Narendra Modi of...",
+      "url": "https://www.pm.gov.au/media/collaborating-india-energy-and-resources",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Australia-India Joint Statement on Energy Security",
+      "snippet": "Australia and India are Comprehensive Strategic Partners with a common vision for&nbsp;a&nbsp;free, open and prosperous Indo-Pacific region.&nbsp;Australia and India share deep concern...",
+      "url": "https://www.pm.gov.au/media/australia-india-joint-statement-energy-security",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Scoring tries and strengthening ties in the Pacific",
+      "snippet": "The Australian Government is helping grow rugby league across the Pacific, committing $250 million over 10 years to the Pacific Rugby League Partnership.Prime Minister Anthony Albanese...",
+      "url": "https://www.pm.gov.au/media/scoring-tries-and-strengthening-ties-pacific",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Wednesday 8 July 2026",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Delivering real change for Australians on July 1",
+      "snippet": "The Albanese Labor Government is delivering real change&nbsp;for Australians, with a suite of cost-of-living measures starting on 1 July 2026, including more tax cuts,&nbsp;a full six...",
+      "url": "https://www.pm.gov.au/media/delivering-real-change-australians-july-1",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Wednesday 1 July 2026",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Australian Local Government Association gala dinner",
+      "snippet": "I begin by acknowledging the traditional owners of the land on which we meet, and I pay my respects to Elders past, present and emerging.I’d also like to acknowledge Australian Local...",
+      "url": "https://www.pm.gov.au/media/australian-local-government-association-gala-dinner",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 25 June 2026",
+      "importance": "Important",
+      "importanceScore": 5,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Advancing education, science and technology ties with India",
+      "snippet": "Australia and India are committed to unlocking the full potential of our relationship by investing in education, science and technology. &nbsp;Prime Minister Anthony Albanese and Prime...",
+      "url": "https://www.pm.gov.au/media/advancing-education-science-and-technology-ties-india",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Australia-India Economic Roadmap Business Reception",
+      "snippet": "Thank you to the Centre for Australia-India Relations and Ryan for organising this reception.I begin by acknowledging the traditional owners of the land we’re meeting on and pay my respect...",
+      "url": "https://www.pm.gov.au/media/australia-india-economic-roadmap-business-reception",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    },
+    {
+      "category": "Australia",
+      "title": "Third Australia–India Annual Summit Joint Statement",
+      "snippet": "At the invitation of the Prime Minister of Australia the Honourable Anthony Albanese MP, the Honourable Prime Minister of India, Shri Narendra Modi visited Australia from 8-10 July 2026...",
+      "url": "https://www.pm.gov.au/media/australia-india-joint-statement",
+      "source": "Prime Minister of Australia",
+      "sourceApi": "Prime Minister of Australia",
+      "sourceApis": [
+        "Prime Minister of Australia"
+      ],
+      "sourceGroup": "RSS",
+      "sourceGroups": [
+        "RSS"
+      ],
+      "image": "",
+      "publishedAt": "Thursday 9 July 2026",
+      "importance": "Watch",
+      "importanceScore": 4,
+      "why": "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.",
+      "isBreaking": false,
+      "isWar": false,
+      "tags": []
+    }
+  ]
 }
