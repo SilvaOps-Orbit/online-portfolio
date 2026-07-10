@@ -28,21 +28,6 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `.github/workflows/*.yml` - deploy and refresh workflows.
 - `_headers` - security/cache headers for hosts that support them.
 
-## Running it locally
-
-From PowerShell:
-
-```powershell
-cd "C:\Users\Alvis ICT\Desktop\resume website github"
-py -m http.server 8010 --bind 127.0.0.1
-```
-
-Then open:
-
-```text
-http://127.0.0.1:8010
-```
-
 ## Things I edit by hand
 
 Most of the personal content lives in `portfolio.config.js`.
