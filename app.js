@@ -12,6 +12,7 @@
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
   let marketSignalTimer = 0;
+  let roadmapCourseSwitchTimer = 0;
   let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
@@ -172,6 +173,690 @@
       row.append(header, meter);
       skillList.append(row);
     });
+
+    renderCareerRoadmap();
+  }
+
+  function parseRoadmapDate(value) {
+    if (typeof value !== "string" || !value.trim()) return null;
+    const date = new Date(`${value.trim()}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  function addRoadmapDays(date, days) {
+    const copy = new Date(date.getTime());
+    copy.setDate(copy.getDate() + Number(days || 0));
+    return copy;
+  }
+
+  function roadmapDateKey(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function roadmapCalendar() {
+    return config.careerRoadmap?.studyCalendar || {};
+  }
+
+  function roadmapStudyDays(calendar, course) {
+    const customDays = Array.isArray(course?.studyDays) ? course.studyDays : calendar.studyDays;
+    const days = Array.isArray(customDays) ? customDays.map(Number).filter((day) => day >= 0 && day <= 6) : [];
+    return days.length ? days : [1, 2, 3, 4, 5];
+  }
+
+  function roadmapRangeContains(date, range) {
+    const start = parseRoadmapDate(range?.start);
+    const end = parseRoadmapDate(range?.end);
+    return Boolean(start && end && date >= start && date <= end);
+  }
+
+  function roadmapTermDates(calendar) {
+    return (Array.isArray(calendar.schoolTerms) ? calendar.schoolTerms : [])
+      .map((term) => ({
+        start: parseRoadmapDate(term.start),
+        end: parseRoadmapDate(term.end)
+      }))
+      .filter((term) => term.start && term.end)
+      .sort((a, b) => a.start.getTime() - b.start.getTime());
+  }
+
+  function roadmapDateWithinTermWindow(date, terms) {
+    if (!terms.length) return false;
+    const firstYearStart = new Date(terms[0].start.getFullYear(), 0, 1);
+    const last = terms[terms.length - 1].end;
+    return date >= firstYearStart && date <= last;
+  }
+
+  function roadmapDateInTerm(date, terms) {
+    return terms.some((term) => date >= term.start && date <= term.end);
+  }
+
+  function isRoadmapPublicHoliday(date, calendar, course) {
+    if (course?.usePublicHolidays === false) return false;
+    const holidays = [
+      ...(Array.isArray(calendar.publicHolidays) ? calendar.publicHolidays : []),
+      ...(Array.isArray(course?.publicHolidays) ? course.publicHolidays : [])
+    ];
+    if (!holidays.length) return false;
+
+    const key = roadmapDateKey(date);
+    const isHoliday = holidays.some((holiday) => {
+      const holidayDate = typeof holiday === "string" ? holiday : holiday?.date;
+      return holidayDate === key;
+    });
+    if (!isHoliday) return false;
+
+    const studyDays = roadmapStudyDays(calendar, course);
+    return course?.countWeekendPublicHolidays === true || studyDays.includes(date.getDay());
+  }
+
+  function isRoadmapSchoolBreak(date, calendar, course) {
+    if (course?.useSchoolTerms === false) return false;
+    const terms = roadmapTermDates(calendar);
+    if (!roadmapDateWithinTermWindow(date, terms)) return false;
+    return !roadmapDateInTerm(date, terms);
+  }
+
+  function isRoadmapCustomBlockedDate(date, calendar, course) {
+    const blockedRanges = [
+      ...(Array.isArray(calendar.blockedDateRanges) ? calendar.blockedDateRanges : []),
+      ...(Array.isArray(course?.blockedDateRanges) ? course.blockedDateRanges : [])
+    ];
+    if (blockedRanges.some((range) => roadmapRangeContains(date, range))) return true;
+
+    const blockedDates = [
+      ...(Array.isArray(calendar.blockedDates) ? calendar.blockedDates : []),
+      ...(Array.isArray(course?.blockedDates) ? course.blockedDates : [])
+    ];
+    return blockedDates.some((blocked) => {
+      const blockedDate = typeof blocked === "string" ? blocked : blocked?.date;
+      return blockedDate === roadmapDateKey(date);
+    });
+  }
+
+  function isRoadmapCourseBlockedDate(date, course) {
+    if (course?.useStudyCalendar === false) return false;
+    const calendar = roadmapCalendar();
+    const studyDays = roadmapStudyDays(calendar, course);
+    const skipWeekends = course?.skipWeekends ?? calendar.skipWeekends ?? false;
+
+    if (skipWeekends && !studyDays.includes(date.getDay())) return true;
+    return (
+      isRoadmapPublicHoliday(date, calendar, course) ||
+      isRoadmapSchoolBreak(date, calendar, course) ||
+      isRoadmapCustomBlockedDate(date, calendar, course)
+    );
+  }
+
+  function courseDurationDays(course) {
+    const days = Number(course?.durationDays || 0);
+    if (Number.isFinite(days) && days > 0) return days;
+
+    const hours = Number(course?.durationHours || 0);
+    if (Number.isFinite(hours) && hours > 0) {
+      return Math.max(hours / 8, 0.5);
+    }
+
+    return 0;
+  }
+
+  function estimateCourseEndDate(course) {
+    const explicitEnd = parseRoadmapDate(course?.endDate);
+    if (explicitEnd) return explicitEnd;
+
+    const start = parseRoadmapDate(course?.startDate);
+    const days = courseDurationDays(course);
+    if (!start || !days) return null;
+
+    const targetDays = Math.ceil(days);
+    const end = new Date(start.getTime());
+    let remainingDays = targetDays;
+    let safety = 0;
+    const safetyLimit = targetDays + 2500;
+
+    while (remainingDays > 0 && safety < safetyLimit) {
+      end.setDate(end.getDate() + 1);
+      if (!isRoadmapCourseBlockedDate(end, course)) {
+        remainingDays -= 1;
+      }
+      safety += 1;
+    }
+
+    return end;
+  }
+
+  function courseFinishMetaLabel(course) {
+    return parseRoadmapDate(course?.endDate) ? "Finish" : "Auto finish";
+  }
+
+  function roadmapCourseCalendarNote(course) {
+    if (!parseRoadmapDate(course?.startDate) || parseRoadmapDate(course?.endDate) || course?.useStudyCalendar === false) {
+      return "";
+    }
+
+    const calendar = roadmapCalendar();
+    const skipped = [];
+    if (course?.useSchoolTerms !== false && Array.isArray(calendar.schoolTerms) && calendar.schoolTerms.length) {
+      skipped.push("school breaks");
+    }
+    if (course?.usePublicHolidays !== false && Array.isArray(calendar.publicHolidays) && calendar.publicHolidays.length) {
+      skipped.push("weekday public holidays");
+    }
+    if ((course?.skipWeekends ?? calendar.skipWeekends) === true) {
+      skipped.push("weekends");
+    }
+
+    return skipped.length ? `Auto estimate pauses for ${skipped.join(", ")}.` : "";
+  }
+
+  function formatRoadmapDate(date, fallback = "TBC") {
+    const parsed = date instanceof Date ? date : parseRoadmapDate(date);
+    if (!parsed) return fallback;
+
+    return parsed.toLocaleDateString("en-AU", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+  }
+
+  function normalizeRoadmapStatus(status) {
+    return String(status || "incomplete").toLowerCase().trim().replace(/[_\s]+/g, "-");
+  }
+
+  function roadmapStatusProgress(status) {
+    const normalized = normalizeRoadmapStatus(status);
+    if (["complete", "completed", "certified", "uploaded"].includes(normalized)) return 100;
+    if (["in-progress", "current", "active"].includes(normalized)) return 45;
+    if (["ready", "booked", "scheduled"].includes(normalized)) return 20;
+    if (["incomplete", "not-started", "planned", "future", "locked"].includes(normalized)) return 0;
+    return 0;
+  }
+
+  function roadmapItemProgress(item) {
+    if (item?.certificateImageUrl || item?.certificateUrl || item?.completedDate) return 100;
+    return roadmapStatusProgress(item?.status);
+  }
+
+  function roadmapStatusLabel(item) {
+    if (item?.certificateImageUrl || item?.certificateUrl) return "evidence uploaded";
+    const normalized = normalizeRoadmapStatus(item?.status);
+    if (["complete", "completed", "certified", "uploaded"].includes(normalized)) return "complete";
+    if (["in-progress", "current", "active"].includes(normalized)) return "in progress";
+    if (["ready", "booked", "scheduled"].includes(normalized)) return normalized.replace(/-/g, " ");
+    return "incomplete";
+  }
+
+  function roadmapStatusClass(item) {
+    const progress = roadmapItemProgress(item);
+    if (progress >= 100) return "roadmap-status is-complete";
+    if (progress > 0) return "roadmap-status is-active";
+    return "roadmap-status is-incomplete";
+  }
+
+  function progressFromDates(start, end) {
+    if (!start || !end || end <= start) return null;
+    const now = new Date();
+    if (now >= end) return 100;
+    if (now <= start) return 0;
+    return ((now.getTime() - start.getTime()) / (end.getTime() - start.getTime())) * 100;
+  }
+
+  function courseProgress(course) {
+    const statusProgress = roadmapItemProgress(course);
+    if (statusProgress >= 100) return 100;
+
+    const start = parseRoadmapDate(course?.startDate);
+    const end = estimateCourseEndDate(course);
+    const dateProgress = progressFromDates(start, end);
+    if (dateProgress !== null) return Math.max(dateProgress, statusProgress);
+
+    return statusProgress;
+  }
+
+  function checklistProgress(items) {
+    const checklist = Array.isArray(items) ? items : [];
+    if (!checklist.length) return null;
+
+    const total = checklist.reduce((sum, item) => sum + roadmapStatusProgress(item.status), 0);
+    return total / checklist.length;
+  }
+
+  function milestoneProgress(milestone, coursesById) {
+    const values = [];
+
+    (milestone.courseIds || []).forEach((id) => {
+      const course = coursesById.get(id);
+      if (course) values.push(courseProgress(course));
+    });
+
+    (milestone.checklist || []).forEach((item) => values.push(roadmapItemProgress(item)));
+
+    if (!values.length) return roadmapStatusProgress(milestone.status);
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  }
+
+  function roadmapProgressElement(value, label) {
+    const progress = Math.max(0, Math.min(100, Number(value || 0)));
+    const wrap = createElement("div", "roadmap-progress");
+    const meter = createElement("span", "roadmap-progress-meter");
+    const progressValue = progress.toFixed(1);
+    wrap.dataset.progressTarget = progressValue;
+    meter.style.width = prefersReducedMotion ? `${progressValue}%` : "0%";
+    if (prefersReducedMotion) {
+      wrap.classList.add("is-filled");
+    }
+    wrap.append(meter);
+    wrap.setAttribute("role", "progressbar");
+    wrap.setAttribute("aria-label", label);
+    wrap.setAttribute("aria-valuemin", "0");
+    wrap.setAttribute("aria-valuemax", "100");
+    wrap.setAttribute("aria-valuenow", String(Math.round(progress)));
+    return wrap;
+  }
+
+  function activateRoadmapProgress(scope = document) {
+    const bars = [];
+    if (scope?.matches?.(".roadmap-progress:not(.is-filled)")) {
+      bars.push(scope);
+    }
+    bars.push(...qsa(".roadmap-progress:not(.is-filled)", scope));
+
+    bars.forEach((bar, index) => {
+      const meter = qs(".roadmap-progress-meter", bar);
+      if (!meter) return;
+      const target = Math.max(0, Math.min(100, Number(bar.dataset.progressTarget || 0)));
+      window.setTimeout(() => {
+        bar.classList.add("is-filled");
+        meter.style.width = `${target.toFixed(1)}%`;
+      }, Math.min(index * 95, 420));
+    });
+  }
+
+  function renderRoadmapMeta(label, value) {
+    const item = createElement("span", "roadmap-meta-item");
+    item.append(createElement("strong", "", label), createElement("span", "", value || "TBC"));
+    return item;
+  }
+
+  function renderRoadmapActionButton(label, className, onClick) {
+    const button = createElement("button", className, label);
+    button.type = "button";
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  function triggerAttributeEasterEgg() {
+    if (document.body.classList.contains("sf-easter-active")) return;
+
+    document.body.classList.add("sf-easter-active");
+    const overlay = createElement("div", "sf-easter");
+    overlay.setAttribute("role", "status");
+    overlay.setAttribute("aria-live", "polite");
+
+    const badge = createElement("div", "sf-easter-badge");
+    badge.append(
+      createElement("span", "", "Mission sequence accepted"),
+      createElement("strong", "", "Foras Admonitio"),
+      createElement("em", "", "Without Warning")
+    );
+
+    const mark = createElement("div", "sf-easter-mark");
+    mark.setAttribute("aria-hidden", "true");
+    Array.from({ length: 4 }, () => mark.append(createElement("span")));
+
+    overlay.append(mark, badge);
+    document.body.append(overlay);
+
+    window.setTimeout(() => {
+      document.body.classList.remove("sf-easter-active");
+      overlay.remove();
+    }, prefersReducedMotion ? 2600 : 5200);
+  }
+
+  function renderRoadmapAttributes(roadmap) {
+    const attributes = Array.isArray(roadmap.commonAttributes) ? roadmap.commonAttributes : [];
+    const sequence = Array.isArray(roadmap.commonAttributesSequence) ? roadmap.commonAttributesSequence : [];
+    const panel = createElement("div", "roadmap-attributes");
+    const heading = createElement("div", "roadmap-attributes-heading");
+    heading.append(
+      createElement("span", "roadmap-card-label", "13 common attributes"),
+      createElement("p", "", "Click an attribute to see how it is assessed under pressure.")
+    );
+    panel.append(heading);
+
+    const list = createElement("div", "roadmap-attribute-list");
+    const clickedSequence = [];
+    attributes.forEach((attribute, index) => {
+      const card = createElement("article", "roadmap-attribute-card");
+      const button = createElement("button", "roadmap-attribute-button");
+      const contentId = `roadmap-attribute-${attribute.id || index}`;
+      button.type = "button";
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", contentId);
+      button.append(
+        createElement("span", "roadmap-attribute-index", String(index + 1).padStart(2, "0")),
+        createElement("strong", "", attribute.title || "Attribute")
+      );
+
+      const meaning = createElement("p", "roadmap-attribute-meaning", attribute.meaning || "Definition pending.");
+      meaning.id = contentId;
+      meaning.hidden = true;
+
+      button.addEventListener("click", () => {
+        const isOpen = card.classList.toggle("is-open");
+        button.setAttribute("aria-expanded", String(isOpen));
+        meaning.hidden = !isOpen;
+
+        if (sequence.length) {
+          clickedSequence.push(attribute.id || "");
+          clickedSequence.splice(0, Math.max(0, clickedSequence.length - sequence.length));
+          const matched = sequence.every((id, sequenceIndex) => clickedSequence[sequenceIndex] === id);
+          if (matched) {
+            clickedSequence.length = 0;
+            triggerAttributeEasterEgg();
+          }
+        }
+      });
+
+      card.append(button, meaning);
+      list.append(card);
+    });
+    panel.append(list);
+    return panel;
+  }
+
+  function closeRoadmapCourseDock(dock, grid) {
+    if (!dock || !grid) return;
+    if (roadmapCourseSwitchTimer) {
+      window.clearTimeout(roadmapCourseSwitchTimer);
+      roadmapCourseSwitchTimer = 0;
+    }
+    qsa(".roadmap-course-card.is-selected", grid).forEach((card) => {
+      card.hidden = false;
+      card.classList.remove("is-selected");
+    });
+    dock.classList.remove("is-open", "is-showing-certificate", "is-switching");
+    dock.hidden = true;
+    dock.replaceChildren();
+  }
+
+  function openRoadmapCourseDock(course, card, dock, grid) {
+    if (!course || !card || !dock || !grid) return;
+    if (roadmapCourseSwitchTimer) {
+      window.clearTimeout(roadmapCourseSwitchTimer);
+      roadmapCourseSwitchTimer = 0;
+    }
+
+    const mountCourse = () => {
+      closeRoadmapCourseDock(dock, grid);
+
+      card.hidden = true;
+      card.classList.add("is-selected");
+      dock.hidden = false;
+      dock.classList.remove("is-showing-certificate", "is-switching");
+      dock.replaceChildren(renderRoadmapCourseDetail(course, () => closeRoadmapCourseDock(dock, grid), dock));
+
+      window.requestAnimationFrame(() => {
+        dock.classList.add("is-visible");
+        dock.classList.add("is-open");
+        activateRoadmapProgress(dock);
+      });
+    };
+
+    if (dock.classList.contains("is-open") && !dock.hidden && !prefersReducedMotion) {
+      dock.classList.add("is-switching");
+      dock.classList.remove("is-open", "is-showing-certificate");
+      roadmapCourseSwitchTimer = window.setTimeout(() => {
+        roadmapCourseSwitchTimer = 0;
+        mountCourse();
+      }, 180);
+      return;
+    }
+
+    mountCourse();
+  }
+
+  function renderCourseDetailsLink(course, className = "button roadmap-course-url-button") {
+    if (course.courseUrl) {
+      const courseLink = createElement("a", className, "View course details");
+      courseLink.href = safeUrl(course.courseUrl);
+      courseLink.target = "_blank";
+      courseLink.rel = "noopener noreferrer";
+      return courseLink;
+    }
+
+    const pending = createElement("button", `${className} roadmap-course-url-missing`, "Course link pending");
+    pending.type = "button";
+    pending.disabled = true;
+    pending.title = "Add courseUrl inside this course in portfolio.config.js.";
+    return pending;
+  }
+
+  function renderQualificationPreview(course, dock) {
+    const preview = createElement("div", "roadmap-qualification-preview");
+    const imageUrl = course.certificateImageUrl || "";
+
+    if (imageUrl) {
+      const image = createElement("img");
+      image.src = safeUrl(imageUrl);
+      image.alt = `${course.qualification || course.title || "Qualification"} certificate preview`;
+      image.loading = "lazy";
+      image.draggable = false;
+      image.addEventListener("contextmenu", (event) => event.preventDefault());
+      preview.append(image);
+    } else {
+      const placeholder = createElement("div", "roadmap-qualification-placeholder");
+      placeholder.append(
+        createElement("span", "roadmap-card-label", "Certificate"),
+        createElement("strong", "", "Pending certificate")
+      );
+      preview.append(placeholder);
+    }
+
+    const previewActions = createElement("div", "roadmap-qualification-actions");
+    previewActions.append(
+      renderCourseDetailsLink(course),
+      renderRoadmapActionButton("Close preview", "button roadmap-card-reset", () => dock.classList.remove("is-showing-certificate"))
+    );
+    preview.append(previewActions, createElement("span", "roadmap-qualification-watermark", "View only"));
+    preview.addEventListener("contextmenu", (event) => event.preventDefault());
+    return preview;
+  }
+
+  function renderRoadmapCourseDetail(course, onClose, dock) {
+    const progress = courseProgress(course);
+    const start = parseRoadmapDate(course.startDate);
+    const end = estimateCourseEndDate(course);
+    const shell = createElement("article", "roadmap-course-detail-shell");
+
+    const detailHeader = createElement("div", "roadmap-course-detail-header");
+    detailHeader.append(
+      createElement("span", "roadmap-course-category", course.category || "Course"),
+      createElement("h4", "", course.title || "Course"),
+      createElement("p", "", course.description || "Course details pending.")
+    );
+
+    const detailPanel = createElement("div", "roadmap-course-detail-panel");
+    detailPanel.append(
+      createElement("span", roadmapStatusClass(course), roadmapStatusLabel(course)),
+      roadmapProgressElement(progress, `${course.title || "Course"} progress`)
+    );
+
+    const meta = createElement("div", "roadmap-course-meta");
+    meta.append(
+      renderRoadmapMeta("Duration", course.duration || "TBC"),
+      renderRoadmapMeta("Start", formatRoadmapDate(start, "TBC")),
+      renderRoadmapMeta(courseFinishMetaLabel(course), formatRoadmapDate(end, "TBC")),
+      renderRoadmapMeta("Qualification", course.qualification || "TBC")
+    );
+    detailPanel.append(meta);
+
+    const calendarNote = roadmapCourseCalendarNote(course);
+    if (calendarNote) {
+      detailPanel.append(createElement("p", "roadmap-calendar-note", calendarNote));
+    }
+
+    const actions = createElement("div", "roadmap-course-links");
+    actions.append(renderCourseDetailsLink(course));
+
+    const viewQualification = renderRoadmapActionButton(
+      course.certificateImageUrl ? "View qualification" : "Pending certificate",
+      "button primary roadmap-qualification-button",
+      () => dock.classList.add("is-showing-certificate")
+    );
+    actions.append(viewQualification, renderRoadmapActionButton("Back to card", "button roadmap-card-reset", onClose));
+    detailPanel.append(actions);
+
+    const detailLayout = createElement("div", "roadmap-course-detail-layout");
+    detailLayout.append(detailHeader, detailPanel);
+    shell.append(detailLayout, renderQualificationPreview(course, dock));
+    return shell;
+  }
+
+  function roadmapStageKind(milestone, index) {
+    const title = String(milestone?.title || "").toLowerCase();
+    if (title.includes("qualification")) return "is-qualification";
+    if (title.includes("health") || title.includes("fitness")) return "is-readiness";
+    if (title.includes("apply") || title.includes("home")) return "is-application";
+    if (title.includes("training") || index >= 3) return "is-training";
+    return "is-general";
+  }
+
+  function renderRoadmapStageArt(kind) {
+    const art = createElement("div", `roadmap-stage-art ${kind}`);
+    for (let index = 0; index < 6; index += 1) {
+      art.append(createElement("span"));
+    }
+    return art;
+  }
+
+  function renderCareerRoadmap() {
+    const target = document.getElementById("career-roadmap");
+    if (!target) return;
+
+    const roadmap = config.careerRoadmap || {};
+    const courses = Array.isArray(roadmap.courses) ? roadmap.courses : [];
+    const milestones = Array.isArray(roadmap.milestones) ? roadmap.milestones : [];
+    const coursesById = new Map(courses.map((course) => [course.id, course]));
+    const milestoneScores = milestones.map((milestone) => milestoneProgress(milestone, coursesById));
+    const overallProgress = milestoneScores.length
+      ? milestoneScores.reduce((sum, score) => sum + score, 0) / milestoneScores.length
+      : 0;
+    const estimatedDates = courses.map(estimateCourseEndDate).filter(Boolean).sort((a, b) => b - a);
+    const estimatedCompletion = roadmap.targetDate || (estimatedDates[0] ? formatRoadmapDate(estimatedDates[0]) : "Add course dates");
+
+    target.replaceChildren();
+
+    const heading = createElement("div", "roadmap-heading");
+    const title = createElement("div");
+    title.append(
+      createElement("p", "kicker", "Career Roadmap"),
+      createElement("h2", "roadmap-title", roadmap.goal || "Career goal"),
+      createElement("p", "roadmap-summary", roadmap.summary || "A staged plan for the next chapter.")
+    );
+
+    const goalCard = createElement("article", "roadmap-goal-card");
+    const goalTop = createElement("div", "roadmap-goal-top");
+    const emblem = createElement("div", "roadmap-goal-emblem");
+    emblem.append(createElement("span", "", "Mission"), createElement("strong", "", roadmap.goalBadge || "OBJ"));
+    const goalCopy = createElement("div", "roadmap-goal-copy");
+    goalCopy.append(
+      createElement("span", "roadmap-card-label", "End goal"),
+      createElement("strong", "", roadmap.target || "Long-term target TBC")
+    );
+    goalTop.append(emblem, goalCopy);
+
+    goalCard.append(
+      goalTop,
+      createElement("p", "roadmap-goal-statement", roadmap.goalStatement || "Built one standard at a time."),
+      renderRoadmapAttributes(roadmap),
+      roadmapProgressElement(overallProgress, "Career roadmap progress"),
+      createElement("span", "roadmap-percent", `${Math.round(overallProgress)}% mapped`)
+    );
+    heading.append(title, goalCard);
+
+    const stats = createElement("div", "roadmap-stats");
+    stats.append(
+      renderRoadmapMeta("Estimated completion:", estimatedCompletion),
+      renderRoadmapMeta("Courses tracked:", String(courses.length)),
+      renderRoadmapMeta("Last updated:", formatRoadmapDate(roadmap.lastUpdated, "TBC"))
+    );
+
+    const stageGrid = createElement("div", "roadmap-stage-grid");
+    milestones.forEach((milestone, index) => {
+      const progress = milestoneScores[index] || 0;
+      const stageKind = roadmapStageKind(milestone, index);
+      const card = createElement("article", `roadmap-stage reveal ${stageKind}`);
+      card.append(
+        renderRoadmapStageArt(stageKind),
+        createElement("span", "roadmap-step", milestone.label || `Step ${index + 1}`),
+        createElement("h3", "", milestone.title || "Roadmap step"),
+        createElement("p", "", milestone.summary || ""),
+        roadmapProgressElement(progress, `${milestone.title || "Roadmap step"} progress`),
+        createElement("span", "roadmap-stage-percent", `${Math.round(progress)}% complete`)
+      );
+
+      const chips = createElement("div", "roadmap-stage-chips");
+      (milestone.courseIds || []).slice(0, 4).forEach((id) => {
+        const course = coursesById.get(id);
+        if (course) chips.append(renderRoadmapStatusChip(course.title, course));
+      });
+      (milestone.checklist || []).slice(0, 4).forEach((item) => chips.append(renderRoadmapStatusChip(item.label, item)));
+      if (chips.children.length) card.append(chips);
+      stageGrid.append(card);
+    });
+
+    const courseHeading = createElement("div", "roadmap-subheading");
+    courseHeading.append(
+      createElement("span", "roadmap-card-label", "Courses and evidence"),
+      createElement("h3", "", "Clickable qualification tracker")
+    );
+
+    const courseDock = createElement("div", "roadmap-course-detail-dock reveal");
+    courseDock.hidden = true;
+
+    const courseGrid = createElement("div", "roadmap-course-grid");
+    courses.forEach((course) => {
+      const card = createElement("article", "roadmap-course-card reveal");
+      card.dataset.courseId = course.id || "";
+
+      const frontButton = createElement("button", "roadmap-course-front-button");
+      frontButton.type = "button";
+      frontButton.addEventListener("click", () => openRoadmapCourseDock(course, card, courseDock, courseGrid));
+      const frontCopy = createElement("span");
+      frontCopy.append(
+        createElement("span", "roadmap-course-category", course.category || "Course"),
+        createElement("strong", "", course.title || "Course"),
+        createElement("span", "", course.provider || "Provider TBC")
+      );
+      const badge = createElement("span", roadmapStatusClass(course), roadmapStatusLabel(course));
+      frontButton.append(frontCopy, badge);
+      card.append(frontButton);
+      courseGrid.append(card);
+    });
+
+    const readiness = createElement("article", "roadmap-readiness-card reveal");
+    readiness.append(createElement("span", "roadmap-card-label", "Fitness baseline"), createElement("h3", "", "Minimum Special Forces pre-fitness targets"));
+    const readinessGrid = createElement("div", "roadmap-readiness-grid");
+    (roadmap.readinessStandards || []).forEach((item) => {
+      const standard = createElement("span");
+      standard.append(createElement("strong", "", item.value || ""), createElement("small", "", item.label || ""));
+      readinessGrid.append(standard);
+    });
+    readiness.append(readinessGrid);
+
+    target.append(heading, stats, stageGrid, courseHeading, courseDock, courseGrid, readiness);
+  }
+
+  function renderRoadmapStatusChip(label, item) {
+    const chip = createElement("span", `roadmap-chip ${roadmapStatusClass(item).replace("roadmap-status", "").trim()}`);
+    chip.append(createElement("b", "", label || "Roadmap item"), createElement("small", "", roadmapStatusLabel(item)));
+    chip.title = `${label || "Roadmap item"}: ${roadmapStatusLabel(item)}`;
+    return chip;
   }
 
   function uniqueTags(projects) {
@@ -2503,6 +3188,7 @@
     const reveals = qsa(".reveal:not(.is-visible)");
     if (prefersReducedMotion || !("IntersectionObserver" in window)) {
       reveals.forEach((item) => item.classList.add("is-visible"));
+      activateRoadmapProgress(document);
       return;
     }
 
@@ -2511,6 +3197,7 @@
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("is-visible");
+            activateRoadmapProgress(entry.target);
             activeObserver.unobserve(entry.target);
           }
         });

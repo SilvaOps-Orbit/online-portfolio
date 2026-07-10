@@ -46,6 +46,441 @@ window.PORTFOLIO_CONFIG = {
     { name: "AI Automation", level: 20 },
     { name: "JavaScript Programming", level: 78 }
   ],
+  careerRoadmap: {
+    goal: "Special Forces Operator",
+    target: "Long-term goal: 2nd Commando Regiment",
+    goalBadge: "OBJ-SF",
+    goalStatement:
+      "This is the long game: build the discipline, fitness, knowledge, and family stability needed to earn the standard one step at a time.",
+    commonAttributesSequence: ["leadership", "judgement", "teamwork", "humility"],
+    commonAttributes: [
+      {
+        id: "leadership",
+        title: "Leadership",
+        meaning:
+          "Ability to effectively influence, organise, or direct others to achieve a desired outcome in an operational environment."
+      },
+      {
+        id: "judgement",
+        title: "Judgement",
+        meaning:
+          "Exercises common sense and sound judgement when forming conclusions from information, leading to situational awareness."
+      },
+      {
+        id: "trainability",
+        title: "Trainability",
+        meaning:
+          "Ability to assimilate skills and knowledge to the degree and speed necessary, then apply them when it matters."
+      },
+      {
+        id: "teamwork",
+        title: "Teamwork",
+        meaning:
+          "Ability to operate effectively in a dynamic and demanding small-team environment."
+      },
+      {
+        id: "self-discipline",
+        title: "Self-discipline",
+        meaning:
+          "Ability to control behaviour and desires independent of external stimulus, environment, and supervision."
+      },
+      {
+        id: "perseverance",
+        title: "Perseverance",
+        meaning:
+          "Resolution and persistence to follow a course of action despite difficulty or delays in achieving success."
+      },
+      {
+        id: "initiative",
+        title: "Initiative",
+        meaning:
+          "Ability to readily take action, make decisions, and provide advice without external encouragement, prompting, or direction."
+      },
+      {
+        id: "adaptability",
+        title: "Adaptability",
+        meaning:
+          "Ability to modify, adapt, and innovate in rapidly changing and ambiguous situations."
+      },
+      {
+        id: "integrity",
+        title: "Integrity",
+        meaning:
+          "Consistently tells the truth and demonstrates strong moral principles under arduous conditions."
+      },
+      {
+        id: "communication",
+        title: "Communication",
+        meaning:
+          "Ability to comprehend verbal and non-verbal communication and clearly convey intent."
+      },
+      {
+        id: "emotional-regulation",
+        title: "Emotional regulation",
+        meaning:
+          "Ability to control anxiety and stress while managing mental and physical responses under arduous conditions."
+      },
+      {
+        id: "independence",
+        title: "Independence",
+        meaning:
+          "Ability to work alone in a dynamic and demanding environment without external encouragement, support, or supervision."
+      },
+      {
+        id: "humility",
+        title: "Humility",
+        meaning:
+          "Self-awareness to be confident without over-promoting skills, while adding value and supporting others without seeking reward."
+      }
+    ],
+    summary:
+      "A practical roadmap from current study and qualifications through readiness, application, Army training, and Special Forces selection.",
+    targetDate: "",
+    lastUpdated: "2026-07-10",
+    editNote:
+      "Use status: \"incomplete\", \"in-progress\", or \"complete\". Add course startDate as YYYY-MM-DD and the site will estimate finish dates around school breaks/public holidays. Add courseUrl on each course for the View course details button. Add certificateImageUrl when a view-only certificate image is ready. Add endDate only when you want to override the estimate.",
+    studyCalendar: {
+      region: "Victoria, Australia",
+      sourceNote:
+        "Victorian government school terms 2026-2030 and Business Victoria public holidays. Add future public holidays here when new dates are published.",
+      studyDays: [1, 2, 3, 4, 5],
+      skipWeekends: false,
+      schoolTerms: [
+        { label: "2026 Term 1", start: "2026-01-27", end: "2026-04-02" },
+        { label: "2026 Term 2", start: "2026-04-20", end: "2026-06-26" },
+        { label: "2026 Term 3", start: "2026-07-13", end: "2026-09-18" },
+        { label: "2026 Term 4", start: "2026-10-05", end: "2026-12-18" },
+        { label: "2027 Term 1", start: "2027-01-27", end: "2027-03-25" },
+        { label: "2027 Term 2", start: "2027-04-12", end: "2027-06-25" },
+        { label: "2027 Term 3", start: "2027-07-12", end: "2027-09-17" },
+        { label: "2027 Term 4", start: "2027-10-04", end: "2027-12-17" },
+        { label: "2028 Term 1", start: "2028-01-27", end: "2028-03-31" },
+        { label: "2028 Term 2", start: "2028-04-18", end: "2028-06-30" },
+        { label: "2028 Term 3", start: "2028-07-17", end: "2028-09-22" },
+        { label: "2028 Term 4", start: "2028-10-09", end: "2028-12-21" },
+        { label: "2029 Term 1", start: "2029-01-29", end: "2029-03-29" },
+        { label: "2029 Term 2", start: "2029-04-16", end: "2029-06-29" },
+        { label: "2029 Term 3", start: "2029-07-16", end: "2029-09-21" },
+        { label: "2029 Term 4", start: "2029-10-08", end: "2029-12-21" },
+        { label: "2030 Term 1", start: "2030-01-29", end: "2030-04-05" },
+        { label: "2030 Term 2", start: "2030-04-23", end: "2030-06-28" },
+        { label: "2030 Term 3", start: "2030-07-15", end: "2030-09-20" },
+        { label: "2030 Term 4", start: "2030-10-07", end: "2030-12-20" }
+      ],
+      publicHolidays: [
+        { date: "2026-01-01", name: "New Year's Day" },
+        { date: "2026-01-26", name: "Australia Day" },
+        { date: "2026-03-09", name: "Labour Day" },
+        { date: "2026-04-03", name: "Good Friday" },
+        { date: "2026-04-06", name: "Easter Monday" },
+        { date: "2026-04-25", name: "ANZAC Day" },
+        { date: "2026-06-08", name: "King's Birthday" },
+        { date: "2026-09-25", name: "Friday before AFL Grand Final" },
+        { date: "2026-11-03", name: "Melbourne Cup" },
+        { date: "2026-12-25", name: "Christmas Day" },
+        { date: "2026-12-26", name: "Boxing Day" },
+        { date: "2026-12-28", name: "Additional Boxing Day public holiday" },
+        { date: "2027-01-01", name: "New Year's Day" },
+        { date: "2027-01-26", name: "Australia Day" },
+        { date: "2027-03-08", name: "Labour Day" },
+        { date: "2027-03-26", name: "Good Friday" },
+        { date: "2027-03-29", name: "Easter Monday" },
+        { date: "2027-04-25", name: "ANZAC Day" },
+        { date: "2027-06-14", name: "King's Birthday" },
+        { date: "2027-11-02", name: "Melbourne Cup" },
+        { date: "2027-12-25", name: "Christmas Day" },
+        { date: "2027-12-27", name: "Additional Christmas Day public holiday" },
+        { date: "2027-12-26", name: "Boxing Day" },
+        { date: "2027-12-28", name: "Additional Boxing Day public holiday" },
+        { date: "2028-01-01", name: "New Year's Day" },
+        { date: "2028-01-03", name: "Additional New Year's Day public holiday" },
+        { date: "2028-01-26", name: "Australia Day" },
+        { date: "2028-03-13", name: "Labour Day" },
+        { date: "2028-04-14", name: "Good Friday" },
+        { date: "2028-04-17", name: "Easter Monday" },
+        { date: "2028-04-25", name: "ANZAC Day" },
+        { date: "2028-06-12", name: "King's Birthday" },
+        { date: "2028-11-07", name: "Melbourne Cup" },
+        { date: "2028-12-25", name: "Christmas Day" },
+        { date: "2028-12-26", name: "Boxing Day" }
+      ]
+    },
+    courses: [
+      {
+        id: "diploma-ict",
+        title: "Diploma of Information Technology",
+        category: "Qualification",
+        provider: "Advanced Networking, Cyber Security",
+        duration: "12 months",
+        durationDays: 365,
+        status: "in-progress",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Diploma of ICT (Advanced Networking, Cyber Security)",
+        description:
+          "Builds the networking, systems, cyber security, troubleshooting, and documentation base that supports both technical work and future defence goals."
+      },
+      {
+        id: "cert-ii-security",
+        title: "Certificate II in Security Operations",
+        category: "Security",
+        provider: "Provider TBC",
+        duration: "5 weeks",
+        durationDays: 35,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Certificate II",
+        description:
+          "Introduces core security operations, observation, communication, legal responsibilities, and professional conduct."
+      },
+      {
+        id: "cert-iii-security",
+        title: "Certificate III in Security Operations",
+        category: "Security",
+        provider: "Provider TBC",
+        duration: "18 days",
+        durationDays: 18,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Certificate III",
+        description:
+          "Extends security operations knowledge into more advanced practical duties, risk awareness, and workplace readiness."
+      },
+      {
+        id: "mental-health-first-aid",
+        title: "Mental Health First Aid Short Course",
+        category: "Readiness",
+        provider: "Provider TBC",
+        duration: "8 hours",
+        durationHours: 8,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Short course certificate",
+        description:
+          "Adds a practical mental health literacy layer for recognising, supporting, and responding to people under pressure."
+      },
+      {
+        id: "leadership-development",
+        title: "Leadership Development Program",
+        category: "Leadership",
+        provider: "Provider TBC",
+        duration: "1 day",
+        durationDays: 1,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Completion certificate",
+        description:
+          "Focuses on decision-making, influence, responsibility, and leading calmly when the pressure rises."
+      },
+      {
+        id: "leadership-21st-century",
+        title: "21st Century Leadership",
+        category: "Leadership",
+        provider: "Provider TBC",
+        duration: "4 hours",
+        durationHours: 4,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Short course certificate",
+        description:
+          "A short leadership module for modern teams, communication, adaptability, and accountability."
+      },
+      {
+        id: "ethics-governance",
+        title: "Ethics and Governance",
+        category: "Leadership",
+        provider: "Provider TBC",
+        duration: "4 hours",
+        durationHours: 4,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Short course certificate",
+        description:
+          "Strengthens judgement, integrity, decision-making, and the ability to act within rules and expectations."
+      },
+      {
+        id: "resilience-wellbeing",
+        title: "Resilience, Stress Management and Wellbeing",
+        category: "Readiness",
+        provider: "Provider TBC",
+        duration: "4 hours",
+        durationHours: 4,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Short course certificate",
+        description:
+          "Supports pressure management, recovery habits, self-awareness, and consistent performance under stress."
+      },
+      {
+        id: "building-the-elite",
+        title: "Building The Elite, 2nd Edition - Australia/NZ",
+        category: "Preparation",
+        provider: "Reading / training resource",
+        duration: "Self-paced",
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Preparation resource",
+        description:
+          "A preparation resource for physical standards, mindset, training structure, and long-term selection readiness."
+      },
+      {
+        id: "army-recruit-course",
+        title: "Army Recruit Course",
+        category: "Military training",
+        provider: "Kapooka, Wagga Wagga, NSW",
+        duration: "13 weeks",
+        durationDays: 91,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Army initial training",
+        description:
+          "Initial Army training that builds discipline, soldier skills, fieldcraft basics, teamwork, and Army standards."
+      },
+      {
+        id: "infantry-employment-training",
+        title: "Infantry Employment Training",
+        category: "Military training",
+        provider: "School of Infantry, Singleton, NSW",
+        duration: "16 weeks",
+        durationDays: 112,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Infantry employment training",
+        description:
+          "Specialist infantry training focused on field skills, weapon handling, tactics, navigation, and operational teamwork."
+      },
+      {
+        id: "sfspc",
+        title: "Special Forces Selection Preparation Course",
+        category: "Selection pathway",
+        provider: "ADF School of Special Operations, Holsworthy, NSW",
+        duration: "8 weeks",
+        durationDays: 56,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Selection preparation",
+        description:
+          "A preparation course for the standards, pressure, conditioning, and judgement expected before Special Forces selection."
+      },
+      {
+        id: "sfsc",
+        title: "Special Forces Selection Course",
+        category: "Selection pathway",
+        provider: "Bindoon Training Area, Perth, WA",
+        duration: "21 days",
+        durationDays: 21,
+        status: "incomplete",
+        startDate: "",
+        endDate: "",
+        courseUrl: "",
+        certificateUrl: "",
+        certificateImageUrl: "",
+        qualification: "Selection course",
+        description:
+          "Selection phase assessing performance, character, resilience, teamwork, judgement, and suitability under sustained pressure."
+      }
+    ],
+    milestones: [
+      {
+        label: "Step 1",
+        title: "Gain qualifications",
+        summary: "Complete the study, security, leadership, resilience, and preparation pieces that build the foundation.",
+        courseIds: [
+          "diploma-ict",
+          "cert-ii-security",
+          "cert-iii-security",
+          "mental-health-first-aid",
+          "leadership-development",
+          "leadership-21st-century",
+          "ethics-governance",
+          "resilience-wellbeing",
+          "building-the-elite"
+        ]
+      },
+      {
+        label: "Step 2",
+        title: "Exceed health and fitness standards",
+        summary: "Build proof that the physical, medical, psychological, and support systems are ready before applying.",
+        checklist: [
+          { label: "Mental health short course", status: "incomplete" },
+          { label: "Medical, dental, hearing and sight checks", status: "incomplete" },
+          { label: "Counsellor or psychologist readiness letter", status: "incomplete" },
+          { label: "Friends and family personal vetting", status: "incomplete" },
+          { label: "Mock Special Forces fitness test", status: "incomplete" }
+        ]
+      },
+      {
+        label: "Step 3",
+        title: "Apply and prepare the home front",
+        summary: "Make sure family support, paperwork, checks, and the online application are ready before day one.",
+        checklist: [
+          { label: "Family and support plan", status: "incomplete" },
+          { label: "Online application", status: "incomplete" },
+          { label: "Recruiting checks", status: "incomplete" },
+          { label: "Attend day one of training", status: "incomplete" }
+        ]
+      },
+      {
+        label: "Step 4",
+        title: "Complete military training and selection",
+        summary: "Move through initial Army training, infantry training, Special Forces preparation, and selection.",
+        courseIds: ["army-recruit-course", "infantry-employment-training", "sfspc", "sfsc"]
+      }
+    ],
+    readinessStandards: [
+      { label: "Sit-ups", value: "60 minimum" },
+      { label: "Push-ups", value: "40 minimum" },
+      { label: "Beep test", value: "10.1 minimum" },
+      { label: "Over-grasp heaves", value: "6 minimum" }
+    ]
+  },
   projects: [
     {
       title: "This Portfolio Website!!",
