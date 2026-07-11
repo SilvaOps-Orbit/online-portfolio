@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://silvaops-orbit.github.io/online-portfolio/sitemap.xml

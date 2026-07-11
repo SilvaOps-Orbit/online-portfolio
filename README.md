@@ -33,6 +33,9 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `analytics-worker/` - private TypeScript Worker, D1 schema, and setup guide for aggregate visitor analytics.
 - `vite.config.ts` - builds every React island into static files for GitHub Pages.
 - `.github/workflows/*.yml` - deploy and refresh workflows.
+- `seo-structured-data.js` - ProfilePage, Person, and WebSite structured data without weakening the CSP.
+- `robots.txt` and `sitemap.xml` - crawler guidance for the GitHub Pages URL.
+- `site.webmanifest` - installable-site identity and theme details.
 - `_headers` - security/cache headers for hosts that support them.
 
 ## Things I edit by hand
@@ -49,6 +52,29 @@ Useful things to update there:
 - Fallback Steam/Spotify text.
 - LinkedIn or resume links when I want to add them.
 - Market/news fallback text if the APIs are down.
+
+## Career roadmap prices
+
+Every course and book in `careerRoadmap.courses` has these fields:
+
+```js
+fullPrice: 20010,
+amountPaid: null,
+currency: "AUD",
+priceNote: "Where the listed amount came from."
+```
+
+`fullPrice` is the advertised price. Leave `amountPaid` as `null` to count the full price in the Education total, or replace it with the amount I actually paid. A free course uses `0`. The total updates automatically beside the roadmap's Last updated value.
+
+## Search setup
+
+The page has a canonical URL, crawl directives, social preview metadata, a manifest, and JavaScript-generated Schema.org profile data. After publishing, I can add the GitHub Pages property to Google Search Console and submit:
+
+```text
+https://silvaops-orbit.github.io/online-portfolio/sitemap.xml
+```
+
+SEO files help search engines understand the site, but they do not guarantee a ranking. Useful portfolio copy and real project updates still matter most.
 
 ## GitHub setup
 

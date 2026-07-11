@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useMemo, useState } from "react";
+import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
@@ -28,16 +28,38 @@ function formatDate(value?: string): string {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function useCyclingWindow(items: SteamItem[] = [], pageSize = 6): SteamItem[] {
+interface CyclingWindow {
+  visible: SteamItem[];
+  swapping: boolean;
+  start: number;
+}
+
+function useCyclingWindow(items: SteamItem[] = [], pageSize = 6): CyclingWindow {
   const [start, setStart] = useState(0);
+  const [swapping, setSwapping] = useState(false);
   useEffect(() => {
     setStart(0);
+    setSwapping(false);
     if (items.length <= pageSize || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setStart((value) => (value + pageSize) % items.length), LIST_INTERVAL);
-    return () => window.clearInterval(timer);
+    let swapTimer = 0;
+    let frame = 0;
+    const timer = window.setInterval(() => {
+      setSwapping(true);
+      swapTimer = window.setTimeout(() => {
+        setStart((value) => (value + pageSize) % items.length);
+        frame = window.requestAnimationFrame(() => setSwapping(false));
+      }, 260);
+    }, LIST_INTERVAL);
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(swapTimer);
+      window.cancelAnimationFrame(frame);
+    };
   }, [items, pageSize]);
-  if (items.length <= pageSize) return items;
-  return Array.from({ length: pageSize }, (_, offset) => items[(start + offset) % items.length]);
+  const visible = items.length <= pageSize
+    ? items
+    : Array.from({ length: pageSize }, (_, offset) => items[(start + offset) % items.length]);
+  return { visible, swapping, start };
 }
 
 function editionText(edition: NonNullable<SteamItem["editions"]>[number]): string {
@@ -46,7 +68,7 @@ function editionText(edition: NonNullable<SteamItem["editions"]>[number]): strin
   return edition.price ? `${label}: ${edition.price}` : label;
 }
 
-function GameItem({ item }: { item: SteamItem }) {
+function GameItem({ item, index = 0 }: { item: SteamItem; index?: number }) {
   const title = item.title || item.name || "Untitled game";
   const body = (
     <>
@@ -57,13 +79,14 @@ function GameItem({ item }: { item: SteamItem }) {
       {Boolean(item.editions?.length) && <span className="game-editions">{item.editions?.slice(0, 3).map((edition, index) => <span className="edition-chip" key={`${editionText(edition)}-${index}`}>{editionText(edition)}</span>)}</span>}
     </>
   );
-  return <li className={`game-item${item.image ? " has-art" : ""}`}>{item.image && <img className="game-art" src={item.image.replace(/^http:\/\//i, "https://")} alt={`${title} artwork`} loading="lazy" />}<div className="game-body">{body}</div></li>;
+  return <li className={`game-item${item.image ? " has-art" : ""}`} style={{ "--item-index": index } as CSSProperties}>{item.image && <img className="game-art" src={item.image.replace(/^http:\/\//i, "https://")} alt={`${title} artwork`} loading="lazy" />}<div className="game-body">{body}</div></li>;
 }
 
 interface GameListProps { items?: SteamItem[]; label: string; pageSize?: number; }
 function GameList({ items = [], label, pageSize = 6 }: GameListProps) {
-  const visible = useCyclingWindow(items.filter(Boolean), pageSize);
-  return <ul className={`game-list cycle-list${items.length > pageSize ? " is-cycling" : ""}`} aria-label={label}>{visible.map((item, index) => <GameItem key={`${item.appid || item.title || item.name}-${index}`} item={item} />)}</ul>;
+  const games = useMemo(() => items.filter(Boolean), [items]);
+  const { visible, swapping, start } = useCyclingWindow(games, pageSize);
+  return <ul className={`game-list cycle-list react-cycle-list${games.length > pageSize ? " is-cycling" : " is-static-animated"}${swapping ? " is-swapping" : ""}`} aria-label={label}>{visible.map((item, index) => <GameItem key={`${start}-${item.appid || item.title || item.name}-${index}`} item={item} index={index} />)}</ul>;
 }
 
 function SteamActivityDashboard() {
@@ -108,9 +131,9 @@ function SteamActivityDashboard() {
           <div className="steam-watch"><span className="steam-label">Pre-Order / Top 20 Games Watch</span>{watchItem ? <ul className="game-list watch-list"><GameItem item={watchItem} /></ul> : <p className="game-note">Steam store watch is waiting for its next snapshot.</p>}</div>
         </article>
         <div className="steam-grid">
-          <article className="steam-card steam-card-large"><h3>Achievements ({steam.achievements?.length || 0})</h3><GameList items={steam.achievements} label="Achievements" /></article>
-          <article className="steam-card"><h3>Most Played</h3><GameList items={steam.mostPlayed} label="Most played games" /></article>
-          <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" /></article>
+          <article className="steam-card steam-card-large"><h3>Achievements ({steam.achievements?.length || 0})</h3><GameList items={steam.achievements} label="Achievements" pageSize={1} /></article>
+          <article className="steam-card"><h3>Most Played</h3><GameList items={steam.mostPlayed} label="Most played games" pageSize={1} /></article>
+          <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" pageSize={1} /></article>
         </div>
       </div>
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>

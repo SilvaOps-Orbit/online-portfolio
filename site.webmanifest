@@ -1,0 +1,19 @@
+{
+  "name": "Alvis Leslie Gordon - EchoOps Portfolio",
+  "short_name": "EchoOps",
+  "description": "Interactive portfolio for Alvis Leslie Gordon, a creative developer with a cyber security mindset.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f1115",
+  "theme_color": "#0f1115",
+  "lang": "en-AU",
+  "icons": [
+    {
+      "src": "assets/echoops-app-icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -5,6 +5,7 @@
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const root = document.documentElement;
   const cycleTimers = new Map();
+  const cycleSwapTimers = new Map();
   const dataRefreshMs = 60000;
   const spotifyDataRefreshMs = 5000;
   const githubHourlyRefreshMs = 60 * 60 * 1000;
@@ -103,7 +104,8 @@
     const profile = config.profile || {};
     const username = profile.githubUsername || "";
 
-    document.title = `${profile.name || "Personal"} | Portfolio`;
+    const titleIdentity = profile.alias ? `${profile.name || "Personal"} (${profile.alias})` : (profile.name || "Personal");
+    document.title = `${titleIdentity} | Cyber Security Developer`;
     setText("brand-label", profile.alias || profile.name || "Portfolio");
     setText("hero-kicker", profile.kicker);
     setText("hero-name", profile.name);
@@ -1393,7 +1395,7 @@
     const list = document.getElementById(id);
     if (!list) return;
     clearCycle(id);
-    list.classList.remove("cycle-list", "is-cycling", "is-swapping");
+    list.classList.remove("cycle-list", "is-cycling", "is-swapping", "is-static-animated");
     list.replaceChildren();
 
     (items || []).forEach((item) => appendGameItem(list, item));
@@ -1404,6 +1406,10 @@
       window.clearInterval(cycleTimers.get(id));
       cycleTimers.delete(id);
     }
+    if (cycleSwapTimers.has(id)) {
+      window.clearTimeout(cycleSwapTimers.get(id));
+      cycleSwapTimers.delete(id);
+    }
   }
 
   function renderCycleList(id, items, label, pageSizeValue = 6) {
@@ -1412,14 +1418,14 @@
 
     clearCycle(id);
     list.classList.add("cycle-list");
-    list.classList.remove("is-swapping");
+    list.classList.remove("is-swapping", "is-static-animated");
     list.replaceChildren();
 
     const games = (Array.isArray(items) ? items : []).filter(Boolean);
     const heading = list.closest(".steam-card, .spotify-card")?.querySelector("h3");
 
     if (!games.length) {
-      list.classList.remove("is-cycling");
+      list.classList.remove("is-cycling", "is-static-animated");
       if (heading) {
         heading.textContent = label;
       }
@@ -1429,6 +1435,7 @@
     const pageSize = Math.min(pageSizeValue, games.length);
     let startIndex = 0;
     list.classList.toggle("is-cycling", games.length > pageSize);
+    list.classList.toggle("is-static-animated", games.length <= pageSize && !prefersReducedMotion);
 
     function updateHeading() {
       if (!heading) return;
@@ -1464,10 +1471,12 @@
 
     const timer = window.setInterval(() => {
       list.classList.add("is-swapping");
-      window.setTimeout(() => {
+      const swapTimer = window.setTimeout(() => {
+        cycleSwapTimers.delete(id);
         startIndex = (startIndex + pageSize) % games.length;
         renderWindow();
       }, 260);
+      cycleSwapTimers.set(id, swapTimer);
     }, 4800);
     cycleTimers.set(id, timer);
   }
@@ -2176,7 +2185,12 @@
 
     const current = spotify.current || spotify.lastTrack;
     renderSpotifyNow("spotify-now", current);
-    renderCycleList("spotify-playlists", spotify.playlists, "Public Playlists", 4);
+    const playlistTarget = document.getElementById("spotify-playlists");
+    const playlistSignature = JSON.stringify((spotify.playlists || []).map((item) => [item?.title, item?.url, item?.image]));
+    if (playlistTarget && (playlistTarget.dataset.playlistSignature !== playlistSignature || !playlistTarget.children.length)) {
+      playlistTarget.dataset.playlistSignature = playlistSignature;
+      renderCycleList("spotify-playlists", spotify.playlists, "Public Playlists", 3);
+    }
     observeReveals();
   }
 

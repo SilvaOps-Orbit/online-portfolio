@@ -38,6 +38,10 @@ export interface RoadmapItem {
   duration?: string;
   durationDays?: number;
   durationHours?: number;
+  fullPrice?: number;
+  amountPaid?: number | null;
+  currency?: string;
+  priceNote?: string;
   status?: string;
   startDate?: string;
   endDate?: string;
@@ -74,6 +78,7 @@ export interface CareerRoadmapConfig {
   summary?: string;
   targetDate?: string;
   lastUpdated?: string;
+  educationCurrency?: string;
   studyCalendar?: RoadmapCalendar;
   commonAttributes?: RoadmapAttribute[];
   commonAttributesSequence?: string[];

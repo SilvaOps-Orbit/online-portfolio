@@ -1999,6 +1999,26 @@ h3 {
   line-height: 1.45;
 }
 
+.roadmap-price-note {
+  margin: -2px 0 0;
+  padding-left: 10px;
+  border-left: 3px solid var(--accent-2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.roadmap-course-front-button .roadmap-course-price {
+  width: fit-content;
+  margin-top: 2px;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 48%, var(--line));
+  border-radius: 5px;
+  color: var(--accent-2) !important;
+  font-size: 0.74rem !important;
+  font-weight: 900;
+}
+
 .roadmap-course-links {
   display: flex;
   flex-wrap: wrap;
@@ -4606,6 +4626,54 @@ h3 {
   transition-delay: calc(var(--item-index, 0) * 18ms);
 }
 
+.react-cycle-list > .game-item {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 260ms ease, transform 260ms ease;
+  transition-delay: calc(var(--item-index, 0) * 34ms);
+  animation: react-game-arrive 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--item-index, 0) * 54ms);
+}
+
+.react-cycle-list.is-cycling {
+  min-height: 118px;
+}
+
+.react-cycle-list.is-swapping > .game-item {
+  opacity: 0;
+  transform: translateY(12px) scale(0.985);
+  transition-delay: calc(var(--item-index, 0) * 18ms);
+}
+
+.react-cycle-list.is-static-animated > .game-item {
+  animation: react-game-arrive 520ms cubic-bezier(0.16, 1, 0.3, 1) both, react-game-idle 5.4s ease-in-out 900ms infinite;
+}
+
+.cycle-list.is-static-animated:not(.react-cycle-list) > .game-item {
+  animation: cycle-static-arrive 520ms cubic-bezier(0.16, 1, 0.3, 1) both, cycle-static-idle 5.8s ease-in-out 900ms infinite;
+  animation-delay: calc(var(--item-index, 0) * 64ms);
+}
+
+@keyframes react-game-arrive {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes react-game-idle {
+  0%, 100% { border-color: color-mix(in srgb, var(--line) 72%, transparent); }
+  50% { border-color: color-mix(in srgb, var(--accent-3) 38%, var(--line)); }
+}
+
+@keyframes cycle-static-arrive {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes cycle-static-idle {
+  0%, 100% { transform: translateY(0); border-color: color-mix(in srgb, var(--line) 72%, transparent); }
+  50% { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 42%, var(--line)); }
+}
+
 .game-list li.has-art {
   grid-template-columns: 86px minmax(0, 1fr);
 }
@@ -4717,7 +4785,7 @@ h3 {
 }
 
 .steam-card-large .cycle-list.is-cycling {
-  min-height: 340px;
+  min-height: 118px;
 }
 
 .current-games {
@@ -5593,7 +5661,8 @@ body.tech-lab-open {
 .sf-easter {
   position: fixed;
   inset: 0;
-  z-index: 86;
+  z-index: 10000;
+  isolation: isolate;
   display: grid;
   place-content: center;
   place-items: center;

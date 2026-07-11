@@ -23,6 +23,19 @@ function RoadmapMeta({ label, value }: MetaProps) {
   return <span className="roadmap-meta-item"><strong>{label}</strong><span>{value || "TBC"}</span></span>;
 }
 
+function courseCurrency(course: RoadmapItem, roadmap: CareerRoadmapConfig): string {
+  return course.currency || roadmap.educationCurrency || "AUD";
+}
+
+function formatMoney(value: number | undefined, currency: string): string {
+  if (!Number.isFinite(value)) return "TBC";
+  return new Intl.NumberFormat("en-AU", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value));
+}
+
+function countedEducationCost(course: RoadmapItem): number {
+  return typeof course.amountPaid === "number" ? Math.max(0, course.amountPaid) : Math.max(0, Number(course.fullPrice || 0));
+}
+
 function StageArt({ kind }: { kind: string }) {
   return <div className={`roadmap-stage-art ${kind}`} aria-hidden="true">{Array.from({ length: 6 }, (_, index) => <span key={index} />)}</div>;
 }
@@ -48,6 +61,8 @@ function CourseDetail({ course, roadmap, onClose }: CourseDetailProps) {
   const start = parseRoadmapDate(course.startDate);
   const end = estimateCourseEndDate(course, calendar);
   const linkLabel = course.courseUrlLabel || "View course details";
+  const currency = courseCurrency(course, roadmap);
+  const countedCost = countedEducationCost(course);
   const autoNote = start && !course.endDate && course.useStudyCalendar !== false
     ? "Auto estimate pauses for configured school breaks and weekday public holidays."
     : "";
@@ -69,7 +84,10 @@ function CourseDetail({ course, roadmap, onClose }: CourseDetailProps) {
               <RoadmapMeta label="Start" value={formatRoadmapDate(start)} />
               <RoadmapMeta label={course.endDate ? "Finish" : "Auto finish"} value={formatRoadmapDate(end)} />
               <RoadmapMeta label="Qualification" value={course.qualification} />
+              <RoadmapMeta label="Full price" value={formatMoney(course.fullPrice, currency)} />
+              <RoadmapMeta label={course.amountPaid === null || course.amountPaid === undefined ? "Counted cost" : "Amount paid"} value={formatMoney(countedCost, currency)} />
             </div>
+            {course.priceNote && <p className="roadmap-price-note">{course.priceNote}</p>}
             {autoNote && <p className="roadmap-calendar-note">{autoNote}</p>}
             <div className="roadmap-course-links">
               {course.courseUrl
@@ -106,6 +124,8 @@ function CareerRoadmap() {
   const requiredScores = scores.filter((_, index) => !milestones[index]?.optional);
   const overall = requiredScores.length ? requiredScores.reduce((sum, value) => sum + value, 0) / requiredScores.length : 0;
   const completedCourses = courses.filter((course) => itemProgress(course) >= 100).length;
+  const educationCurrency = roadmap.educationCurrency || "AUD";
+  const educationTotal = courses.reduce((sum, course) => sum + countedEducationCost(course), 0);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [activeStage, setActiveStage] = useState(0);
   const stageGridRef = useRef<HTMLDivElement>(null);
@@ -150,6 +170,7 @@ function CareerRoadmap() {
         <RoadmapMeta label="Courses tracked:" value={String(courses.length)} />
         <RoadmapMeta label="Courses complete:" value={String(completedCourses)} />
         <RoadmapMeta label="Last updated:" value={formatRoadmapDate(roadmap.lastUpdated)} />
+        <RoadmapMeta label="Education total:" value={formatMoney(educationTotal, educationCurrency)} />
       </div>
 
       <div className="roadmap-stage-carousel">
@@ -187,7 +208,7 @@ function CareerRoadmap() {
         {courses.filter((course) => course.id !== selectedCourseId).map((course) => (
           <article key={course.id || course.title} className="roadmap-course-card">
             <button className="roadmap-course-front-button" type="button" onClick={() => setSelectedCourseId(course.id || course.title || "") }>
-              <span><span className="roadmap-course-category">{course.category || "Course"}</span><strong>{course.title || "Course"}</strong><span>{course.provider || "Provider TBC"}</span></span>
+              <span><span className="roadmap-course-category">{course.category || "Course"}</span><strong>{course.title || "Course"}</strong><span>{course.provider || "Provider TBC"}</span><span className="roadmap-course-price">Full price {formatMoney(course.fullPrice, courseCurrency(course, roadmap))}</span></span>
               <span className={`roadmap-status ${statusClass(course)}`}>{statusLabel(course)}</span>
             </button>
           </article>

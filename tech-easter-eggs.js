@@ -17,6 +17,10 @@
     architecture: {
       title: "Systems Mapper",
       detail: "Decoded the portfolio's browser, snapshot, workflow, and API boundaries."
+    },
+    snake: {
+      title: "Packet Wrangler",
+      detail: "Reached 50 points in the allowlisted Ops Console Snake protocol."
     }
   };
 
@@ -83,7 +87,7 @@
     const completed = unlockedIds().length === Object.keys(achievements).length;
     showToast(
       completed ? "Systems Architect unlocked" : achievements[id].title,
-      completed ? "All three technical discoveries are now recorded in the field report." : achievements[id].detail
+      completed ? `All ${Object.keys(achievements).length} technical discoveries are now recorded in the field report.` : achievements[id].detail
     );
     return true;
   }
@@ -153,8 +157,238 @@
     results.forEach((line) => appendTerminalLine(output, line));
   }
 
+  function createSnakeGame() {
+    const columns = 24;
+    const rows = 16;
+    const cellSize = 30;
+    const shell = createElement("section", "ops-snake-shell");
+    shell.setAttribute("aria-label", "Ops Console Snake game");
+    const header = createElement("div", "ops-snake-header");
+    const scoreLabel = createElement("span", "ops-snake-score", "Score 0");
+    const bestLabel = createElement("span", "ops-snake-best", `Best ${Number(state.snakeHighScore || 0)}`);
+    const status = createElement("span", "ops-snake-status", "Running");
+    status.setAttribute("role", "status");
+    status.setAttribute("aria-live", "polite");
+    header.append(scoreLabel, bestLabel, status);
+
+    const canvas = document.createElement("canvas");
+    canvas.className = "ops-snake-canvas";
+    canvas.width = columns * cellSize;
+    canvas.height = rows * cellSize;
+    canvas.tabIndex = 0;
+    canvas.setAttribute("role", "application");
+    canvas.setAttribute("aria-label", "Snake game board. Use arrow or WASD keys. Space pauses and R restarts.");
+
+    const controls = createElement("div", "ops-snake-controls");
+    const actionControls = createElement("div", "ops-snake-actions");
+    const pauseButton = createElement("button", "ops-snake-control", "Ⅱ");
+    pauseButton.type = "button";
+    pauseButton.title = "Pause or resume";
+    pauseButton.setAttribute("aria-label", "Pause or resume Snake");
+    const restartButton = createElement("button", "ops-snake-control", "↻");
+    restartButton.type = "button";
+    restartButton.title = "Restart";
+    restartButton.setAttribute("aria-label", "Restart Snake");
+    actionControls.append(pauseButton, restartButton);
+
+    const directionControls = createElement("div", "ops-snake-directions");
+    const directions = [
+      { icon: "↑", label: "Move up", x: 0, y: -1, className: "is-up" },
+      { icon: "←", label: "Move left", x: -1, y: 0, className: "is-left" },
+      { icon: "↓", label: "Move down", x: 0, y: 1, className: "is-down" },
+      { icon: "→", label: "Move right", x: 1, y: 0, className: "is-right" }
+    ];
+    const directionButtons = directions.map((direction) => {
+      const button = createElement("button", `ops-snake-control ${direction.className}`, direction.icon);
+      button.type = "button";
+      button.title = direction.label;
+      button.setAttribute("aria-label", direction.label);
+      button.dataset.x = String(direction.x);
+      button.dataset.y = String(direction.y);
+      directionControls.append(button);
+      return button;
+    });
+    controls.append(actionControls, directionControls);
+    shell.append(header, canvas, controls);
+
+    const context = canvas.getContext("2d");
+    let snake = [];
+    let food = { x: 17, y: 8 };
+    let direction = { x: 1, y: 0 };
+    let queuedDirection = { x: 1, y: 0 };
+    let score = 0;
+    let running = true;
+    let gameOver = false;
+    let destroyed = false;
+    let timer = 0;
+
+    function reset() {
+      window.clearTimeout(timer);
+      snake = [{ x: 7, y: 8 }, { x: 6, y: 8 }, { x: 5, y: 8 }, { x: 4, y: 8 }];
+      direction = { x: 1, y: 0 };
+      queuedDirection = { x: 1, y: 0 };
+      score = 0;
+      running = true;
+      gameOver = false;
+      scoreLabel.textContent = "Score 0";
+      status.textContent = "Running";
+      pauseButton.textContent = "Ⅱ";
+      placeFood();
+      draw();
+      schedule();
+      canvas.focus();
+    }
+
+    function placeFood() {
+      const openCells = [];
+      for (let y = 0; y < rows; y += 1) {
+        for (let x = 0; x < columns; x += 1) {
+          if (!snake.some((part) => part.x === x && part.y === y)) openCells.push({ x, y });
+        }
+      }
+      food = openCells[Math.floor(Math.random() * openCells.length)] || { x: 17, y: 8 };
+    }
+
+    function drawCell(x, y, colour, inset = 2) {
+      context.fillStyle = colour;
+      context.fillRect(x * cellSize + inset, y * cellSize + inset, cellSize - (inset * 2), cellSize - (inset * 2));
+    }
+
+    function draw() {
+      if (!context) return;
+      context.fillStyle = "#070b0e";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.strokeStyle = "rgba(86, 208, 190, 0.08)";
+      context.lineWidth = 1;
+      for (let x = 0; x <= columns; x += 1) {
+        context.beginPath();
+        context.moveTo(x * cellSize, 0);
+        context.lineTo(x * cellSize, canvas.height);
+        context.stroke();
+      }
+      for (let y = 0; y <= rows; y += 1) {
+        context.beginPath();
+        context.moveTo(0, y * cellSize);
+        context.lineTo(canvas.width, y * cellSize);
+        context.stroke();
+      }
+      drawCell(food.x, food.y, "#ff6168", 6);
+      snake.forEach((part, index) => drawCell(part.x, part.y, index === 0 ? "#f7b955" : "#56d0be", index === 0 ? 2 : 4));
+      if (gameOver) {
+        context.fillStyle = "rgba(7, 11, 14, 0.76)";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "#f4f1e8";
+        context.font = "900 34px Consolas, monospace";
+        context.textAlign = "center";
+        context.fillText("SIGNAL LOST", canvas.width / 2, (canvas.height / 2) - 8);
+        context.fillStyle = "#f7b955";
+        context.font = "700 19px Consolas, monospace";
+        context.fillText(`SCORE ${score} · PRESS R`, canvas.width / 2, (canvas.height / 2) + 34);
+      }
+    }
+
+    function schedule() {
+      if (!running || destroyed || gameOver) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(tick, Math.max(62, 132 - Math.floor(score / 10) * 4));
+    }
+
+    function tick() {
+      if (!running || destroyed || gameOver) return;
+      direction = queuedDirection;
+      const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+      const hitWall = head.x < 0 || head.x >= columns || head.y < 0 || head.y >= rows;
+      const hitSelf = snake.some((part) => part.x === head.x && part.y === head.y);
+      if (hitWall || hitSelf) {
+        running = false;
+        gameOver = true;
+        status.textContent = "Signal lost";
+        pauseButton.textContent = "▶";
+        draw();
+        return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        scoreLabel.textContent = `Score ${score}`;
+        if (score > Number(state.snakeHighScore || 0)) {
+          state.snakeHighScore = score;
+          bestLabel.textContent = `Best ${score}`;
+          saveState();
+        }
+        if (score >= 50) unlock("snake");
+        placeFood();
+      } else {
+        snake.pop();
+      }
+      draw();
+      schedule();
+    }
+
+    function setDirection(x, y) {
+      if (gameOver) return;
+      if (x === -direction.x && y === -direction.y) return;
+      queuedDirection = { x, y };
+      if (!running) togglePause();
+    }
+
+    function togglePause() {
+      if (gameOver) {
+        reset();
+        return;
+      }
+      running = !running;
+      status.textContent = running ? "Running" : "Paused";
+      pauseButton.textContent = running ? "Ⅱ" : "▶";
+      if (running) schedule();
+      else window.clearTimeout(timer);
+    }
+
+    function onKeyDown(event) {
+      const key = event.key.toLowerCase();
+      const keyDirections = {
+        arrowup: [0, -1], w: [0, -1],
+        arrowleft: [-1, 0], a: [-1, 0],
+        arrowdown: [0, 1], s: [0, 1],
+        arrowright: [1, 0], d: [1, 0]
+      };
+      if (keyDirections[key]) {
+        event.preventDefault();
+        setDirection(...keyDirections[key]);
+      } else if (key === " " || key === "p") {
+        event.preventDefault();
+        togglePause();
+      } else if (key === "r") {
+        event.preventDefault();
+        reset();
+      }
+    }
+
+    function onVisibilityChange() {
+      if (document.hidden && running) togglePause();
+    }
+
+    canvas.addEventListener("keydown", onKeyDown);
+    pauseButton.addEventListener("click", togglePause);
+    restartButton.addEventListener("click", reset);
+    directionButtons.forEach((button) => button.addEventListener("click", () => setDirection(Number(button.dataset.x), Number(button.dataset.y))));
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    reset();
+
+    return {
+      element: shell,
+      focus: () => canvas.focus(),
+      destroy: () => {
+        destroyed = true;
+        window.clearTimeout(timer);
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+        canvas.removeEventListener("keydown", onKeyDown);
+      }
+    };
+  }
+
   function openOpsConsole() {
-    const { content } = createLabDialog(
+    const { dialog, content } = createLabDialog(
       "console",
       "Discovery 01 / Local Operator",
       "EchoOps sandbox console",
@@ -172,16 +406,38 @@
     input.setAttribute("aria-label", "Sandbox command");
     const history = [];
     let historyIndex = 0;
+    const snakeHost = createElement("div", "ops-snake-host");
+    snakeHost.hidden = true;
+    let snakeGame = null;
+
+    function closeSnake() {
+      snakeGame?.destroy();
+      snakeGame = null;
+      snakeHost.replaceChildren();
+      snakeHost.hidden = true;
+      content.classList.remove("is-playing-snake");
+    }
+
+    function launchSnake() {
+      closeSnake();
+      snakeGame = createSnakeGame();
+      snakeHost.hidden = false;
+      snakeHost.append(snakeGame.element);
+      content.classList.add("is-playing-snake");
+      window.requestAnimationFrame(() => snakeGame?.focus());
+    }
 
     appendTerminalLine(output, "EchoOps local sandbox v1.0");
     appendTerminalLine(output, "Type help to inspect the allowed command surface.");
 
     async function runCommand(rawValue) {
-      const command = rawValue.trim().toLowerCase().split(/\s+/)[0];
+      const parts = rawValue.trim().toLowerCase().split(/\s+/);
+      const command = parts[0];
+      const argument = parts[1] || "";
       if (!command) return;
       appendTerminalLine(output, `${prompt.textContent} ${rawValue.trim()}`, "is-command");
       if (command === "help") {
-        appendTerminalLine(output, "help · whoami · stack · security · probe · uptime · achievements · clear · exit");
+        appendTerminalLine(output, "help · whoami · stack · security · probe · uptime · achievements · games · clear · exit");
       } else if (command === "whoami") {
         const profile = window.PORTFOLIO_CONFIG?.profile || {};
         appendTerminalLine(output, `${profile.name || "Alvis Leslie Gordon"} // ${profile.alias || "EchoOps"}`);
@@ -202,9 +458,17 @@
         appendTerminalLine(output, `viewport       :: ${window.innerWidth} × ${window.innerHeight}`);
       } else if (command === "achievements") {
         appendTerminalLine(output, `${unlockedIds().length}/${Object.keys(achievements).length} technical discoveries // ${achievementCode()}`);
+      } else if (command === "games") {
+        appendTerminalLine(output, "installed :: snake");
+        appendTerminalLine(output, "launch    :: snake | play snake | game snake");
+      } else if (command === "snake" || ((command === "play" || command === "game") && argument === "snake")) {
+        appendTerminalLine(output, "snake protocol :: local canvas initialised", "is-command");
+        launchSnake();
       } else if (command === "clear") {
+        closeSnake();
         output.replaceChildren();
       } else if (command === "exit") {
+        closeSnake();
         activeDialog?.close();
       } else {
         appendTerminalLine(output, `command denied: ${command}`, "is-error");
@@ -234,7 +498,8 @@
     });
 
     form.append(prompt, input);
-    content.append(output, form);
+    dialog.addEventListener("close", closeSnake, { once: true });
+    content.append(output, form, snakeHost);
     unlock("console");
     window.setTimeout(() => input.focus(), 80);
   }
@@ -393,13 +658,14 @@
 
   function openVault() {
     const count = unlockedIds().length;
-    const complete = count === Object.keys(achievements).length;
+    const total = Object.keys(achievements).length;
+    const complete = count === total;
     const { content } = createLabDialog(
       "vault",
-      complete ? "Technical mastery achieved" : `Technical discoveries ${count}/${Object.keys(achievements).length}`,
+      complete ? "Technical mastery achieved" : `Technical discoveries ${count}/${total}`,
       complete ? "Systems Architect field report" : "Encrypted achievement vault",
       complete
-        ? "Three hidden systems were discovered, inspected, and persisted locally without an account or tracking identifier."
+        ? `${total} hidden systems were discovered, inspected, and persisted locally without an account or tracking identifier.`
         : "Discoveries are stored only in this browser. Locked entries reveal the engineering discipline demonstrated by each reward."
     );
     const list = createElement("div", "achievement-list");
@@ -422,13 +688,14 @@
   function renderVaultButton() {
     document.getElementById("tech-achievement-vault")?.remove();
     const count = unlockedIds().length;
+    const total = Object.keys(achievements).length;
     if (!count) return;
     const footer = document.querySelector(".footer-actions");
     if (!footer) return;
     const button = createElement(
       "button",
-      `tech-vault-button ${count === Object.keys(achievements).length ? "is-complete" : ""}`,
-      count === Object.keys(achievements).length ? "Systems Architect 3/3" : `Technical discoveries ${count}/3`
+      `tech-vault-button ${count === total ? "is-complete" : ""}`,
+      count === total ? `Systems Architect ${total}/${total}` : `Technical discoveries ${count}/${total}`
     );
     button.id = "tech-achievement-vault";
     button.type = "button";
