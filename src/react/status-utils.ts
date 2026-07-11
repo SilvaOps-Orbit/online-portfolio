@@ -24,6 +24,14 @@ interface SnapshotPayload {
   stats?: Array<{ label?: string; value?: string; note?: string }>;
 }
 
+interface GitHubHourlyCache {
+  checkedAt?: number;
+  nextCheckAt?: number;
+  status?: "checking" | "live" | "error";
+  repositories?: unknown[];
+  remaining?: number;
+}
+
 const SNAPSHOT_DEFINITIONS: SnapshotDefinition[] = [
   { id: "steam", label: "Steam", path: "data/steam.json" },
   { id: "spotify", label: "Spotify", path: "data/spotify.json" },
@@ -33,6 +41,16 @@ const SNAPSHOT_DEFINITIONS: SnapshotDefinition[] = [
 ];
 
 const SETUP_PATTERN = /needs? key|add .*secret|not connected|ready for api secrets/i;
+const GITHUB_HOURLY_CACHE_KEY = "echoops-github-hourly-cache-v1";
+
+function readGitHubHourlyCache(): GitHubHourlyCache | null {
+  if (typeof window === "undefined" || !("localStorage" in window)) return null;
+  try {
+    return JSON.parse(window.localStorage.getItem(GITHUB_HOURLY_CACHE_KEY) || "null") as GitHubHourlyCache | null;
+  } catch (error) {
+    return null;
+  }
+}
 
 function timestampAgeHours(value: string | null): number | null {
   if (!value) return null;
@@ -47,8 +65,8 @@ function compactDetail(value: string, fallback: string): string {
 }
 
 function snapshotToStatus(definition: SnapshotDefinition, payload: SnapshotPayload): IntegrationStatus {
-  const source = String(payload.source || "generated snapshot");
-  const updatedAt = payload.lastGoodAt || payload.generatedAt || null;
+  let source = String(payload.source || "generated snapshot");
+  let updatedAt = payload.lastGoodAt || payload.generatedAt || null;
   const statText = (payload.stats || [])
     .map((item) => [item.label, item.value, item.note].filter(Boolean).join(" "))
     .join(" ");
@@ -64,6 +82,21 @@ function snapshotToStatus(definition: SnapshotDefinition, payload: SnapshotPaylo
   let detail = payload.status || `${definition.label} snapshot loaded successfully.`;
   if (definition.id === "steam" && needsSetup) {
     detail = "Steam Store data is available; private profile activity still needs its configured API key.";
+  }
+  if (definition.id === "github") {
+    const hourlyCache = readGitHubHourlyCache();
+    const hourlyCacheCurrent = Number(hourlyCache?.nextCheckAt || 0) > Date.now();
+    if (hourlyCacheCurrent && hourlyCache?.status === "live") {
+      const repositoryCount = Array.isArray(hourlyCache.repositories) ? hourlyCache.repositories.length : 0;
+      state = "live";
+      source = "hourly public GitHub API + Actions snapshot";
+      updatedAt = hourlyCache.checkedAt ? new Date(hourlyCache.checkedAt).toISOString() : updatedAt;
+      detail = `${repositoryCount} public repositories checked without a browser token. The Actions snapshot remains the primary fallback.`;
+    } else if (hourlyCacheCurrent && hourlyCache?.status === "error") {
+      state = "cached";
+      source = "GitHub Actions snapshot";
+      detail = "The hourly public API check could not refresh, so the last good Actions snapshot remains active.";
+    }
   }
 
   return {

@@ -16,6 +16,7 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - Gaming, finance, Australian, and breaking news feeds.
 - For the Nerds section showing security choices and unique features.
 - Lazy-loaded React and TypeScript integration status panel.
+- Layered technical easter eggs with a sandbox console, Web Crypto audit, architecture map, and achievement vault.
 - GitHub Actions workflows that refresh data without exposing secrets.
 
 ## Main files
@@ -23,6 +24,7 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `index.html` - page structure.
 - `styles.css` - the look, layout, animations, and responsive styling.
 - `app.js` - renders the interactive parts and loads JSON data.
+- `tech-easter-eggs.js` - isolated technical easter eggs and local achievement system.
 - `portfolio.config.js` - fallback content and personal site settings.
 - `data/*.json` - generated Steam, Spotify, GitHub, market, and news data.
 - `scripts/*.mjs` - data refresh scripts used by GitHub Actions.
@@ -48,7 +50,7 @@ Useful things to update there:
 
 ## GitHub setup
 
-Repository cards, language totals, and public activity are generated into `data/github.json`. The browser reads that local snapshot instead of calling `api.github.com`, so visitors do not share GitHub's small unauthenticated rate limit.
+Repository cards, language totals, and public activity are generated into `data/github.json`. The browser renders that snapshot first, then may make one token-free public repository request per hour. The successful result and next allowed check time are kept in `localStorage`, so reloading the page does not repeatedly hit GitHub.
 
 No extra GitHub secret is needed. GitHub Actions supplies its built-in read-only `GITHUB_TOKEN` to `scripts/update-github-data.mjs`, and only sanitized public fields are written to the JSON file.
 
@@ -56,6 +58,7 @@ No extra GitHub secret is needed. GitHub Actions supplies its built-in read-only
 - The main Pages and combined data workflows also refresh it during deployment.
 - Other data workflows preserve the last good GitHub snapshot.
 - The checked-in fallback keeps repository cards visible if an API refresh fails.
+- The optional browser check only refreshes public repository metadata; languages and public activity continue to come from the Actions snapshot.
 
 ## Steam setup
 

@@ -7,11 +7,14 @@
   const cycleTimers = new Map();
   const dataRefreshMs = 60000;
   const spotifyDataRefreshMs = 5000;
+  const githubHourlyRefreshMs = 60 * 60 * 1000;
+  const githubHourlyCacheKey = "echoops-github-hourly-cache-v1";
   let bootQuoteTimer = 0;
   let bootStepTimers = [];
   let spotifyProgressTimer = 0;
   let spotifyFactTimers = [];
   let marketSignalTimer = 0;
+  let githubRefreshTimer = 0;
   let roadmapCourseSwitchTimer = 0;
   let roadmapStageAutoTimer = 0;
   let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
@@ -3038,6 +3041,160 @@
     return String(repo?.id || repo?.full_name || repo?.name || "");
   }
 
+  function readGitHubHourlyCache(username) {
+    if (!("localStorage" in window)) return null;
+    try {
+      const cached = JSON.parse(window.localStorage.getItem(githubHourlyCacheKey) || "null");
+      return cached?.username === username ? cached : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeGitHubHourlyCache(cache) {
+    if (!("localStorage" in window)) return;
+    try {
+      window.localStorage.setItem(githubHourlyCacheKey, JSON.stringify(cache));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function isGitHubHourlyCacheCurrent(cache) {
+    return Number(cache?.nextCheckAt || 0) > Date.now();
+  }
+
+  function cleanGitHubApiText(value, maxLength = 500) {
+    return String(value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+  }
+
+  function cleanGitHubApiUrl(value, githubOnly = false) {
+    try {
+      const url = new URL(String(value || ""));
+      if (!["https:", "http:"].includes(url.protocol)) return "";
+      if (githubOnly && url.origin !== "https://github.com") return "";
+      return url.href;
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function sanitizeHourlyGitHubRepo(repo) {
+    const htmlUrl = cleanGitHubApiUrl(repo?.html_url, true);
+    const name = cleanGitHubApiText(repo?.name, 120);
+    if (!htmlUrl || !name) return null;
+
+    return {
+      id: Number(repo.id || 0),
+      name,
+      full_name: cleanGitHubApiText(repo.full_name, 240),
+      html_url: htmlUrl,
+      description: cleanGitHubApiText(repo.description || "Public repository", 500),
+      homepage: cleanGitHubApiUrl(repo.homepage),
+      language: cleanGitHubApiText(repo.language, 80),
+      topics: Array.isArray(repo.topics) ? repo.topics.map((topic) => cleanGitHubApiText(topic, 60)).filter(Boolean).slice(0, 20) : [],
+      stargazers_count: Math.max(0, Number(repo.stargazers_count || 0)),
+      forks_count: Math.max(0, Number(repo.forks_count || 0)),
+      open_issues_count: Math.max(0, Number(repo.open_issues_count || 0)),
+      size: Math.max(0, Number(repo.size || 0)),
+      updated_at: cleanGitHubApiText(repo.updated_at, 40),
+      has_pages: Boolean(repo.has_pages),
+      has_issues: Boolean(repo.has_issues),
+      archived: Boolean(repo.archived),
+      fork: Boolean(repo.fork)
+    };
+  }
+
+  function mergeGitHubRepos(snapshotRepos, hourlyRepos) {
+    const liveByName = new Map((hourlyRepos || []).map((repo) => [String(repo.full_name || repo.name).toLowerCase(), repo]));
+    const merged = (snapshotRepos || []).map((repo) => {
+      const key = String(repo.full_name || repo.name).toLowerCase();
+      const liveRepo = liveByName.get(key);
+      if (!liveRepo) return repo;
+      liveByName.delete(key);
+      return { ...repo, ...liveRepo };
+    });
+    return [...merged, ...liveByName.values()];
+  }
+
+  async function refreshGitHubHourlyCache(username, previousCache) {
+    const now = Date.now();
+    let response = null;
+    writeGitHubHourlyCache({
+      ...previousCache,
+      version: 1,
+      username,
+      checkedAt: now,
+      nextCheckAt: now + 60_000,
+      status: "checking"
+    });
+    try {
+      const headers = { Accept: "application/vnd.github+json" };
+      if (previousCache?.etag) {
+        headers["If-None-Match"] = previousCache.etag;
+      }
+      response = await fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&direction=desc&per_page=100&type=owner`, {
+        cache: "no-store",
+        headers,
+        referrerPolicy: "no-referrer",
+        signal: typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(15_000) : undefined
+      });
+
+      if (response.status === 304 && Array.isArray(previousCache?.repositories)) {
+        const refreshedCache = {
+          ...previousCache,
+          checkedAt: now,
+          nextCheckAt: now + githubHourlyRefreshMs,
+          status: "live"
+        };
+        writeGitHubHourlyCache(refreshedCache);
+        return refreshedCache;
+      }
+
+      if (!response.ok) {
+        throw new Error(`GitHub API returned ${response.status}`);
+      }
+
+      const payload = await response.json();
+      const repositories = (Array.isArray(payload) ? payload : [])
+        .filter((repo) => !repo?.fork)
+        .map(sanitizeHourlyGitHubRepo)
+        .filter(Boolean);
+      const refreshedCache = {
+        version: 1,
+        username,
+        checkedAt: now,
+        nextCheckAt: now + githubHourlyRefreshMs,
+        status: "live",
+        etag: response.headers.get("etag") || "",
+        remaining: Number(response.headers.get("x-ratelimit-remaining") || 0),
+        repositories
+      };
+      writeGitHubHourlyCache(refreshedCache);
+      return refreshedCache;
+    } catch (error) {
+      const resetAt = Number(response?.headers?.get("x-ratelimit-reset") || 0) * 1000;
+      const failedCache = {
+        ...previousCache,
+        version: 1,
+        username,
+        checkedAt: now,
+        nextCheckAt: Math.max(now + githubHourlyRefreshMs, resetAt || 0),
+        status: "error",
+        message: "The hourly public GitHub check failed; the Actions snapshot remains active."
+      };
+      writeGitHubHourlyCache(failedCache);
+      return failedCache;
+    }
+  }
+
+  function scheduleGitHubHourlyRefresh(cache) {
+    window.clearTimeout(githubRefreshTimer);
+    const nextCheckAt = Number(cache?.nextCheckAt || 0);
+    const delay = Math.max(60_000, nextCheckAt > Date.now() ? nextCheckAt - Date.now() : githubHourlyRefreshMs);
+    githubRefreshTimer = window.setTimeout(() => loadGitHubRepos(), Math.min(delay, githubHourlyRefreshMs));
+  }
+
   function githubPrimaryLanguageStats(repos) {
     const totals = new Map();
     const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
@@ -3235,7 +3392,7 @@
     renderGitHubActivity(container, events, username);
   }
 
-  async function loadGitHubRepos() {
+  async function loadGitHubRepos(options = {}) {
     const profile = config.profile || {};
     const username = profile.githubUsername;
     const status = document.getElementById("github-status");
@@ -3264,7 +3421,11 @@
       }
 
       const snapshot = await response.json();
-      const repos = Array.isArray(snapshot?.repositories) ? snapshot.repositories : [];
+      const snapshotRepos = Array.isArray(snapshot?.repositories) ? snapshot.repositories : [];
+      const hourlyCache = options.hourlyCache || readGitHubHourlyCache(username);
+      const hourlyCacheCurrent = isGitHubHourlyCacheCurrent(hourlyCache);
+      const liveCacheActive = hourlyCacheCurrent && hourlyCache?.status === "live" && Array.isArray(hourlyCache.repositories);
+      const repos = liveCacheActive ? mergeGitHubRepos(snapshotRepos, hourlyCache.repositories) : snapshotRepos;
       const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
       const publicRepos = repos.filter((repo) => !repo.fork);
       const languageData = githubSnapshotLanguageStats(publicRepos, snapshot?.languagesByRepo || {});
@@ -3284,10 +3445,16 @@
         .filter(Number.isFinite)
         .sort((a, b) => b - a)[0];
       const snapshotUpdatedAt = snapshot?.lastGoodAt || snapshot?.generatedAt;
-      const snapshotLabel = snapshot?.stale ? "Using the last good GitHub snapshot" : "GitHub snapshot refreshed by Actions";
+      const snapshotLabel = liveCacheActive
+        ? `Hourly public GitHub check completed ${formatDate(hourlyCache.checkedAt)}; the Actions snapshot supplies languages and activity`
+        : hourlyCacheCurrent && hourlyCache?.status === "error"
+          ? "The hourly public GitHub check is unavailable; using the Actions snapshot"
+          : snapshot?.stale
+            ? "Using the last good GitHub snapshot"
+            : "GitHub snapshot refreshed by Actions";
 
       status.textContent = visibleRepos.length
-        ? `${snapshotLabel} ${formatDate(snapshotUpdatedAt)}. Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest repo update ${formatDate(latestUpdate)}. No browser GitHub API request or token.`
+        ? `${snapshotLabel}. Snapshot date ${formatDate(snapshotUpdatedAt)}. Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest repo update ${formatDate(latestUpdate)}. No browser token; public API checks are limited to once per hour.`
         : `No non-fork public repositories found for ${username}.`;
 
       renderGitHubInsights(insights, username, publicRepos, events, languageData);
@@ -3324,7 +3491,7 @@
         const securityNote = createElement(
           "p",
           "repo-security-note",
-          "Public repo metadata cached by GitHub Actions. The browser never receives a token or calls the GitHub API directly."
+          "The GitHub Actions snapshot is primary. A token-free browser check can refresh public repository metadata at most once per hour."
         );
 
         const links = createElement("div", "repo-links");
@@ -3345,8 +3512,15 @@
         card.append(securityNote, links);
         grid.append(card);
       });
+
+      if (options.allowHourlyRefresh !== false && !hourlyCacheCurrent) {
+        void refreshGitHubHourlyCache(username, hourlyCache)
+          .then((refreshedCache) => loadGitHubRepos({ allowHourlyRefresh: false, hourlyCache: refreshedCache }));
+      } else {
+        scheduleGitHubHourlyRefresh(hourlyCache);
+      }
     } catch (error) {
-      status.textContent = "The local GitHub snapshot could not be loaded. No browser token or direct GitHub API request was attempted.";
+      status.textContent = "The local GitHub snapshot could not be loaded. No browser token was used.";
     }
 
     observeReveals();

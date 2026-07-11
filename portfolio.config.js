@@ -1002,10 +1002,30 @@ window.PORTFOLIO_CONFIG = {
       ]
     },
     {
+      title: "Layered Technical Discoveries",
+      body:
+        "Several discreet easter eggs unlock a sandboxed command console, a Web Crypto SHA-256 source audit, an animated architecture blueprint, and a locally persisted technical achievement vault. Inputs use allowlisted commands and DOM-safe output rather than eval or raw HTML.",
+      why: "The rewards turn hidden interaction into evidence of event sequencing, async data inspection, cryptographic browser APIs, resilient architecture, accessibility, state persistence, and careful security boundaries.",
+      docs: [
+        {
+          label: "Web Crypto API",
+          url: "https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API"
+        },
+        {
+          label: "Dialog Element",
+          url: "https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/dialog"
+        },
+        {
+          label: "MutationObserver",
+          url: "https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver"
+        }
+      ]
+    },
+    {
       title: "GitHub Repository Feed",
       body:
-        "GitHub Actions uses its built-in read-only token to collect public repositories, languages, and public activity into data/github.json. Visitors read that local snapshot instead of calling GitHub directly.",
-      why: "It keeps the portfolio connected to public work while preventing browser rate-limit failures and ensuring no GitHub token can reach a visitor.",
+        "GitHub Actions uses its built-in read-only token to collect public repositories, languages, and activity into data/github.json. That snapshot stays primary, while a token-free browser request can refresh public repository metadata at most once per hour and caches the result locally.",
+      why: "It keeps the portfolio current without making every reload hit GitHub, while snapshot fallbacks prevent rate limits or connection failures from emptying the section.",
       docs: [
         {
           label: "GitHub REST API",
