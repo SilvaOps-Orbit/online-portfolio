@@ -549,6 +549,9 @@ window.PORTFOLIO_CONFIG = {
       demo: "#"
     }
   ],
+  githubRepoTechnologies: {
+    "online-portfolio": ["React.js"]
+  },
   steam: {
     steamId: "76561199192411740",
     profileUrl: "https://steamcommunity.com/profiles/76561199192411740",

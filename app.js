@@ -3098,10 +3098,21 @@
   function repoLanguageChips(repo, repoLanguages) {
     const stats = repoLanguages instanceof Map ? repoLanguages.get(repoLanguageKey(repo)) : null;
     const fallback = repo?.language ? [{ language: repo.language, percent: 100 }] : [];
-    return (Array.isArray(stats) && stats.length ? stats : fallback)
+    const detectedLanguages = (Array.isArray(stats) && stats.length ? stats : fallback)
       .filter((item) => item?.language)
-      .slice(0, 6)
       .map((item) => `${item.language}${Number.isFinite(Number(item.percent)) ? ` ${Number(item.percent).toFixed(1)}%` : ""}`);
+    const configuredTechnologies = config.githubRepoTechnologies?.[repo?.name];
+    const technologyLabels = Array.isArray(configuredTechnologies)
+      ? configuredTechnologies.map((item) => String(item || "").trim()).filter(Boolean)
+      : [];
+    const seen = new Set();
+
+    return [...detectedLanguages, ...technologyLabels].filter((label) => {
+      const key = label.replace(/\s+\d+(?:\.\d+)?%$/, "").toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   function dateKey(value) {
