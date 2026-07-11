@@ -1100,9 +1100,13 @@ h3 {
 
 .roadmap-heading {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
-  gap: 18px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 28px);
+  align-items: start;
+}
+
+.roadmap-heading-copy {
+  max-width: 980px;
 }
 
 .roadmap-title,
@@ -1113,7 +1117,7 @@ h3 {
 }
 
 .roadmap-summary {
-  max-width: 760px;
+  max-width: 900px;
   margin: 10px 0 0;
   color: var(--muted);
   font-size: clamp(1rem, 1.5vw, 1.12rem);
@@ -1131,9 +1135,9 @@ h3 {
 
 .roadmap-goal-card {
   display: grid;
-  align-content: center;
+  align-content: start;
   gap: 12px;
-  min-height: 330px;
+  min-height: 0;
   isolation: isolate;
   border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
   background:
@@ -1267,41 +1271,56 @@ h3 {
 
 .roadmap-attribute-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(40px, auto));
   gap: 7px;
-  max-height: 270px;
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--accent) 42%, transparent) transparent;
+  max-width: 100%;
+  overflow: visible;
+  padding: 2px;
 }
 
 .roadmap-attribute-card {
   min-width: 0;
+  overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
-  border-radius: 6px;
+  border-radius: 999px;
   background: color-mix(in srgb, var(--bg) 25%, transparent);
+  transition: border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
-.roadmap-attribute-card.is-open {
-  grid-column: 1 / -1;
+.roadmap-attribute-card.is-selected {
   border-color: color-mix(in srgb, var(--accent) 54%, var(--line));
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+.roadmap-attribute-card.is-sequence-good {
+  border-color: #42e58d;
+  background: color-mix(in srgb, #42e58d 18%, var(--panel));
+  box-shadow: 0 0 18px color-mix(in srgb, #42e58d 48%, transparent);
+  animation: roadmap-attribute-confirm 2s ease;
+}
+
+.roadmap-attribute-card.is-sequence-bad {
+  border-color: #ff5158;
+  background: color-mix(in srgb, #ff5158 17%, var(--panel));
+  box-shadow: 0 0 18px color-mix(in srgb, #ff5158 42%, transparent);
+  animation: roadmap-attribute-reject 2s ease;
+}
+
 .roadmap-attribute-button {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px;
+  display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  min-height: 42px;
-  padding: 8px 9px;
+  height: 100%;
+  min-height: 38px;
+  padding: 6px 5px;
   border: 0;
+  border-radius: inherit;
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  text-align: left;
+  text-align: center;
 }
 
 .roadmap-attribute-button:hover,
@@ -1310,32 +1329,67 @@ h3 {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
-.roadmap-attribute-index {
-  display: inline-grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: 1px solid color-mix(in srgb, var(--accent-2) 52%, var(--line));
-  border-radius: 4px;
-  color: var(--accent-2);
-  font-size: 0.66rem;
-  font-weight: 950;
-}
-
 .roadmap-attribute-button strong {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 0.8rem;
-  line-height: 1.15;
+  white-space: normal;
+  font-size: 0.62rem;
+  line-height: 1.05;
   text-transform: uppercase;
 }
 
-.roadmap-attribute-meaning {
+.roadmap-attribute-popover {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 14px;
+  padding: 12px 14px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 46%, var(--line));
+  border-radius: 7px;
+  background:
+    linear-gradient(110deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 62%),
+    color-mix(in srgb, var(--panel-strong) 94%, transparent);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
+}
+
+.roadmap-attribute-popover[hidden] {
+  display: none;
+}
+
+.roadmap-attribute-popover.is-entering {
+  animation: roadmap-attribute-popover-in 280ms ease both;
+}
+
+.roadmap-attribute-popover strong {
+  color: var(--accent-2);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.roadmap-attribute-popover p {
+  grid-column: 1 / -1;
   margin: 0;
-  padding: 0 10px 10px 45px;
   color: var(--muted);
   font-size: 0.84rem;
   line-height: 1.45;
+}
+
+.roadmap-attribute-popover-close {
+  align-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.roadmap-attribute-popover-close:hover,
+.roadmap-attribute-popover-close:focus-visible {
+  color: var(--text);
 }
 
 .roadmap-card-label,
@@ -1426,7 +1480,28 @@ h3 {
 
 .roadmap-stage-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(320px, calc((100% - 28px) / 3));
+  grid-auto-rows: 1fr;
+  gap: 14px;
+  margin: 0;
+  padding: 2px 1px 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.roadmap-stage-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.roadmap-stage-carousel {
+  position: relative;
+  display: grid;
   gap: 14px;
   margin-top: 18px;
 }
@@ -1435,10 +1510,45 @@ h3 {
   display: grid;
   gap: 12px;
   min-height: 272px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
   isolation: isolate;
   background:
     linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%),
     color-mix(in srgb, var(--panel) 86%, transparent);
+}
+
+.roadmap-stage-dots {
+  display: flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.roadmap-stage-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--muted) 68%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--muted) 22%, transparent);
+  cursor: pointer;
+  transition: width 220ms ease, border-color 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+.roadmap-stage-dot:hover,
+.roadmap-stage-dot:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.roadmap-stage-dot.is-active {
+  width: 28px;
+  border-radius: 999px;
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 46%, transparent);
 }
 
 .roadmap-stage > *:not(.roadmap-stage-art) {
@@ -1581,6 +1691,48 @@ h3 {
   transform: rotate(-45deg);
 }
 
+.roadmap-stage.is-optional {
+  border-style: dashed;
+  border-color: color-mix(in srgb, #6ea8fe 54%, var(--line));
+  background:
+    linear-gradient(145deg, color-mix(in srgb, #6ea8fe 8%, transparent), transparent 62%),
+    color-mix(in srgb, var(--panel) 82%, transparent);
+}
+
+.roadmap-stage.is-optional .roadmap-stage-art span {
+  width: 34px;
+  height: 34px;
+  border: 2px dashed #8cbbff;
+  border-radius: 50%;
+  animation: roadmap-radar 5.2s linear infinite;
+}
+
+.roadmap-stage.is-optional .roadmap-stage-art span::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 13px;
+  background: #8cbbff;
+  content: "";
+  transform: translate(-50%, -100%);
+  transform-origin: 50% 100%;
+}
+
+.roadmap-optional-note {
+  width: fit-content;
+  padding: 5px 8px;
+  border: 1px solid color-mix(in srgb, #6ea8fe 48%, var(--line));
+  border-radius: 6px;
+  color: #8cbbff;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+
+.roadmap-stage.is-optional .roadmap-progress-meter {
+  background: linear-gradient(90deg, #6ea8fe, var(--accent), var(--accent-2));
+}
+
 .roadmap-stage-chips .roadmap-chip {
   display: grid;
   gap: 2px;
@@ -1619,9 +1771,27 @@ h3 {
   background: color-mix(in srgb, var(--accent-2) 8%, transparent);
 }
 
+.roadmap-chip.is-applied {
+  border-color: color-mix(in srgb, #6ea8fe 62%, var(--line));
+  background: color-mix(in srgb, #6ea8fe 8%, transparent);
+}
+
 .roadmap-chip.is-incomplete {
   border-color: color-mix(in srgb, var(--line) 72%, transparent);
   opacity: 0.78;
+}
+
+.roadmap-chip.is-linked {
+  text-decoration: none;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.roadmap-chip.is-linked:hover,
+.roadmap-chip.is-linked:focus-visible {
+  border-color: color-mix(in srgb, #6ea8fe 72%, var(--line));
+  background: color-mix(in srgb, #6ea8fe 10%, transparent);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .roadmap-subheading {
@@ -1787,6 +1957,12 @@ h3 {
 .roadmap-status.is-active {
   border-color: color-mix(in srgb, var(--accent-2) 58%, var(--line));
   color: var(--accent-2);
+}
+
+.roadmap-status.is-applied {
+  border-color: color-mix(in srgb, #6ea8fe 62%, var(--line));
+  color: #8cbbff;
+  box-shadow: 0 0 16px color-mix(in srgb, #6ea8fe 16%, transparent);
 }
 
 .roadmap-status.is-incomplete {
@@ -2095,6 +2271,242 @@ h3 {
 .nerd-group {
   display: grid;
   gap: 18px;
+}
+
+.react-island-group {
+  padding-block: 4px;
+}
+
+#react-api-status-root {
+  min-height: 180px;
+}
+
+.react-api-status-fallback {
+  display: grid;
+  min-height: 180px;
+  place-items: center;
+  border-block: 1px solid var(--line);
+  color: var(--muted);
+  font-weight: 800;
+  text-align: center;
+}
+
+.react-api-status-fallback.is-error {
+  border-color: color-mix(in srgb, #ff5158 44%, var(--line));
+  color: #ff777d;
+}
+
+.react-api-pulse {
+  display: grid;
+  gap: 16px;
+  padding-block: clamp(16px, 3vw, 24px);
+  border-block: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--panel) 34%, transparent);
+}
+
+.react-api-pulse-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.react-api-pulse-header > div {
+  display: grid;
+  gap: 5px;
+}
+
+.react-api-tech-label {
+  width: fit-content;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, #6ea8fe 58%, var(--line));
+  border-radius: 6px;
+  color: #8cbbff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.react-api-pulse h4,
+.react-api-pulse p,
+.react-api-card dl,
+.react-api-card dd {
+  margin: 0;
+}
+
+.react-api-pulse h4 {
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+}
+
+.react-api-pulse-header p,
+.react-api-pulse-footer {
+  color: var(--muted);
+}
+
+.react-api-pulse-header button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, var(--line));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--accent) 9%, var(--panel));
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.react-api-pulse-header button:hover,
+.react-api-pulse-header button:focus-visible {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.react-api-pulse-header button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.react-api-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.react-api-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 178px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+}
+
+.react-api-card-heading {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.react-api-card-heading strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.react-api-state-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.react-api-state-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.react-api-card > p {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.react-api-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+}
+
+.react-api-card-meta div {
+  min-width: 0;
+}
+
+.react-api-card-meta dt {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.react-api-card-meta dd {
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+
+.react-api-card.is-live {
+  border-color: color-mix(in srgb, #42e58d 48%, var(--line));
+}
+
+.react-api-card.is-live .react-api-state-dot {
+  background: #42e58d;
+  box-shadow: 0 0 12px color-mix(in srgb, #42e58d 70%, transparent);
+  animation: react-api-live-pulse 2.2s ease-in-out infinite;
+}
+
+.react-api-card.is-cached {
+  border-color: color-mix(in srgb, var(--accent-2) 48%, var(--line));
+}
+
+.react-api-card.is-cached .react-api-state-dot {
+  background: var(--accent-2);
+}
+
+.react-api-card.is-partial {
+  border-color: color-mix(in srgb, #ffb44c 54%, var(--line));
+}
+
+.react-api-card.is-partial .react-api-state-dot {
+  background: #ffb44c;
+}
+
+.react-api-card.is-offline {
+  border-color: color-mix(in srgb, #ff5158 52%, var(--line));
+}
+
+.react-api-card.is-offline .react-api-state-dot {
+  background: #ff5158;
+}
+
+.react-api-card.is-checking .react-api-state-dot {
+  animation: react-api-checking-pulse 1.1s ease-in-out infinite;
+}
+
+.react-api-pulse-footer {
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+@keyframes react-api-live-pulse {
+  0%,
+  100% {
+    opacity: 0.62;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+}
+
+@keyframes react-api-checking-pulse {
+  0%,
+  100% {
+    opacity: 0.36;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 .nerd-group-heading {
@@ -4211,54 +4623,45 @@ h3 {
   inset: 0;
   z-index: 86;
   display: grid;
+  place-content: center;
   place-items: center;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  width: 100%;
   padding: 24px;
   background:
     radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 28%),
     repeating-linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent) 0 1px, transparent 1px 48px),
     color-mix(in srgb, var(--bg) 86%, transparent);
-  animation: sf-easter-fade 5200ms ease forwards;
+  animation: sf-easter-fade 10000ms ease forwards;
 }
 
-.sf-easter-mark {
-  position: absolute;
-  width: min(62vw, 420px);
-  aspect-ratio: 1;
-  opacity: 0.78;
-  animation: sf-easter-lock 1600ms ease forwards;
-}
-
-.sf-easter-mark span {
-  position: absolute;
-  inset: 24%;
-  border: 2px solid color-mix(in srgb, var(--accent) 74%, transparent);
-  transform: rotate(45deg);
-  box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-.sf-easter-mark span:nth-child(2) {
-  inset: 34% 18%;
-  border-color: color-mix(in srgb, var(--accent-2) 62%, transparent);
-}
-
-.sf-easter-mark span:nth-child(3) {
-  inset: 18% 34%;
-  border-color: color-mix(in srgb, var(--accent-2) 62%, transparent);
-}
-
-.sf-easter-mark span:nth-child(4) {
-  inset: 40%;
-  border-color: var(--accent);
-  animation: sf-easter-pulse 900ms ease-in-out infinite;
+.sf-easter-real-badge {
+  display: block;
+  align-self: center;
+  justify-self: center;
+  width: min(46vh, 88vw, 390px);
+  max-height: 48vh;
+  margin-inline: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent-2) 36%, transparent));
+  transform-origin: center center;
+  user-select: none;
+  -webkit-user-drag: none;
+  animation:
+    sf-easter-insignia 1400ms cubic-bezier(0.16, 1, 0.3, 1) both,
+    sf-easter-float 2.8s ease-in-out 1400ms infinite,
+    sf-easter-glow 1.8s ease-in-out 1400ms infinite;
 }
 
 .sf-easter-badge {
   position: relative;
   z-index: 1;
   display: grid;
+  justify-self: center;
   gap: 8px;
-  width: min(92vw, 520px);
-  padding: clamp(22px, 5vw, 38px);
+  width: min(92vw, 540px);
+  padding: 15px 18px;
   border: 1px solid color-mix(in srgb, var(--accent) 58%, var(--line));
   border-radius: 8px;
   background:
@@ -4267,7 +4670,7 @@ h3 {
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.44);
   text-align: center;
   transform: translateY(16px) scale(0.96);
-  animation: sf-easter-card 520ms ease forwards;
+  animation: sf-easter-card 520ms 180ms ease both;
 }
 
 .sf-easter-badge span {
@@ -4279,7 +4682,7 @@ h3 {
 
 .sf-easter-badge strong {
   color: var(--accent);
-  font-size: clamp(2rem, 8vw, 4.6rem);
+  font-size: clamp(1.55rem, 5vw, 2.8rem);
   font-weight: 950;
   line-height: 0.96;
   text-transform: uppercase;
@@ -4291,6 +4694,50 @@ h3 {
   font-style: normal;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.sf-motto-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.sf-motto-help {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 58%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 46%, transparent);
+  color: var(--accent-2);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 950;
+}
+
+.sf-motto-help:hover,
+.sf-motto-help:focus-visible {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent-2) 34%, transparent);
+  outline: none;
+}
+
+.sf-motto-meaning {
+  margin: 4px auto 0;
+  max-width: 48ch;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 650;
+  line-height: 1.45;
+  text-transform: none;
+}
+
+.sf-motto-meaning[hidden] {
+  display: none;
 }
 
 .easter-burst {
@@ -4447,28 +4894,39 @@ h3 {
   }
 }
 
-@keyframes sf-easter-lock {
+@keyframes sf-easter-insignia {
   from {
     opacity: 0;
-    transform: scale(0.76) rotate(-12deg);
+    transform: scale(0.68) rotate(-8deg);
   }
 
   to {
-    opacity: 0.78;
+    opacity: 1;
     transform: scale(1) rotate(0deg);
   }
 }
 
-@keyframes sf-easter-pulse {
+@keyframes sf-easter-float {
   0%,
   100% {
-    opacity: 0.38;
-    transform: rotate(45deg) scale(0.82);
+    transform: translateY(0) scale(1);
   }
 
   50% {
-    opacity: 1;
-    transform: rotate(45deg) scale(1.12);
+    transform: translateY(-8px) scale(1.025);
+  }
+}
+
+@keyframes sf-easter-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent-2) 30%, transparent));
+  }
+
+  50% {
+    filter:
+      drop-shadow(0 0 26px color-mix(in srgb, var(--accent-2) 62%, transparent))
+      drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 54%, transparent));
   }
 }
 
@@ -4481,6 +4939,29 @@ h3 {
   100% {
     opacity: 0;
   }
+}
+
+@keyframes roadmap-attribute-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes roadmap-attribute-confirm {
+  0%, 100% { transform: scale(1); }
+  16% { transform: scale(1.06); }
+}
+
+@keyframes roadmap-attribute-reject {
+  0%, 100% { transform: translateX(0); }
+  12%, 36% { transform: translateX(-4px); }
+  24%, 48% { transform: translateX(4px); }
 }
 
 @keyframes easter-burst-fade {
@@ -4514,6 +4995,10 @@ h3 {
 }
 
 @media (max-width: 980px) {
+  .react-api-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .hero,
   .story-layout,
   .roadmap-heading,
@@ -4541,13 +5026,29 @@ h3 {
   }
 
   .market-grid,
-  .market-signal-list,
-  .roadmap-stage-grid {
+  .market-signal-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roadmap-stage-grid {
+    grid-auto-columns: minmax(300px, calc((100% - 14px) / 2));
   }
 }
 
 @media (max-width: 760px) {
+  .react-api-pulse-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .react-api-pulse-header button {
+    width: 100%;
+  }
+
+  .react-api-grid {
+    grid-template-columns: 1fr;
+  }
+
   .site-header {
     min-height: 66px;
   }
@@ -4606,9 +5107,12 @@ h3 {
   .market-signal-list,
   .news-grid,
   .steam-grid,
-  .roadmap-stage-grid,
   .roadmap-course-grid {
     grid-template-columns: 1fr;
+  }
+
+  .roadmap-stage-grid {
+    grid-auto-columns: minmax(280px, 88%);
   }
 
   .highlight-grid li,
@@ -4632,12 +5136,10 @@ h3 {
   }
 
   .roadmap-attribute-list {
-    grid-template-columns: 1fr;
-    max-height: 360px;
-  }
-
-  .roadmap-attribute-card.is-open {
-    grid-column: auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: none;
+    grid-auto-rows: minmax(40px, auto);
+    max-height: none;
   }
 
   .roadmap-course-detail-shell {
@@ -4737,6 +5239,14 @@ h3 {
 }
 
 @media (max-width: 420px) {
+  .roadmap-stage-grid {
+    grid-auto-columns: 94%;
+  }
+
+  .roadmap-attribute-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .hero-actions,
   .contact-actions,
   .steam-actions {
@@ -4807,9 +5317,9 @@ h3 {
   .boot-bars span,
   .status-dot,
   .sf-easter,
-  .sf-easter-mark,
-  .sf-easter-mark span,
+  .sf-easter-real-badge,
   .sf-easter-badge,
+  .react-api-state-dot,
   .easter-burst,
   .easter-burst span,
   .easter-toast {

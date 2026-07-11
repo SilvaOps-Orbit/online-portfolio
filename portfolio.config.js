@@ -50,6 +50,13 @@ window.PORTFOLIO_CONFIG = {
     goal: "Special Forces Operator",
     target: "Long-term goal: 2nd Commando Regiment",
     goalBadge: "OBJ-SF",
+    badgeImageUrl: "assets/sf-badge.png",
+    motto: {
+      text: "Foras Admonitio",
+      translation: "Without Warning",
+      meaning:
+        "The motto translates to 'Without Warning' and represents readiness, decisive action, and being prepared before the moment arrives."
+    },
     goalStatement:
       "This is the long game: build the discipline, fitness, knowledge, and family stability needed to earn the standard one step at a time.",
     commonAttributesSequence: ["leadership", "judgement", "teamwork", "humility"],
@@ -136,9 +143,9 @@ window.PORTFOLIO_CONFIG = {
     summary:
       "A practical roadmap from current study and qualifications through readiness, application, Army training, and Special Forces selection.",
     targetDate: "",
-    lastUpdated: "2026-07-10",
+    lastUpdated: "2026-07-11",
     editNote:
-      "Use status: \"incomplete\", \"in-progress\", or \"complete\". Add course startDate as YYYY-MM-DD and the site will estimate finish dates around school breaks/public holidays. Add courseUrl on each course for the View course details button. Add certificateImageUrl when a view-only certificate image is ready. Add endDate only when you want to override the estimate.",
+      "Use status: \"incomplete\", \"applied\", \"in-progress\", or \"complete\". Applied adds 1% to that qualification's progress. Add course startDate as YYYY-MM-DD and the site will estimate finish dates around school breaks/public holidays. Add courseUrl on each course for the View course details button. Add certificateImageUrl when a view-only certificate image is ready. Add endDate only when you want to override the estimate.",
     studyCalendar: {
       region: "Victoria, Australia",
       sourceNote:
@@ -213,7 +220,7 @@ window.PORTFOLIO_CONFIG = {
         provider: "Swinburne University of Technology",
         duration: "12 months",
         durationDays: 365,
-        status: "Applying",
+        status: "applied",
         startDate: "2027-03-01",
         endDate: "",
         courseUrl: "https://www.swinburne.edu.au/course/tafe/diploma-of-information-technology-advanced-networking-cyber-security/",
@@ -352,9 +359,12 @@ window.PORTFOLIO_CONFIG = {
         startDate: "",
         endDate: "",
         courseUrl: "",
+        courseUrlLabel: "Book storepage",
         certificateUrl: "",
         certificateImageUrl: "",
-        qualification: "Preparation resource",
+        hideCertificate: true,
+        evidenceLabel: "Book not obtained",
+        qualification: "Book not obtained",
         description:
           "A preparation resource for physical standards, mindset, training structure, and long-term selection readiness."
       },
@@ -471,6 +481,39 @@ window.PORTFOLIO_CONFIG = {
         title: "Complete military training and selection",
         summary: "Move through initial Army training, infantry training, Special Forces preparation, and selection.",
         courseIds: ["army-recruit-course", "infantry-employment-training", "sfspc", "sfsc"]
+      },
+      {
+        label: "Optional: While in the Army",
+        title: "Optional skills while serving",
+        summary: "Build extra driving, combat-sport, and martial-arts skills alongside the main pathway. This stage has its own tracker and does not affect the main goal progress.",
+        optional: true,
+        checklist: [
+          {
+            label: "Advanced driver training",
+            status: "incomplete",
+            url: "https://driverdynamics.com/contact/"
+          },
+          {
+            label: "Weapons and stick fighting",
+            status: "incomplete",
+            url: "https://martialarts.com.au/weapons-stick-fighting/"
+          },
+          {
+            label: "Martial arts weapons training",
+            status: "incomplete",
+            url: "https://www.guestsmartialarts.com.au/martial-arts-weapons-training-in-melbourne.html"
+          },
+          {
+            label: "Mixed martial arts",
+            status: "incomplete",
+            url: "https://absolutemma.com.au/absolutemma-classesandservices/mixed-martial-arts/"
+          },
+          {
+            label: "Jiu-jitsu and additional martial arts",
+            status: "incomplete",
+            url: "https://www.jiujitsu.org.au/our-martial-arts/S"
+          }
+        ]
       }
     ],
     readinessStandards: [
@@ -935,6 +978,26 @@ window.PORTFOLIO_CONFIG = {
     }
   ],
   nerdFeatures: [
+    {
+      title: "React and TypeScript Status Island",
+      body:
+        "A small lazy-loaded React and TypeScript component checks the public Steam, Spotify, market, news, and GitHub data sources while the rest of the portfolio stays plain HTML, CSS, and JavaScript.",
+      why: "It demonstrates component-based React and typed front-end code without rebuilding the whole site or slowing down the first page load.",
+      docs: [
+        {
+          label: "React",
+          url: "https://react.dev/"
+        },
+        {
+          label: "TypeScript",
+          url: "https://www.typescriptlang.org/docs/"
+        },
+        {
+          label: "Vite",
+          url: "https://vite.dev/guide/"
+        }
+      ]
+    },
     {
       title: "GitHub Repository Feed",
       body:

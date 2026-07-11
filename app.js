@@ -13,6 +13,7 @@
   let spotifyFactTimers = [];
   let marketSignalTimer = 0;
   let roadmapCourseSwitchTimer = 0;
+  let roadmapStageAutoTimer = 0;
   let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
@@ -372,6 +373,7 @@
     if (["complete", "completed", "certified", "uploaded"].includes(normalized)) return 100;
     if (["in-progress", "current", "active"].includes(normalized)) return 45;
     if (["ready", "booked", "scheduled"].includes(normalized)) return 20;
+    if (["applied", "application-submitted"].includes(normalized)) return 1;
     if (["incomplete", "not-started", "planned", "future", "locked"].includes(normalized)) return 0;
     return 0;
   }
@@ -384,13 +386,18 @@
   function roadmapStatusLabel(item) {
     if (item?.certificateImageUrl || item?.certificateUrl) return "evidence uploaded";
     const normalized = normalizeRoadmapStatus(item?.status);
-    if (["complete", "completed", "certified", "uploaded"].includes(normalized)) return "complete";
+    if (["complete", "completed", "certified", "uploaded"].includes(normalized)) {
+      return item?.evidenceLabel ? String(item.evidenceLabel).toLowerCase() : "complete";
+    }
     if (["in-progress", "current", "active"].includes(normalized)) return "in progress";
     if (["ready", "booked", "scheduled"].includes(normalized)) return normalized.replace(/-/g, " ");
+    if (["applied", "application-submitted"].includes(normalized)) return "applied";
     return "incomplete";
   }
 
   function roadmapStatusClass(item) {
+    const normalized = normalizeRoadmapStatus(item?.status);
+    if (["applied", "application-submitted"].includes(normalized)) return "roadmap-status is-applied";
     const progress = roadmapItemProgress(item);
     if (progress >= 100) return "roadmap-status is-complete";
     if (progress > 0) return "roadmap-status is-active";
@@ -492,29 +499,54 @@
   function triggerAttributeEasterEgg() {
     if (document.body.classList.contains("sf-easter-active")) return;
 
+    const roadmap = config.careerRoadmap || {};
+    const motto = roadmap.motto || {};
     document.body.classList.add("sf-easter-active");
     const overlay = createElement("div", "sf-easter");
-    overlay.setAttribute("role", "status");
-    overlay.setAttribute("aria-live", "polite");
+    overlay.setAttribute("role", "dialog");
+    overlay.setAttribute("aria-modal", "true");
+    overlay.setAttribute("aria-label", "Mission sequence accepted");
+
+    const badgeImage = createElement("img", "sf-easter-real-badge");
+    badgeImage.src = safeUrl(roadmap.badgeImageUrl || "assets/sf-badge.png");
+    badgeImage.alt = `${motto.text || "Foras Admonitio"} badge`;
+    badgeImage.draggable = false;
+    badgeImage.addEventListener("contextmenu", (event) => event.preventDefault());
 
     const badge = createElement("div", "sf-easter-badge");
+    const mottoLine = createElement("div", "sf-motto-line");
+    mottoLine.append(createElement("strong", "", motto.text || "Foras Admonitio"));
+
+    const mottoHelp = createElement("button", "sf-motto-help", "?");
+    mottoHelp.type = "button";
+    mottoHelp.setAttribute("aria-label", "Explain the motto");
+    mottoHelp.setAttribute("aria-expanded", "false");
+    const mottoMeaning = createElement(
+      "p",
+      "sf-motto-meaning",
+      motto.meaning || "The motto means 'Without Warning' and represents readiness before action."
+    );
+    mottoMeaning.hidden = true;
+    mottoHelp.addEventListener("click", () => {
+      const isOpen = mottoMeaning.hidden;
+      mottoMeaning.hidden = !isOpen;
+      mottoHelp.setAttribute("aria-expanded", String(isOpen));
+    });
+    mottoLine.append(mottoHelp);
     badge.append(
       createElement("span", "", "Mission sequence accepted"),
-      createElement("strong", "", "Foras Admonitio"),
-      createElement("em", "", "Without Warning")
+      mottoLine,
+      createElement("em", "", motto.translation || "Without Warning"),
+      mottoMeaning
     );
 
-    const mark = createElement("div", "sf-easter-mark");
-    mark.setAttribute("aria-hidden", "true");
-    Array.from({ length: 4 }, () => mark.append(createElement("span")));
-
-    overlay.append(mark, badge);
+    overlay.append(badgeImage, badge);
     document.body.append(overlay);
 
     window.setTimeout(() => {
       document.body.classList.remove("sf-easter-active");
       overlay.remove();
-    }, prefersReducedMotion ? 2600 : 5200);
+    }, prefersReducedMotion ? 4200 : 10000);
   }
 
   function renderRoadmapAttributes(roadmap) {
@@ -524,48 +556,71 @@
     const heading = createElement("div", "roadmap-attributes-heading");
     heading.append(
       createElement("span", "roadmap-card-label", "13 common attributes"),
-      createElement("p", "", "Click an attribute to see how it is assessed under pressure.")
+      createElement("p", "", "Left click for the meaning. Right click tests the hidden sequence.")
     );
     panel.append(heading);
 
     const list = createElement("div", "roadmap-attribute-list");
-    const clickedSequence = [];
+    const popover = createElement("div", "roadmap-attribute-popover");
+    const popoverTitle = createElement("strong", "", "Attribute briefing");
+    const popoverMeaning = createElement("p", "", "Select an attribute to open its briefing.");
+    const popoverClose = createElement("button", "roadmap-attribute-popover-close", "Close");
+    popoverClose.type = "button";
+    popoverClose.addEventListener("click", () => {
+      popover.hidden = true;
+      qsa(".roadmap-attribute-card.is-selected", list).forEach((item) => item.classList.remove("is-selected"));
+    });
+    popover.append(popoverTitle, popoverMeaning, popoverClose);
+    popover.hidden = true;
+
+    let sequenceIndex = 0;
+    const flashSequenceResult = (card, className) => {
+      card.classList.remove("is-sequence-good", "is-sequence-bad");
+      card.classList.add(className);
+      window.setTimeout(() => card.classList.remove(className), 2000);
+    };
+
     attributes.forEach((attribute, index) => {
       const card = createElement("article", "roadmap-attribute-card");
       const button = createElement("button", "roadmap-attribute-button");
-      const contentId = `roadmap-attribute-${attribute.id || index}`;
       button.type = "button";
-      button.setAttribute("aria-expanded", "false");
-      button.setAttribute("aria-controls", contentId);
+      button.title = "Left click for details. Right click for the hidden sequence.";
       button.append(
-        createElement("span", "roadmap-attribute-index", String(index + 1).padStart(2, "0")),
         createElement("strong", "", attribute.title || "Attribute")
       );
 
-      const meaning = createElement("p", "roadmap-attribute-meaning", attribute.meaning || "Definition pending.");
-      meaning.id = contentId;
-      meaning.hidden = true;
-
       button.addEventListener("click", () => {
-        const isOpen = card.classList.toggle("is-open");
-        button.setAttribute("aria-expanded", String(isOpen));
-        meaning.hidden = !isOpen;
+        qsa(".roadmap-attribute-card.is-selected", list).forEach((item) => item.classList.remove("is-selected"));
+        card.classList.add("is-selected");
+        popoverTitle.textContent = attribute.title || "Attribute";
+        popoverMeaning.textContent = attribute.meaning || "Definition pending.";
+        popover.hidden = false;
+        popover.classList.remove("is-entering");
+        window.requestAnimationFrame(() => popover.classList.add("is-entering"));
+      });
 
-        if (sequence.length) {
-          clickedSequence.push(attribute.id || "");
-          clickedSequence.splice(0, Math.max(0, clickedSequence.length - sequence.length));
-          const matched = sequence.every((id, sequenceIndex) => clickedSequence[sequenceIndex] === id);
-          if (matched) {
-            clickedSequence.length = 0;
-            triggerAttributeEasterEgg();
+      button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        if (!sequence.length) return;
+
+        const attributeId = attribute.id || "";
+        if (attributeId === sequence[sequenceIndex]) {
+          flashSequenceResult(card, "is-sequence-good");
+          sequenceIndex += 1;
+          if (sequenceIndex === sequence.length) {
+            sequenceIndex = 0;
+            window.setTimeout(triggerAttributeEasterEgg, 220);
           }
+        } else {
+          flashSequenceResult(card, "is-sequence-bad");
+          sequenceIndex = 0;
         }
       });
 
-      card.append(button, meaning);
+      card.append(button);
       list.append(card);
     });
-    panel.append(list);
+    panel.append(list, popover);
     return panel;
   }
 
@@ -621,18 +676,19 @@
   }
 
   function renderCourseDetailsLink(course, className = "button roadmap-course-url-button") {
+    const linkLabel = course.courseUrlLabel || "View course details";
     if (course.courseUrl) {
-      const courseLink = createElement("a", className, "View course details");
+      const courseLink = createElement("a", className, linkLabel);
       courseLink.href = safeUrl(course.courseUrl);
       courseLink.target = "_blank";
       courseLink.rel = "noopener noreferrer";
       return courseLink;
     }
 
-    const pending = createElement("button", `${className} roadmap-course-url-missing`, "Course link pending");
+    const pending = createElement("button", `${className} roadmap-course-url-missing`, linkLabel);
     pending.type = "button";
     pending.disabled = true;
-    pending.title = "Add courseUrl inside this course in portfolio.config.js.";
+    pending.title = "Add courseUrl inside this item in portfolio.config.js.";
     return pending;
   }
 
@@ -703,22 +759,28 @@
     const actions = createElement("div", "roadmap-course-links");
     actions.append(renderCourseDetailsLink(course));
 
-    const viewQualification = renderRoadmapActionButton(
-      course.certificateImageUrl ? "View qualification" : "Pending certificate",
-      "button primary roadmap-qualification-button",
-      () => dock.classList.add("is-showing-certificate")
-    );
-    actions.append(viewQualification, renderRoadmapActionButton("Back to card", "button roadmap-card-reset", onClose));
+    if (!course.hideCertificate) {
+      actions.append(
+        renderRoadmapActionButton(
+          course.certificateImageUrl ? "View qualification" : "Pending certificate",
+          "button primary roadmap-qualification-button",
+          () => dock.classList.add("is-showing-certificate")
+        )
+      );
+    }
+    actions.append(renderRoadmapActionButton("Back to card", "button roadmap-card-reset", onClose));
     detailPanel.append(actions);
 
     const detailLayout = createElement("div", "roadmap-course-detail-layout");
     detailLayout.append(detailHeader, detailPanel);
-    shell.append(detailLayout, renderQualificationPreview(course, dock));
+    shell.append(detailLayout);
+    if (!course.hideCertificate) shell.append(renderQualificationPreview(course, dock));
     return shell;
   }
 
   function roadmapStageKind(milestone, index) {
     const title = String(milestone?.title || "").toLowerCase();
+    if (milestone?.optional) return "is-optional";
     if (title.includes("qualification")) return "is-qualification";
     if (title.includes("health") || title.includes("fitness")) return "is-readiness";
     if (title.includes("apply") || title.includes("home")) return "is-application";
@@ -734,6 +796,97 @@
     return art;
   }
 
+  function bindRoadmapStageCarousel(stageGrid, dotNavigation) {
+    if (!stageGrid || !dotNavigation) return;
+    if (roadmapStageAutoTimer) {
+      window.clearInterval(roadmapStageAutoTimer);
+      roadmapStageAutoTimer = 0;
+    }
+
+    let pagePositions = [0];
+    let activePage = 0;
+    let scrollFrame = 0;
+
+    const updateActiveDot = () => {
+      const current = stageGrid.scrollLeft;
+      activePage = pagePositions.reduce((closestIndex, position, index) => {
+        return Math.abs(position - current) < Math.abs(pagePositions[closestIndex] - current) ? index : closestIndex;
+      }, 0);
+      qsa(".roadmap-stage-dot", dotNavigation).forEach((dot, index) => {
+        const isActive = index === activePage;
+        dot.classList.toggle("is-active", isActive);
+        dot.setAttribute("aria-current", isActive ? "true" : "false");
+      });
+    };
+
+    const goToPage = (index) => {
+      if (!pagePositions.length) return;
+      activePage = (index + pagePositions.length) % pagePositions.length;
+      stageGrid.scrollTo({
+        left: pagePositions[activePage],
+        behavior: prefersReducedMotion ? "auto" : "smooth"
+      });
+      updateActiveDot();
+    };
+
+    const startAutoSlide = () => {
+      if (prefersReducedMotion || pagePositions.length < 2) return;
+      if (roadmapStageAutoTimer) window.clearInterval(roadmapStageAutoTimer);
+      roadmapStageAutoTimer = window.setInterval(() => goToPage(activePage + 1), 8500);
+    };
+
+    const stopAutoSlide = () => {
+      if (!roadmapStageAutoTimer) return;
+      window.clearInterval(roadmapStageAutoTimer);
+      roadmapStageAutoTimer = 0;
+    };
+
+    const rebuildDots = () => {
+      const cards = qsa(".roadmap-stage", stageGrid);
+      const maxScroll = Math.max(0, stageGrid.scrollWidth - stageGrid.clientWidth);
+      const cardStep = cards.length > 1 ? Math.max(1, cards[1].offsetLeft - cards[0].offsetLeft) : stageGrid.clientWidth;
+      const positions = [];
+      for (let position = 0; position < maxScroll - 2; position += cardStep) positions.push(position);
+      positions.push(maxScroll);
+      pagePositions = positions.filter((position, index) => index === 0 || Math.abs(position - positions[index - 1]) > 2);
+      dotNavigation.replaceChildren();
+      pagePositions.forEach((position, index) => {
+        const dot = createElement("button", "roadmap-stage-dot");
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Show roadmap stages ${index + 1}`);
+        dot.addEventListener("click", () => {
+          stopAutoSlide();
+          goToPage(index);
+          startAutoSlide();
+        });
+        dotNavigation.append(dot);
+      });
+      activePage = Math.min(activePage, pagePositions.length - 1);
+      updateActiveDot();
+      startAutoSlide();
+    };
+
+    stageGrid.addEventListener("scroll", () => {
+      if (scrollFrame) return;
+      scrollFrame = window.requestAnimationFrame(() => {
+        scrollFrame = 0;
+        updateActiveDot();
+      });
+    }, { passive: true });
+    stageGrid.addEventListener("pointerenter", stopAutoSlide);
+    stageGrid.addEventListener("pointerleave", startAutoSlide);
+    stageGrid.addEventListener("focusin", stopAutoSlide);
+    stageGrid.addEventListener("focusout", startAutoSlide);
+
+    if ("ResizeObserver" in window) {
+      const observer = new ResizeObserver(rebuildDots);
+      observer.observe(stageGrid);
+    } else {
+      window.addEventListener("resize", rebuildDots);
+    }
+    window.requestAnimationFrame(rebuildDots);
+  }
+
   function renderCareerRoadmap() {
     const target = document.getElementById("career-roadmap");
     if (!target) return;
@@ -743,16 +896,18 @@
     const milestones = Array.isArray(roadmap.milestones) ? roadmap.milestones : [];
     const coursesById = new Map(courses.map((course) => [course.id, course]));
     const milestoneScores = milestones.map((milestone) => milestoneProgress(milestone, coursesById));
-    const overallProgress = milestoneScores.length
-      ? milestoneScores.reduce((sum, score) => sum + score, 0) / milestoneScores.length
+    const requiredMilestoneScores = milestoneScores.filter((score, index) => !milestones[index]?.optional);
+    const overallProgress = requiredMilestoneScores.length
+      ? requiredMilestoneScores.reduce((sum, score) => sum + score, 0) / requiredMilestoneScores.length
       : 0;
+    const completedCourses = courses.filter((course) => roadmapItemProgress(course) >= 100).length;
     const estimatedDates = courses.map(estimateCourseEndDate).filter(Boolean).sort((a, b) => b - a);
     const estimatedCompletion = roadmap.targetDate || (estimatedDates[0] ? formatRoadmapDate(estimatedDates[0]) : "Add course dates");
 
     target.replaceChildren();
 
     const heading = createElement("div", "roadmap-heading");
-    const title = createElement("div");
+    const title = createElement("div", "roadmap-heading-copy");
     title.append(
       createElement("p", "kicker", "Career Roadmap"),
       createElement("h2", "roadmap-title", roadmap.goal || "Career goal"),
@@ -783,10 +938,13 @@
     stats.append(
       renderRoadmapMeta("Estimated completion:", estimatedCompletion),
       renderRoadmapMeta("Courses tracked:", String(courses.length)),
+      renderRoadmapMeta("Courses complete:", String(completedCourses)),
       renderRoadmapMeta("Last updated:", formatRoadmapDate(roadmap.lastUpdated, "TBC"))
     );
 
     const stageGrid = createElement("div", "roadmap-stage-grid");
+    stageGrid.setAttribute("role", "region");
+    stageGrid.setAttribute("aria-label", "Career roadmap stages");
     milestones.forEach((milestone, index) => {
       const progress = milestoneScores[index] || 0;
       const stageKind = roadmapStageKind(milestone, index);
@@ -795,20 +953,31 @@
         renderRoadmapStageArt(stageKind),
         createElement("span", "roadmap-step", milestone.label || `Step ${index + 1}`),
         createElement("h3", "", milestone.title || "Roadmap step"),
-        createElement("p", "", milestone.summary || ""),
+        createElement("p", "", milestone.summary || "")
+      );
+      if (milestone.optional) {
+        card.append(createElement("span", "roadmap-optional-note", "Independent progress - excluded from the main goal"));
+      }
+      card.append(
         roadmapProgressElement(progress, `${milestone.title || "Roadmap step"} progress`),
-        createElement("span", "roadmap-stage-percent", `${Math.round(progress)}% complete`)
+        createElement("span", "roadmap-stage-percent", milestone.optional ? `${Math.round(progress)}% optional progress` : `${Math.round(progress)}% complete`)
       );
 
       const chips = createElement("div", "roadmap-stage-chips");
-      (milestone.courseIds || []).slice(0, 4).forEach((id) => {
+      const chipLimit = milestone.optional ? 8 : 4;
+      (milestone.courseIds || []).slice(0, chipLimit).forEach((id) => {
         const course = coursesById.get(id);
         if (course) chips.append(renderRoadmapStatusChip(course.title, course));
       });
-      (milestone.checklist || []).slice(0, 4).forEach((item) => chips.append(renderRoadmapStatusChip(item.label, item)));
+      (milestone.checklist || []).slice(0, chipLimit).forEach((item) => chips.append(renderRoadmapStatusChip(item.label, item)));
       if (chips.children.length) card.append(chips);
       stageGrid.append(card);
     });
+    const stageCarousel = createElement("div", "roadmap-stage-carousel");
+    const stageDots = createElement("div", "roadmap-stage-dots");
+    stageDots.setAttribute("role", "group");
+    stageDots.setAttribute("aria-label", "Select roadmap stage group");
+    stageCarousel.append(stageGrid, stageDots);
 
     const courseHeading = createElement("div", "roadmap-subheading");
     courseHeading.append(
@@ -849,11 +1018,17 @@
     });
     readiness.append(readinessGrid);
 
-    target.append(heading, stats, stageGrid, courseHeading, courseDock, courseGrid, readiness);
+    target.append(heading, stats, stageCarousel, courseHeading, courseDock, courseGrid, readiness);
+    bindRoadmapStageCarousel(stageGrid, stageDots);
   }
 
   function renderRoadmapStatusChip(label, item) {
-    const chip = createElement("span", `roadmap-chip ${roadmapStatusClass(item).replace("roadmap-status", "").trim()}`);
+    const chip = createElement(item?.url ? "a" : "span", `roadmap-chip ${roadmapStatusClass(item).replace("roadmap-status", "").trim()}${item?.url ? " is-linked" : ""}`);
+    if (item?.url) {
+      chip.href = safeUrl(item.url);
+      chip.target = "_blank";
+      chip.rel = "noopener noreferrer";
+    }
     chip.append(createElement("b", "", label || "Roadmap item"), createElement("small", "", roadmapStatusLabel(item)));
     chip.title = `${label || "Roadmap item"}: ${roadmapStatusLabel(item)}`;
     return chip;

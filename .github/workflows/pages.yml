@@ -25,6 +25,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install React island dependencies
+        run: npm ci
+
+      - name: Build React TypeScript island
+        run: npm run build:react
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -33,6 +45,9 @@ jobs:
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
           PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json"
+
+      - name: Remove build-only dependencies
+        run: rm -rf node_modules
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,6 +1,6 @@
 # EchoOps Portfolio
 
-This is my personal portfolio site. I built it with plain HTML, CSS, and JavaScript because I wanted it fast, easy to host, and not packed with random dependencies I do not need.
+This is my personal portfolio site. Most of it is built with plain HTML, CSS, and JavaScript because I wanted it fast, easy to host, and not packed with random dependencies I do not need. I also added one small React and TypeScript island for the live integration status panel so I can show component-based work without rebuilding the whole site.
 
 The main idea is simple: make the site feel alive with animation, Steam, Spotify, GitHub, market data, news, and security notes, while keeping API keys and private tokens out of the browser.
 
@@ -15,6 +15,7 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - Market watchlist for the S&P 500 plus tech/gaming stocks.
 - Gaming, finance, Australian, and breaking news feeds.
 - For the Nerds section showing security choices and unique features.
+- Lazy-loaded React and TypeScript integration status panel.
 - GitHub Actions workflows that refresh data without exposing secrets.
 
 ## Main files
@@ -25,6 +26,8 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `portfolio.config.js` - fallback content and personal site settings.
 - `data/*.json` - generated Steam, Spotify, market, and news data.
 - `scripts/*.mjs` - data refresh scripts used by GitHub Actions.
+- `src/react/*.tsx` - source for the small React and TypeScript status island.
+- `vite.config.ts` - builds the React island into static files for GitHub Pages.
 - `.github/workflows/*.yml` - deploy and refresh workflows.
 - `_headers` - security/cache headers for hosts that support them.
 
