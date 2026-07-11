@@ -1,6 +1,6 @@
 # EchoOps Portfolio
 
-This is my personal portfolio site. Most of it is built with plain HTML, CSS, and JavaScript because I wanted it fast, easy to host, and not packed with random dependencies I do not need. I also added one small React and TypeScript island for the live integration status panel so I can show component-based work without rebuilding the whole site.
+This is my personal portfolio site. The page shell stays plain HTML, CSS, and JavaScript because I wanted it fast, easy to host, and not packed with random dependencies I do not need. The more stateful parts now use small React and TypeScript islands, so I can show component-based work without rebuilding the whole site as a single-page app.
 
 The main idea is simple: make the site feel alive with animation, Steam, Spotify, GitHub, market data, news, and security notes, while keeping API keys and private tokens out of the browser.
 
@@ -15,7 +15,8 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - Market watchlist for the S&P 500 plus tech/gaming stocks.
 - Gaming, finance, Australian, and breaking news feeds.
 - For the Nerds section showing security choices and unique features.
-- Lazy-loaded React and TypeScript integration status panel.
+- Lazy-loaded React and TypeScript islands for the Career Roadmap, Steam, GitHub, Security Snapshot, Technical Achievement Vault, integration status, and anonymous visitor insights.
+- Privacy-preserving browser/device and Easter egg discovery analytics through a separate Cloudflare Worker and D1 database.
 - Layered technical easter eggs with a sandbox console, Web Crypto audit, architecture map, and achievement vault.
 - GitHub Actions workflows that refresh data without exposing secrets.
 
@@ -28,8 +29,9 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `portfolio.config.js` - fallback content and personal site settings.
 - `data/*.json` - generated Steam, Spotify, GitHub, market, and news data.
 - `scripts/*.mjs` - data refresh scripts used by GitHub Actions.
-- `src/react/*.tsx` - source for the small React and TypeScript status island.
-- `vite.config.ts` - builds the React island into static files for GitHub Pages.
+- `src/react/*.tsx` - typed React components for the interactive dashboard islands.
+- `analytics-worker/` - private TypeScript Worker, D1 schema, and setup guide for aggregate visitor analytics.
+- `vite.config.ts` - builds every React island into static files for GitHub Pages.
 - `.github/workflows/*.yml` - deploy and refresh workflows.
 - `_headers` - security/cache headers for hosts that support them.
 

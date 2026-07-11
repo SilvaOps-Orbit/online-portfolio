@@ -178,7 +178,6 @@
       skillList.append(row);
     });
 
-    renderCareerRoadmap();
   }
 
   function parseRoadmapDate(value) {
@@ -1106,7 +1105,6 @@
     const grid = document.getElementById("security-grid");
     const featureGrid = document.getElementById("nerd-feature-grid");
 
-    renderSecuritySnapshot();
     renderInfoCards(grid, config.security || [], "Security Control");
     renderInfoCards(featureGrid, config.nerdFeatures || [], "Build Feature");
   }
@@ -1495,6 +1493,10 @@
 
   function renderSteam(steamData) {
     const steam = steamData || config.steam || {};
+    if (document.getElementById("react-steam-dashboard-root")) {
+      document.dispatchEvent(new CustomEvent("echoops:steam-data", { detail: steam }));
+      return;
+    }
     setText("steam-summary", steam.summary || "");
     renderStatus("steam-status", steam);
 
@@ -3913,7 +3915,6 @@
     observeReveals();
     bindTiltCards();
     startSignalCanvas();
-    loadGitHubRepos();
     finishBoot();
     scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);

@@ -14,7 +14,7 @@
     <title>Alvis Leslie Gordon | Portfolio</title>
     <link rel="icon" type="image/png" href="assets/echoops-app-icon.png">
     <link rel="apple-touch-icon" href="assets/echoops-app-icon.png">
-    <link rel="stylesheet" href="styles.css?v=20260711-tech-easter-v1">
+    <link rel="stylesheet" href="styles.css?v=20260711-react-islands-v2">
   </head>
   <body class="is-booting">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -139,7 +139,11 @@
           </aside>
           <div class="story-track" id="about-copy"></div>
         </div>
-        <section class="career-roadmap reveal" id="career-roadmap" aria-labelledby="career-roadmap-title"></section>
+        <section class="career-roadmap reveal" id="career-roadmap" aria-labelledby="career-roadmap-title">
+          <div id="react-career-roadmap-root">
+            <div class="react-api-status-fallback" role="status">Preparing the typed career roadmap...</div>
+          </div>
+        </section>
       </section>
 
       <section class="section" id="projects">
@@ -155,50 +159,10 @@
         <div class="section-heading reveal">
           <p class="kicker">Steam</p>
           <h2>Gaming, achievement hunting, and the worlds I keep coming back to.</h2>
-          <p class="section-summary" id="steam-summary"></p>
-          <p class="data-status" id="steam-status"></p>
+          <p class="section-summary">A live, cached view of my Steam activity, achievement progress, and game library.</p>
         </div>
-        <div class="steam-layout">
-          <article class="steam-feature reveal">
-            <div class="steam-profile-card" id="steam-profile-card" hidden>
-              <img class="steam-avatar" id="steam-avatar" alt="Steam profile avatar" loading="lazy">
-              <div>
-                <span class="steam-persona" id="steam-persona">Steam Profile</span>
-                <span class="steam-updated" id="steam-updated"></span>
-              </div>
-            </div>
-            <div class="steam-actions">
-              <a class="button ghost" id="steam-profile-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Steam Profile</a>
-              <a class="button" id="steamdb-link" href="#" target="_blank" rel="noopener noreferrer" hidden>SteamDB</a>
-            </div>
-            <div class="steam-stat-grid" id="steam-stats"></div>
-            <span class="steam-label">Currently Playing</span>
-            <ul class="game-list current-games" id="steam-current"></ul>
-            <div class="steam-watch">
-              <span class="steam-label">Pre-Order / Top 20 Games Watch</span>
-              <ul class="game-list watch-list" id="steam-preorder-watch" aria-live="polite"></ul>
-            </div>
-          </article>
-          <div class="steam-grid">
-            <article class="steam-card steam-card-large reveal">
-              <h3>Achievements</h3>
-              <ul class="game-list" id="steam-achievements"></ul>
-            </article>
-            <article class="steam-card reveal">
-              <h3>Most Played</h3>
-              <ul class="game-list" id="steam-most-played"></ul>
-            </article>
-            <article class="steam-card reveal">
-              <h3>100% Games</h3>
-              <ul class="game-list" id="steam-completed"></ul>
-            </article>
-          </div>
-        </div>
-        <div class="steam-store-strip reveal">
-          <span class="steam-label">Steam Store Radar</span>
-          <div class="store-marquee" aria-label="Steam games currently on sale, popular, new, or coming soon">
-            <div class="store-marquee-track" id="steam-store-ticker"></div>
-          </div>
+        <div id="react-steam-dashboard-root">
+          <div class="react-api-status-fallback" role="status">Loading the Steam activity snapshot...</div>
         </div>
       </section>
 
@@ -229,12 +193,8 @@
           <p class="kicker">GitHub</p>
           <h2>Live public repositories, pulled without exposing tokens.</h2>
         </div>
-        <div class="github-panel reveal">
-          <div>
-            <p class="github-status" id="github-status">Add your GitHub username in portfolio.config.js to load repositories.</p>
-          </div>
-          <div class="github-insights" id="github-insights" aria-live="polite"></div>
-          <div class="repo-grid" id="repo-grid" aria-live="polite"></div>
+        <div class="github-panel reveal" id="react-github-dashboard-root">
+          <div class="react-api-status-fallback" role="status">Loading GitHub insights from the saved snapshot...</div>
         </div>
       </section>
 
@@ -296,7 +256,9 @@
               <h3>The cyber security measures built into this site.</h3>
               <p>This list stays updated as new security features are added.</p>
             </div>
-            <div class="security-score-card" id="security-score"></div>
+            <div id="react-security-snapshot-root">
+              <div class="react-api-status-fallback" role="status">Preparing the security snapshot...</div>
+            </div>
             <div class="security-grid" id="security-grid"></div>
           </div>
           <div class="nerd-group reveal">
@@ -311,10 +273,20 @@
             <div class="nerd-group-heading">
               <p class="kicker">Live Integration Pulse</p>
               <h3>API health, freshness, and fallback status.</h3>
-              <p>A small React and TypeScript island that checks the public data powering the portfolio without exposing private keys.</p>
+              <p>One of several isolated React and TypeScript components, checking the public data powering the portfolio without exposing private keys.</p>
             </div>
             <div id="react-api-status-root">
               <div class="react-api-status-fallback" role="status">Preparing integration status...</div>
+            </div>
+          </div>
+          <div class="nerd-group reveal react-island-group visitor-insights-group">
+            <div class="nerd-group-heading">
+              <p class="kicker">Anonymous Site Reach</p>
+              <h3>Unique browsers, device mix, and Easter egg discoveries.</h3>
+              <p>Aggregate audience insight without advertising cookies, invasive fingerprinting, or publishing visitor-level data.</p>
+            </div>
+            <div id="react-visitor-insights-root">
+              <div class="react-api-status-fallback" role="status">Preparing anonymous visitor insights...</div>
             </div>
           </div>
         </div>
@@ -337,12 +309,13 @@
       <div class="footer-actions">
         <a class="button footer-resume" id="footer-resume-link" href="assets/alvis-leslie-gordon-resume.txt" download>Download Resume</a>
         <span class="footer-note">Secure static portfolio</span>
+        <div id="react-achievement-vault-root"></div>
       </div>
     </footer>
 
-    <script src="portfolio.config.js?v=20260711-tech-easter-v1"></script>
-    <script src="app.js?v=20260711-github-hybrid-v1"></script>
-    <script src="tech-easter-eggs.js?v=20260711-tech-easter-v1"></script>
-    <script type="module" src="assets/react-widget-loader.js?v=20260711-github-hybrid-v1"></script>
+    <script src="portfolio.config.js?v=20260711-react-islands-v2"></script>
+    <script src="app.js?v=20260711-react-islands-v2"></script>
+    <script src="tech-easter-eggs.js?v=20260711-react-islands-v2"></script>
+    <script type="module" src="assets/react-widget-loader.js?v=20260711-react-islands-v2"></script>
   </body>
 </html>

@@ -528,7 +528,7 @@ window.PORTFOLIO_CONFIG = {
       title: "This Portfolio Website!!",
       summary:
         "A fast static portfolio with animated sections, project filtering, a GitHub integration, and strict client-side security defaults.",
-      tags: ["HTML", "CSS", "JavaScript", "PowerShell", "GitHub Actions", "Security", "APIs"],
+      tags: ["HTML", "CSS", "JavaScript", "TypeScript", "React.js", "PowerShell", "GitHub Actions", "Security", "APIs"],
       github: "https://github.com/SilvaOps-Orbit/online-portfolio",
       demo: "https://silvaops-orbit.github.io/online-portfolio/"
     },
@@ -550,7 +550,12 @@ window.PORTFOLIO_CONFIG = {
     }
   ],
   githubRepoTechnologies: {
-    "online-portfolio": ["React.js"]
+    "online-portfolio": ["React.js", "TypeScript"]
+  },
+  analytics: {
+    // After deploying analytics-worker, paste its HTTPS URL here and add its exact origin to connect-src in index.html and _headers.
+    endpoint: "",
+    refreshMs: 120000
   },
   steam: {
     steamId: "76561199192411740",
@@ -962,7 +967,35 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Small Supply Chain",
       body:
-        "Most of the front end stays dependency-free. One isolated React and TypeScript island is locked with package-lock.json, built in GitHub Actions, scanned by Dependabot, and lazy-loaded only near its section."
+        "Most of the front end stays dependency-free. The isolated React and TypeScript dashboards share one locked runtime, build through GitHub Actions, receive Dependabot updates, and lazy-load only near their sections."
+    },
+    {
+      title: "Isolated React Failure Boundaries",
+      body:
+        "Every React dashboard has its own error boundary and plain HTML loading fallback. A failed API response or component render is contained to that island instead of blanking the portfolio or blocking unrelated sections.",
+      why: "It keeps live integrations useful without letting one unstable data source become a site-wide failure.",
+      docs: [
+        {
+          label: "React Error Boundaries",
+          url: "https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+        }
+      ]
+    },
+    {
+      title: "Privacy-Preserving Audience Analytics",
+      body:
+        "The audience panel counts unique browsers, daily visits, coarse device/browser categories, and Easter egg discoveries. The browser sends a random local identifier over HTTPS; the Worker stores only a secret-peppered SHA-256 hash and never stores the raw identifier, raw IP address, or full user-agent string.",
+      why: "It provides useful reach and interaction evidence without using advertising cookies or invasive fingerprinting.",
+      docs: [
+        {
+          label: "Cloudflare D1",
+          url: "https://developers.cloudflare.com/d1/get-started/"
+        },
+        {
+          label: "Worker Secrets",
+          url: "https://developers.cloudflare.com/workers/configuration/secrets/"
+        }
+      ]
     },
     {
       title: "GitHub Security Automation",
@@ -982,10 +1015,10 @@ window.PORTFOLIO_CONFIG = {
   ],
   nerdFeatures: [
     {
-      title: "React and TypeScript Status Island",
+      title: "React and TypeScript Dashboard Islands",
       body:
-        "A small lazy-loaded React and TypeScript component checks the public Steam, Spotify, market, news, and GitHub data sources while the rest of the portfolio stays plain HTML, CSS, and JavaScript.",
-      why: "It demonstrates component-based React and typed front-end code without rebuilding the whole site or slowing down the first page load.",
+        "Seven lazy-loaded React and TypeScript islands now power the Career Roadmap, Steam Activity Dashboard, GitHub Insights Dashboard, Security Snapshot, Technical Achievement Vault, public integration status, and anonymous visitor insights while the page shell stays static-first.",
+      why: "It demonstrates typed component architecture, isolated state, cached data loading, error boundaries, and progressive enhancement without turning the entire portfolio into a heavy single-page app.",
       docs: [
         {
           label: "React",
@@ -998,6 +1031,22 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Vite",
           url: "https://vite.dev/guide/"
+        }
+      ]
+    },
+    {
+      title: "Anonymous Discovery Analytics",
+      body:
+        "A TypeScript client records one qualifying visit per anonymous browser each day and sends allowlisted Easter egg unlock events to a Cloudflare Worker. A React dashboard renders only aggregate browser, device, finder, and completion totals from D1.",
+      why: "It proves event-driven React/TypeScript, privacy-aware analytics design, server-side hashing, SQL aggregation, CORS boundaries, and resilient cached state in one visible feature.",
+      docs: [
+        {
+          label: "Cloudflare Workers TypeScript",
+          url: "https://developers.cloudflare.com/workers/languages/typescript/"
+        },
+        {
+          label: "D1 Worker API",
+          url: "https://developers.cloudflare.com/d1/worker-api/"
         }
       ]
     },

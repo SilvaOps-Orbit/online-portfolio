@@ -79,7 +79,7 @@
     if (!achievements[id] || state.unlocks[id]) return false;
     state.unlocks[id] = new Date().toISOString();
     saveState();
-    renderVaultButton();
+    document.dispatchEvent(new CustomEvent("echoops:achievement-unlocked", { detail: { id } }));
     const completed = unlockedIds().length === Object.keys(achievements).length;
     showToast(
       completed ? "Systems Architect unlocked" : achievements[id].title,
@@ -471,20 +471,8 @@
   }
 
   function bindArchitectureSequence() {
-    const grid = document.getElementById("repo-grid");
-    if (!grid) return;
     let progress = 0;
     let resetTimer = 0;
-
-    const prepareChips = () => {
-      grid.querySelectorAll(".repo-language-stack .is-language").forEach((chip) => {
-        if (chip.dataset.techSequenceReady === "true") return;
-        chip.dataset.techSequenceReady = "true";
-        chip.tabIndex = 0;
-        chip.setAttribute("role", "button");
-        chip.setAttribute("aria-label", `Technology signal ${normalizeLanguageLabel(chip.textContent)}`);
-      });
-    };
 
     const activate = (chip) => {
       const value = normalizeLanguageLabel(chip.textContent);
@@ -509,19 +497,17 @@
       }, 5000);
     };
 
-    grid.addEventListener("click", (event) => {
+    document.addEventListener("click", (event) => {
       const chip = event.target.closest?.(".repo-language-stack .is-language");
       if (chip) activate(chip);
     });
-    grid.addEventListener("keydown", (event) => {
+    document.addEventListener("keydown", (event) => {
       const chip = event.target.closest?.(".repo-language-stack .is-language");
       if (chip && (event.key === "Enter" || event.key === " ")) {
         event.preventDefault();
         activate(chip);
       }
     });
-    prepareChips();
-    new MutationObserver(prepareChips).observe(grid, { childList: true, subtree: true });
   }
 
   function init() {
@@ -540,15 +526,6 @@
     }
 
     bindArchitectureSequence();
-    renderVaultButton();
-    document.addEventListener("keydown", (event) => {
-      const target = event.target;
-      const isTyping = target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
-      if (!isTyping && event.shiftKey && event.key.toLowerCase() === "a" && unlockedIds().length) {
-        event.preventDefault();
-        openVault();
-      }
-    });
   }
 
   init();

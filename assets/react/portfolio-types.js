@@ -1,0 +1,1 @@
+function e(){return window.PORTFOLIO_CONFIG||{}}export{e as t};

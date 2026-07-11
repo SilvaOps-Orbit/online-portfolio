@@ -2036,6 +2036,25 @@ h3 {
   user-select: none;
 }
 
+.roadmap-qualification-preview.is-react-preview {
+  display: grid;
+  place-items: center;
+}
+
+.roadmap-qualification-preview.is-react-preview .roadmap-qualification-actions {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.roadmap-qualification-preview.is-react-preview .roadmap-card-reset {
+  position: static;
+}
+
 .roadmap-course-detail-dock.is-showing-certificate .roadmap-course-detail-layout {
   display: none;
 }
@@ -2483,6 +2502,241 @@ h3 {
 .react-api-pulse-footer {
   font-size: 0.76rem;
   line-height: 1.45;
+}
+
+.visitor-insights {
+  display: grid;
+  gap: 18px;
+  padding-block: clamp(16px, 3vw, 24px);
+  border-block: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  background:
+    linear-gradient(115deg, color-mix(in srgb, #42e58d 8%, transparent), transparent 38%),
+    linear-gradient(245deg, color-mix(in srgb, var(--accent-2) 8%, transparent), transparent 42%),
+    color-mix(in srgb, var(--panel) 34%, transparent);
+}
+
+.visitor-insights-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.visitor-insights-header > div {
+  display: grid;
+  gap: 5px;
+}
+
+.visitor-insights h4,
+.visitor-insights h5,
+.visitor-insights p {
+  margin: 0;
+}
+
+.visitor-insights h4 {
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+}
+
+.visitor-insights-header p,
+.visitor-privacy-note,
+.visitor-insights-footer,
+.visitor-setup-copy {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.visitor-live-state {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.visitor-live-state.is-live {
+  border-color: color-mix(in srgb, #42e58d 58%, var(--line));
+  color: #42e58d;
+  box-shadow: 0 0 16px color-mix(in srgb, #42e58d 22%, transparent);
+}
+
+.visitor-live-state.is-cached,
+.visitor-live-state.is-pending {
+  border-color: color-mix(in srgb, var(--accent-2) 58%, var(--line));
+  color: var(--accent-2);
+}
+
+.visitor-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.visitor-metric-grid article {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  min-height: 126px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+}
+
+.visitor-metric-grid article.is-discovery {
+  border-color: color-mix(in srgb, var(--accent-2) 52%, var(--line));
+}
+
+.visitor-metric-grid article.is-mastery {
+  border-color: color-mix(in srgb, #42e58d 52%, var(--line));
+}
+
+.visitor-metric-grid span,
+.visitor-metric-grid small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.visitor-metric-grid strong {
+  color: var(--text);
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: 1;
+}
+
+.visitor-breakdown-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.visitor-breakdown {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 78%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 64%, transparent);
+}
+
+.visitor-breakdown h5 {
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.visitor-breakdown-list {
+  display: grid;
+  gap: 11px;
+}
+
+.visitor-breakdown-row {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.72fr) minmax(100px, 1.28fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.visitor-breakdown-row > div:first-child {
+  display: grid;
+  min-width: 0;
+}
+
+.visitor-breakdown-row strong,
+.visitor-breakdown-row span,
+.visitor-breakdown-row b {
+  font-size: 0.76rem;
+}
+
+.visitor-breakdown-row span {
+  color: var(--muted);
+}
+
+.visitor-breakdown-row b {
+  color: var(--accent-2);
+}
+
+.visitor-breakdown-track {
+  height: 8px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 68%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 56%, transparent);
+}
+
+.visitor-breakdown-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), #42e58d);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 34%, transparent);
+  transition: width 680ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.visitor-achievement-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.visitor-achievement-strip span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent-2);
+  background: color-mix(in srgb, var(--panel-strong) 68%, transparent);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.visitor-achievement-strip b {
+  color: var(--accent-2);
+  font-size: 1.1rem;
+}
+
+.visitor-privacy-note,
+.visitor-insights-footer,
+.visitor-empty {
+  font-size: 0.78rem;
+}
+
+.visitor-setup-copy code {
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--panel-strong) 76%, transparent);
+  color: var(--accent-2);
+}
+
+@media (max-width: 900px) {
+  .visitor-metric-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .visitor-insights-header,
+  .visitor-breakdown-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visitor-insights-header {
+    flex-direction: column;
+  }
+
+  .visitor-breakdown-grid,
+  .visitor-achievement-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .visitor-breakdown-row {
+    grid-template-columns: minmax(94px, 0.8fr) minmax(80px, 1.2fr) auto;
+  }
 }
 
 @keyframes react-api-live-pulse {
@@ -3057,7 +3311,7 @@ h3 {
 
 .tag-list li,
 .repo-meta span,
-.repo-language-stack span {
+.repo-language-stack .is-language {
   display: inline-flex;
   align-items: center;
   min-height: 28px;
@@ -3066,6 +3320,22 @@ h3 {
   border-radius: 6px;
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.repo-language-stack button.is-language {
+  font: inherit;
+  cursor: pointer;
+}
+
+#react-career-roadmap-root,
+#react-steam-dashboard-root,
+#react-github-dashboard-root,
+#react-security-snapshot-root {
+  min-width: 0;
+}
+
+#react-achievement-vault-root:empty {
+  display: none;
 }
 
 .project-links {

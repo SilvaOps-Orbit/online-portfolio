@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "echoops-portfolio-analytics",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-11",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://silvaops-orbit.github.io"
+  },
+  "secrets": {
+    "required": ["ANALYTICS_PEPPER"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "echoops-portfolio-analytics",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}
