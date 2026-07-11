@@ -1,8 +1,8 @@
-name: Refresh Spotify Data
+name: Refresh GitHub Snapshot
 
 on:
   schedule:
-    - cron: "1,6,11,16,21,26,31,36,41,46,51,56 * * * *"
+    - cron: "13,43 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -27,20 +27,17 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Preserve deployed non-Spotify data
+      - name: Preserve deployed non-GitHub data
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,market.json,news.json,github.json"
+          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json"
 
-      - name: Generate Spotify data
-        run: node scripts/update-spotify-data.mjs
+      - name: Refresh GitHub snapshot
+        run: node scripts/update-github-data.mjs
         env:
-          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
-          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
-          GENIUS_ACCESS_TOKEN: ${{ secrets.GENIUS_ACCESS_TOKEN }}
-          AUDIODB_API_KEY: ${{ secrets.AUDIODB_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_USERNAME: "SilvaOps-Orbit"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

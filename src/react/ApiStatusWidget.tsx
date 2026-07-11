@@ -3,10 +3,6 @@ import { createRoot } from "react-dom/client";
 import { StatusCard } from "./StatusCard";
 import { createCheckingStatuses, loadIntegrationStatuses, type IntegrationStatus } from "./status-utils";
 
-interface ApiStatusWidgetProps {
-  githubUser: string;
-}
-
 interface ErrorBoundaryState {
   hasError: boolean;
 }
@@ -34,7 +30,7 @@ class WidgetErrorBoundary extends Component<PropsWithChildren, ErrorBoundaryStat
   }
 }
 
-function ApiStatusWidget({ githubUser }: ApiStatusWidgetProps) {
+function ApiStatusWidget() {
   const [statuses, setStatuses] = useState<IntegrationStatus[]>(createCheckingStatuses);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(true);
@@ -43,7 +39,7 @@ function ApiStatusWidget({ githubUser }: ApiStatusWidgetProps) {
   useEffect(() => {
     const controller = new AbortController();
     setIsRefreshing(true);
-    loadIntegrationStatuses(githubUser, controller.signal)
+    loadIntegrationStatuses(controller.signal)
       .then((nextStatuses) => {
         setStatuses(nextStatuses);
         setLastCheckedAt(new Date());
@@ -55,7 +51,7 @@ function ApiStatusWidget({ githubUser }: ApiStatusWidgetProps) {
         if (!controller.signal.aborted) setIsRefreshing(false);
       });
     return () => controller.abort();
-  }, [githubUser, refreshKey]);
+  }, [refreshKey]);
 
   useEffect(() => {
     const requestRefresh = () => setRefreshKey((value) => value + 1);
@@ -100,11 +96,10 @@ function ApiStatusWidget({ githubUser }: ApiStatusWidgetProps) {
 }
 
 export function mountApiStatusWidget(target: HTMLElement) {
-  const githubUser = target.dataset.githubUser || "SilvaOps-Orbit";
   createRoot(target).render(
     <StrictMode>
       <WidgetErrorBoundary>
-        <ApiStatusWidget githubUser={githubUser} />
+        <ApiStatusWidget />
       </WidgetErrorBoundary>
     </StrictMode>
   );

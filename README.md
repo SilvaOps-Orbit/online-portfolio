@@ -24,7 +24,7 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - `styles.css` - the look, layout, animations, and responsive styling.
 - `app.js` - renders the interactive parts and loads JSON data.
 - `portfolio.config.js` - fallback content and personal site settings.
-- `data/*.json` - generated Steam, Spotify, market, and news data.
+- `data/*.json` - generated Steam, Spotify, GitHub, market, and news data.
 - `scripts/*.mjs` - data refresh scripts used by GitHub Actions.
 - `src/react/*.tsx` - source for the small React and TypeScript status island.
 - `vite.config.ts` - builds the React island into static files for GitHub Pages.
@@ -45,6 +45,17 @@ Useful things to update there:
 - Fallback Steam/Spotify text.
 - LinkedIn or resume links when I want to add them.
 - Market/news fallback text if the APIs are down.
+
+## GitHub setup
+
+Repository cards, language totals, and public activity are generated into `data/github.json`. The browser reads that local snapshot instead of calling `api.github.com`, so visitors do not share GitHub's small unauthenticated rate limit.
+
+No extra GitHub secret is needed. GitHub Actions supplies its built-in read-only `GITHUB_TOKEN` to `scripts/update-github-data.mjs`, and only sanitized public fields are written to the JSON file.
+
+- `.github/workflows/github.yml` refreshes the snapshot every 30 minutes.
+- The main Pages and combined data workflows also refresh it during deployment.
+- Other data workflows preserve the last good GitHub snapshot.
+- The checked-in fallback keeps repository cards visible if an API refresh fails.
 
 ## Steam setup
 

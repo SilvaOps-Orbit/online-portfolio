@@ -924,7 +924,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Generated Public Data",
       body:
-        "Live Steam, Spotify, and music enrichment data is generated in GitHub Actions, saved into public JSON files, and then read by the site. The browser only sees safe output, not the credentials used to collect it.",
+        "Live Steam, Spotify, GitHub, market, news, and music enrichment data is generated in GitHub Actions, saved into public JSON files, and then read by the site. The browser only sees safe output, not the credentials used to collect it.",
       docs: [
         {
           label: "GitHub Actions",
@@ -946,7 +946,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Plain-Text API Sanitization",
       body:
-        "Steam, Spotify, and music API text is normalized into plain text before it is published to data files, removing tag-like markup, avoiding repeated entity decoding, and keeping generated content safe to display.",
+        "Steam, Spotify, GitHub, and music API text is normalized into plain text before it is published to data files, removing control characters or tag-like markup and keeping generated content safe to display.",
       docs: [
         {
           label: "OWASP Output Encoding",
@@ -962,7 +962,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Small Supply Chain",
       body:
-        "The front end avoids third-party packages. Fewer dependencies means fewer packages to audit and fewer supply-chain updates that can break trust."
+        "Most of the front end stays dependency-free. One isolated React and TypeScript island is locked with package-lock.json, built in GitHub Actions, scanned by Dependabot, and lazy-loaded only near its section."
     },
     {
       title: "GitHub Security Automation",
@@ -1004,8 +1004,8 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "GitHub Repository Feed",
       body:
-        "The portfolio pulls public repositories from GitHub so the project section can show real work that changes as the account changes.",
-      why: "It proves the portfolio is connected to live public work without needing a GitHub token in the browser.",
+        "GitHub Actions uses its built-in read-only token to collect public repositories, languages, and public activity into data/github.json. Visitors read that local snapshot instead of calling GitHub directly.",
+      why: "It keeps the portfolio connected to public work while preventing browser rate-limit failures and ensuring no GitHub token can reach a visitor.",
       docs: [
         {
           label: "GitHub REST API",

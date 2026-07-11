@@ -50,6 +50,10 @@ function hasUsefulData(file, data) {
     return usefulSpotifyData(data);
   }
 
+  if (file === "github.json") {
+    return Array.isArray(data.repositories) && data.repositories.some((repo) => repo?.name && repo?.html_url);
+  }
+
   return true;
 }
 

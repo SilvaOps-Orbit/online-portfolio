@@ -11,8 +11,8 @@ export default defineConfig({
       input: resolve(process.cwd(), "src/react/loader.ts"),
       output: {
         entryFileNames: "react-widget-loader.js",
-        chunkFileNames: "react/[name]-[hash].js",
-        assetFileNames: "react/[name]-[hash][extname]"
+        chunkFileNames: "react/[name].js",
+        assetFileNames: "react/[name][extname]"
       }
     }
   }

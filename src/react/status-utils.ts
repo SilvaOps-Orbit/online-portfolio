@@ -24,16 +24,12 @@ interface SnapshotPayload {
   stats?: Array<{ label?: string; value?: string; note?: string }>;
 }
 
-interface GitHubProfile {
-  public_repos?: number;
-  updated_at?: string;
-}
-
 const SNAPSHOT_DEFINITIONS: SnapshotDefinition[] = [
   { id: "steam", label: "Steam", path: "data/steam.json" },
   { id: "spotify", label: "Spotify", path: "data/spotify.json" },
   { id: "market", label: "Markets", path: "data/market.json" },
-  { id: "news", label: "News", path: "data/news.json" }
+  { id: "news", label: "News", path: "data/news.json" },
+  { id: "github", label: "GitHub", path: "data/github.json" }
 ];
 
 const SETUP_PATTERN = /needs? key|add .*secret|not connected|ready for api secrets/i;
@@ -103,63 +99,19 @@ async function loadSnapshot(definition: SnapshotDefinition, signal: AbortSignal)
   }
 }
 
-async function loadGitHub(githubUser: string, signal: AbortSignal): Promise<IntegrationStatus> {
-  try {
-    const response = await fetch(`https://api.github.com/users/${encodeURIComponent(githubUser)}`, {
-      cache: "no-store",
-      headers: { Accept: "application/vnd.github+json" },
-      referrerPolicy: "no-referrer",
-      signal
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const profile = (await response.json()) as GitHubProfile;
-    return {
-      id: "github",
-      label: "GitHub",
-      state: "live",
-      source: "public GitHub API",
-      updatedAt: profile.updated_at || null,
-      detail: `${Number(profile.public_repos || 0)} public repositories available without exposing a private token.`
-    };
-  } catch (error) {
-    if (signal.aborted) throw error;
-    return {
-      id: "github",
-      label: "GitHub",
-      state: "offline",
-      source: "public GitHub API",
-      updatedAt: null,
-      detail: "GitHub could not be reached during this check. No private token was sent from the browser."
-    };
-  }
-}
-
 export function createCheckingStatuses(): IntegrationStatus[] {
-  return [
-    ...SNAPSHOT_DEFINITIONS.map((definition) => ({
-      id: definition.id,
-      label: definition.label,
-      state: "checking" as const,
-      source: "checking snapshot",
-      updatedAt: null,
-      detail: "Checking the latest public status..."
-    })),
-    {
-      id: "github",
-      label: "GitHub",
-      state: "checking",
-      source: "checking public API",
-      updatedAt: null,
-      detail: "Checking the latest public status..."
-    }
-  ];
+  return SNAPSHOT_DEFINITIONS.map((definition) => ({
+    id: definition.id,
+    label: definition.label,
+    state: "checking" as const,
+    source: "checking snapshot",
+    updatedAt: null,
+    detail: "Checking the latest public status..."
+  }));
 }
 
-export async function loadIntegrationStatuses(githubUser: string, signal: AbortSignal): Promise<IntegrationStatus[]> {
-  return Promise.all([
-    ...SNAPSHOT_DEFINITIONS.map((definition) => loadSnapshot(definition, signal)),
-    loadGitHub(githubUser, signal)
-  ]);
+export async function loadIntegrationStatuses(signal: AbortSignal): Promise<IntegrationStatus[]> {
+  return Promise.all(SNAPSHOT_DEFINITIONS.map((definition) => loadSnapshot(definition, signal)));
 }
 
 export function formatRelativeTime(value: string | null): string {

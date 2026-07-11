@@ -3051,31 +3051,17 @@
     return totalsToLanguageStats(totals);
   }
 
-  async function loadGitHubLanguageStats(repos, headers) {
+  function githubSnapshotLanguageStats(repos, languagesByRepo) {
     const sourceRepos = (Array.isArray(repos) ? repos : []).filter((repo) => !repo.fork);
     const totals = new Map();
     const byRepo = new Map();
 
-    const languageResults = await Promise.all(sourceRepos.map(async (repo) => {
-      if (!repo.languages_url) return null;
-
-      try {
-        const response = await fetch(repo.languages_url, {
-          headers,
-          referrerPolicy: "no-referrer"
-        });
-
-        if (!response.ok) return null;
-        const languages = await response.json();
-        return languages && typeof languages === "object" ? { repo, languages } : null;
-      } catch (error) {
-        return null;
-      }
-    }));
-
-    languageResults.forEach((result, index) => {
-      const entries = Object.entries(result?.languages || {});
-      const repo = result?.repo || sourceRepos[index];
+    sourceRepos.forEach((repo) => {
+      const languageKeys = [repoLanguageKey(repo), repo?.full_name, repo?.name].map(String).filter(Boolean);
+      const languages = languageKeys
+        .map((key) => languagesByRepo?.[key])
+        .find((value) => value && typeof value === "object");
+      const entries = Object.entries(languages || {});
 
       if (entries.length) {
         entries.forEach(([language, bytes]) => addLanguageTotal(totals, language, bytes));
@@ -3167,7 +3153,7 @@
     });
 
     card.append(bar, list);
-    card.append(createElement("p", "github-insight-note", "Based on GitHub's public languages endpoint for each non-fork repository, summed across the account."));
+    card.append(createElement("p", "github-insight-note", "Based on GitHub's public languages endpoint for each non-fork repository, cached securely by GitHub Actions and summed across the account."));
     parent.append(card);
   }
 
@@ -3237,7 +3223,7 @@
     profileLink.rel = "noopener noreferrer";
 
     card.append(months, grid, legend);
-    card.append(createElement("p", "github-insight-note", "Uses public GitHub events only, so private commits and older hidden activity are not requested."));
+    card.append(createElement("p", "github-insight-note", "Uses a GitHub Actions snapshot of public events only, so private commits and older hidden activity are not requested."));
     card.append(profileLink);
     parent.append(card);
   }
@@ -3267,26 +3253,21 @@
     }
 
     try {
-      const headers = { Accept: "application/vnd.github+json" };
-      const [response, eventsResponse] = await Promise.all([
-        fetch(`https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100`, {
-          headers,
-          referrerPolicy: "no-referrer"
-        }),
-        fetch(`https://api.github.com/users/${encodeURIComponent(username)}/events/public?per_page=100`, {
-          headers,
-          referrerPolicy: "no-referrer"
-        }).catch(() => null)
-      ]);
+      const response = await fetch("data/github.json", {
+        cache: "no-store",
+        credentials: "same-origin",
+        referrerPolicy: "no-referrer"
+      });
 
       if (!response.ok) {
-        throw new Error(`GitHub API returned ${response.status}`);
+        throw new Error(`GitHub snapshot returned ${response.status}`);
       }
 
-      const repos = await response.json();
-      const events = eventsResponse?.ok ? await eventsResponse.json() : [];
+      const snapshot = await response.json();
+      const repos = Array.isArray(snapshot?.repositories) ? snapshot.repositories : [];
+      const events = Array.isArray(snapshot?.events) ? snapshot.events : [];
       const publicRepos = repos.filter((repo) => !repo.fork);
-      const languageData = await loadGitHubLanguageStats(publicRepos, headers);
+      const languageData = githubSnapshotLanguageStats(publicRepos, snapshot?.languagesByRepo || {});
       const visibleRepos = repos
         .filter((repo) => !repo.fork)
         .sort((a, b) => {
@@ -3302,9 +3283,11 @@
         .map((repo) => new Date(repo.updated_at || 0).getTime())
         .filter(Number.isFinite)
         .sort((a, b) => b - a)[0];
+      const snapshotUpdatedAt = snapshot?.lastGoodAt || snapshot?.generatedAt;
+      const snapshotLabel = snapshot?.stale ? "Using the last good GitHub snapshot" : "GitHub snapshot refreshed by Actions";
 
       status.textContent = visibleRepos.length
-        ? `Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest update ${formatDate(latestUpdate)}. Public GitHub API only, no token exposed.`
+        ? `${snapshotLabel} ${formatDate(snapshotUpdatedAt)}. Showing ${visibleRepos.length} displayed public repositories from ${publicRepos.length} total public non-fork repos. ${totalStars} stars, ${totalForks} forks, latest repo update ${formatDate(latestUpdate)}. No browser GitHub API request or token.`
         : `No non-fork public repositories found for ${username}.`;
 
       renderGitHubInsights(insights, username, publicRepos, events, languageData);
@@ -3341,7 +3324,7 @@
         const securityNote = createElement(
           "p",
           "repo-security-note",
-          "Public repo metadata only. External links open safely and private repo data is never requested."
+          "Public repo metadata cached by GitHub Actions. The browser never receives a token or calls the GitHub API directly."
         );
 
         const links = createElement("div", "repo-links");
@@ -3363,7 +3346,7 @@
         grid.append(card);
       });
     } catch (error) {
-      status.textContent = "GitHub repositories could not be loaded right now.";
+      status.textContent = "The local GitHub snapshot could not be loaded. No browser token or direct GitHub API request was attempted.";
     }
 
     observeReveals();

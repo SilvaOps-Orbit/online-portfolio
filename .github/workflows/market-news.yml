@@ -41,7 +41,7 @@ jobs:
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json"
+          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,github.json"
 
       - name: Generate market and news data
         run: node scripts/update-market-news-data.mjs
