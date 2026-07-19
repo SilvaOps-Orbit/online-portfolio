@@ -1,13 +1,25 @@
+// React + DOM rendering primitives.
 import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "react";
+// `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
+// Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
 import { CalendarClock, Clock3, Coins, Dice5, Flame, Gamepad2, Grid3X3, Keyboard, Layers3, LibraryBig, Mouse, Sparkles, TrendingUp, Trophy, WalletCards } from "lucide-react";
+// Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
+// Reads the baked-in `window.PORTFOLIO_CONFIG` object (set by the build / inline script).
 import { getPortfolioConfig } from "./portfolio-types";
 
+// How long a rotating game list stays on screen before sliding to the next window (ms).
 const LIST_INTERVAL = 4800;
+// Initial data shown before the live `data/steam.json` fetch resolves. Taken from the
+// static config so the dashboard is never empty on first paint.
 const steamFallback = getPortfolioConfig().steam || {};
 
+// Combines the static fallback config with freshly fetched live data.
+// Live values win, but the merge is "shallow per section" so individual sub-objects
+// (profile, replay, insights, accountValue) keep their fallback fields when the live
+// payload omits them. Array sections fall back entirely if the live array is missing/empty.
 function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData {
   if (!live) return fallback;
   const merged: SteamData = {
@@ -25,19 +37,27 @@ function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData
   return merged;
 }
 
+// The four selectable insight panels inside the "Library intelligence" deck.
 type SteamInsightView = "pulse" | "cabinet" | "playstyle" | "picker";
 
+// Renders a horizontal bar list of labelled values (e.g. genre mix / playstyle split).
+// Each bar is scaled relative to the largest value so the longest bar fills 100% width.
 function InsightMeterList({ items = [] }: { items?: Array<{ label?: string; value?: number; note?: string }> }) {
   const max = Math.max(1, ...items.map((item) => Number(item.value || 0)));
   return <div className="insight-meter-list">{items.slice(0, 7).map((item) => <div key={item.label}><span><b>{item.label}</b><small>{item.note || Number(item.value || 0).toLocaleString("en-AU")}</small></span><i><em style={{ width: `${Math.max(7, Number(item.value || 0) / max * 100)}%` }} /></i></div>)}</div>;
 }
 
+// Formats a money amount in Australian locale. Unknown/missing values show "Not logged"
+// instead of "$NaN" so the UI never looks broken.
 function money(value: number | null | undefined, currency = "AUD"): string {
   if (value === null || value === undefined) return "Not logged";
   if (!Number.isFinite(Number(value))) return "Not logged";
   return new Intl.NumberFormat("en-AU", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value));
 }
 
+// Draws the "genre fingerprint": a conic-gradient pie ring plus a legend. Each genre is a
+// slice sized by its sampled playtime, cycling through a fixed 6-colour palette. The ring
+// uses a CSS custom property (`--genre-ring`) so the stylesheet can render the gradient.
 function GenreFingerprint({ genres = [] }: { genres?: Array<{ label?: string; value?: number }> }) {
   const palette = ["#55d5c4", "#ffbf5a", "#ff5b61", "#5f9cff", "#78d96b", "#d47cff"];
   const visible = genres.slice(0, 6);
@@ -73,11 +93,14 @@ function getDeepDiveGames(steam: SteamData): SteamItem[] {
     .sort((a, b) => parseHoursFromMeta(b) - parseHoursFromMeta(a));
 }
 
+// The "Playstyle" insight panel: how the library is played rather than just what is owned.
+// Combines precomputed `insights` with Replay and Store-based spending estimates.
 function PlaystyleView({ steam }: { steam: SteamData }) {
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
   const insights = steam.insights || {};
   const spending = steam.spending || {};
   const currency = spending.currency || "AUD";
+  // Manually logged per-game spends (from the spending source), used to find the priciest title.
   const loggedGames = (spending.games || []).filter((game) => game.title && Number.isFinite(Number(game.amount)));
   const highestLogged = spending.highestGame?.title
     ? spending.highestGame
@@ -86,6 +109,8 @@ function PlaystyleView({ steam }: { steam: SteamData }) {
   const retail = insights.retailEstimate;
   const retailCurrency = retail?.currency || currency;
   const highestRetail = retail?.highestGame;
+  // Prefer the precomputed playstyle split; fall back to a simple controller/other split
+  // derived from the Replay controller percentage when no richer breakdown exists.
   const playstyle = insights.playstyle?.length ? insights.playstyle : [
     { label: "Controller", value: controller, note: `${controller}% of Replay` },
     { label: "Keyboard, mouse + other", value: 100 - controller, note: `${100 - controller}% of Replay` }
@@ -105,27 +130,36 @@ function PlaystyleView({ steam }: { steam: SteamData }) {
   : <p className="game-note">Deep-dive games will appear after the next Steam refresh.</p>}</section>}<section className="playstyle-lower-grid"><div className="dlc-profile"><div className="insight-subhead"><span>DLC-heavy game ecosystems</span><small>Store availability, not purchase history</small></div><ol>{(insights.dlcHeavyGames || []).slice(0, 5).map((game, index) => <li key={game.appid || game.title}><span>{String(index + 1).padStart(2, "0")}</span><SteamArtwork item={game} title={game.title || "Steam game"} className="dlc-game-art" /><div><strong>{game.title}</strong><small>{game.meta}</small></div><b>{Number(game.dlcAvailable || 0)} DLC</b></li>)}{!insights.dlcHeavyGames?.length && <li className="playstyle-empty">DLC metadata will appear after the next Steam refresh.</li>}</ol></div><div className="spending-profile"><div className="insight-subhead"><span>Retail value estimate</span><small>{retail?.sampledGames || 0} owned-game Store pages sampled</small></div><div className="spending-summary"><article><WalletCards aria-hidden="true" /><span><small>Library value</small><strong>{steam.accountValue?.value || "Not logged"}</strong></span></article><article><Coins aria-hidden="true" /><span><small>Total personally logged</small><strong>{money(spending.totalSpent, currency)}</strong></span></article><article><TrendingUp aria-hidden="true" /><span><small>Highest sampled retail estimate</small><strong>{highestRetail?.title || "Awaiting Store prices"}</strong><b>{money(highestRetail?.amount, retailCurrency)}</b></span></article></div>{retail?.topGames?.length ? <ol className="spending-game-list">{retail.topGames.map((game) => <li key={game.appid || game.title}><span><strong>{game.title}</strong><small>Base {money(game.baseAmount, game.currency || retailCurrency)} + {game.confirmedDlcCount || 0} confirmed DLC {money(game.dlcAmount, game.currency || retailCurrency)}</small></span><b>{money(game.amount, game.currency || retailCurrency)}</b></li>)}</ol> : <p className="spending-pending">Store-price estimates will appear after the next Steam refresh.</p>}<p className="spending-method">{retail?.method || "Full-price Store estimate only. Steam does not expose purchase receipts or public DLC ownership."}</p>{loggedGames.length > 0 && <p className="spending-method">Actual amounts manually logged for {loggedGames.length} game{loggedGames.length === 1 ? "" : "s"}; highest logged: {highestLogged?.title} at {money(highestLogged?.amount, currency)}.</p>}</div></section></div>;
 }
 
+// Tabbed "Library intelligence" deck. Holds which sub-panel is active and, for the
+// "Pick a Game" panel, which game is currently chosen. All data is derived from `steam`.
 function SteamInsightsDeck({ steam }: { steam: SteamData }) {
   const [active, setActive] = useState<SteamInsightView>("pulse");
   const [pickIndex, setPickIndex] = useState(0);
   const insights = steam.insights || {};
+  // Recent activity: prefer precomputed recentGames, else currently-playing minus "Playing now".
   const recent = insights.recentGames?.length ? insights.recentGames : (steam.currentlyPlaying || []).filter((item) => item.meta !== "Playing now");
+  // Owned library (for picker/cabinet source): prefer insights.ownedGames, else mostPlayed.
   const owned = insights.ownedGames?.length ? insights.ownedGames : steam.mostPlayed || [];
+  // Rare achievements cabinet: prefer insights.rareAchievements, else the achievements list.
   const cabinet = insights.rareAchievements?.length ? insights.rareAchievements : steam.achievements || [];
+  // "Pick a Game" candidate pool: short games (<30h) when available, otherwise the whole library.
   const pickerPool = owned.filter((game) => Number(game.playtimeMinutes || 0) < 1800).length ? owned.filter((game) => Number(game.playtimeMinutes || 0) < 1800) : owned;
   const pick = pickerPool[pickIndex % Math.max(1, pickerPool.length)];
   const recentMinutes = recent.reduce((sum, item) => sum + Number(item.recentMinutes || 0), 0);
+  // 14-slot activity signal: one relative-intensity cell per recent game (wrapped if <14 games).
   const pulse = Array.from({ length: 14 }, (_, index) => {
     const game = recent[index % Math.max(1, recent.length)];
     const value = recent.length ? Math.max(1, Math.round(Number(game?.recentMinutes || recentMinutes / recent.length || 0) / 60)) : 0;
     return { value, label: game?.title || game?.name || "No activity" };
   });
+  // The four selectable tabs and their icons.
   const tabs: Array<{ id: SteamInsightView; label: string; icon: typeof LibraryBig }> = [
     { id: "pulse", label: "Library Pulse", icon: Grid3X3 },
     { id: "cabinet", label: "Rare Cabinet", icon: Trophy },
     { id: "playstyle", label: "Playstyle", icon: Gamepad2 },
     { id: "picker", label: "Pick a Game", icon: Dice5 }
   ];
+  // Largest pulse value, used to normalise each heatmap cell's intensity.
   const pulseMax = Math.max(1, ...pulse.map((item) => item.value));
   const renderPanel = () => {
     if (active === "pulse") return <div className="steam-pulse-view"><div className="insight-stat-row"><div><strong>{recent.length}</strong><span>recent games</span></div><div><strong>{Math.round(recentMinutes / 60)}</strong><span>hours in 2 weeks</span></div><div><strong>{steam.replay?.longestStreak || 0}</strong><span>day Replay streak</span></div></div><div className="steam-pulse-grid"><div><div className="insight-subhead"><span>14-slot activity signal</span><small>relative recent-game intensity, not a daily calendar</small></div><div className="steam-heatmap" aria-label="Recent library activity signal">{pulse.map((item, index) => <span key={index} title={`${item.label}: ${item.value} hour signal`} style={{ "--pulse": item.value / pulseMax } as CSSProperties} />)}</div></div><div><div className="insight-subhead"><span>Genre mix</span><small>{insights.metadataSampleSize ? `${insights.metadataSampleSize} games sampled` : "saved metadata"}</small></div><InsightMeterList items={insights.genreMix || []} /></div></div></div>;
@@ -142,12 +176,16 @@ function formatDate(value?: string): string {
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" });
 }
 
+// Shape returned by the cycling hook: the currently visible slice + a `swapping`
+// flag the CSS uses to animate the transition between windows.
 interface CyclingWindow {
   visible: SteamItem[];
   swapping: boolean;
   start: number;
 }
 
+// Auto-rotates a long game list a page at a time. For short lists (<= pageSize) it shows
+// everything statically. Honours "prefers-reduced-motion" by disabling the rotation entirely.
 function useCyclingWindow(items: SteamItem[] = [], pageSize = 6): CyclingWindow {
   const [start, setStart] = useState(0);
   const [swapping, setSwapping] = useState(false);
@@ -176,12 +214,17 @@ function useCyclingWindow(items: SteamItem[] = [], pageSize = 6): CyclingWindow 
   return { visible, swapping, start };
 }
 
+// Normalises an edition entry (which may be a plain string OR an object with label/name/price)
+// into the short chip text shown on a game card.
 function editionText(edition: NonNullable<SteamItem["editions"]>[number]): string {
   if (typeof edition === "string") return edition;
   const label = edition.label || edition.name || "Edition";
   return edition.price ? `${label}: ${edition.price}` : label;
 }
 
+// Builds an ordered list of image URLs to try for a game's cover art. Steam serves header
+// images from two CDNs (akamai + fastly) plus a canonical Cloudflare URL keyed by appid.
+// `SteamArtwork` walks this list and falls through to the next on any load error.
 function artworkCandidates(item: SteamItem): string[] {
   const candidates: string[] = [];
   const primary = String(item.image || "").trim().replace(/^http:\/\//i, "https://");
@@ -195,6 +238,10 @@ function artworkCandidates(item: SteamItem): string[] {
   return [...new Set(candidates)];
 }
 
+// Resilient game cover image. Tries each candidate URL in turn; on a load error it advances
+// to the next candidate. If every candidate fails it shows a plain "Steam" placeholder so the
+// layout never collapses. The candidate list is memoised so it only recomputes when the
+// game's appid/image changes (not on every parent re-render).
 function SteamArtwork({ item, title, className = "game-art" }: { item: SteamItem; title: string; className?: string }) {
   const candidates = useMemo(() => artworkCandidates(item), [item.appid, item.image]);
   const [candidateIndex, setCandidateIndex] = useState(0);
@@ -217,6 +264,8 @@ function SteamArtwork({ item, title, className = "game-art" }: { item: SteamItem
   );
 }
 
+// One game row: optional cover art plus a text block with title (linked to the store when a
+// URL exists), meta line, price/discount row, note, and up to three edition chips.
 function GameItem({ item, index = 0 }: { item: SteamItem; index?: number }) {
   const title = item.title || item.name || "Untitled game";
   const hasArtwork = Boolean(item.image || item.appid);
@@ -233,6 +282,8 @@ function GameItem({ item, index = 0 }: { item: SteamItem; index?: number }) {
 }
 
 interface GameListProps { items?: SteamItem[]; label: string; pageSize?: number; }
+// Renders a (possibly auto-rotating) list of game rows. Wires the visible window from
+// `useCyclingWindow` and applies CSS classes that drive the animation/sizing.
 function GameList({ items = [], label, pageSize = 6 }: GameListProps) {
   const games = useMemo(() => items.filter(Boolean), [items]);
   const { visible, swapping, start } = useCyclingWindow(games, pageSize);
