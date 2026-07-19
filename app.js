@@ -2723,6 +2723,13 @@
       }
 
       card.append(meta);
+      const preview = createElement("div", "news-preview");
+      const previewSource = String(item.source || item.sourceApi || item.category || "News");
+      const previewFallback = createElement("div", "news-preview-fallback");
+      previewFallback.setAttribute("aria-hidden", "true");
+      previewFallback.append(createElement("span", "news-preview-mark", previewSource.slice(0, 2).toUpperCase()));
+      previewFallback.append(createElement("span", "news-preview-label", previewSource));
+      preview.append(previewFallback);
       const imageUrl = safeUrl(item.image || "");
       if (imageUrl !== "#") {
         const image = createElement("img", "news-image");
@@ -2730,9 +2737,11 @@
         image.alt = item.title ? `${item.title} image` : "";
         image.loading = "lazy";
         image.referrerPolicy = "no-referrer";
-        image.addEventListener("error", () => image.remove());
-        card.append(image);
+        image.addEventListener("load", () => preview.classList.add("has-image"), { once: true });
+        image.addEventListener("error", () => image.remove(), { once: true });
+        preview.append(image);
       }
+      card.append(preview);
       card.append(createElement("h3", "", String(item.title || "News update")));
       card.append(createElement("p", "news-snippet", String(item.snippet || "Summary pending.")));
       if (item.why) {

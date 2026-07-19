@@ -50,6 +50,10 @@ const defaultFeeds = {
     "https://www.pcgamer.com/rss/",
     "https://www.ign.com/rss/articles/feed?tags=games"
   ],
+  Technology: [
+    "https://feeds.arstechnica.com/arstechnica/index",
+    "https://techcrunch.com/feed/"
+  ],
   Finance: [
     "https://finance.yahoo.com/news/rssindex",
     "https://www.cnbc.com/id/100003114/device/rss/rss.html"
@@ -67,6 +71,14 @@ const newsQueries = {
     newsApiCategory: "technology",
     mediastack: "gaming,video games,Steam,PlayStation,Xbox,Nintendo",
     mediastackCategories: "technology,entertainment",
+    prioritizeAustralia: true
+  },
+  Technology: {
+    newsApi: '(technology OR software OR programming OR "cyber security" OR AI OR "open source")',
+    newsApiAu: 'technology OR software OR programming OR "cyber security" OR AI',
+    newsApiCategory: "technology",
+    mediastack: "technology,software,programming,cyber security,AI,open source",
+    mediastackCategories: "technology",
     prioritizeAustralia: true
   },
   Finance: {
@@ -607,6 +619,9 @@ function rssSourceName(hostname) {
     "finance.yahoo.com": "Yahoo Finance",
     "ign.com": "IGN",
     "pcgamer.com": "PC Gamer",
+    "arstechnica.com": "Ars Technica",
+    "feeds.arstechnica.com": "Ars Technica",
+    "techcrunch.com": "TechCrunch",
     "pm.gov.au": "Prime Minister of Australia"
   };
   if (names[host]) return names[host];
@@ -742,7 +757,9 @@ function whyNewsMatters(category, item) {
     return "Finance headlines can explain stock moves and help visitors understand the watchlist context.";
   }
   if (category === "Technology") {
-    return "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio.";
+    return sourceHas(item, "Hacker News")
+      ? "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio."
+      : "Technology coverage connects current software, cyber security, AI, hardware, and open-source changes to the work behind this portfolio.";
   }
   if (category === "Australia") {
     return "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.";
@@ -960,14 +977,17 @@ async function buildNewsItems() {
   const [
     breakingRss,
     gamingRss,
+    technologyRss,
     financeRss,
     financeFinnhub,
     australiaRss,
     gamingNewsApi,
+    technologyNewsApi,
     financeNewsApi,
     australiaNewsApi,
     breakingNewsApi,
     gamingMediastack,
+    technologyMediastack,
     financeMediastack,
     australiaMediastack,
     breakingMediastack,
@@ -975,14 +995,17 @@ async function buildNewsItems() {
   ] = await Promise.all([
     loadRssCategory("Breaking Worldwide", configuredFeeds("Breaking Worldwide", defaultFeeds["Breaking Worldwide"])),
     loadRssCategory("Gaming", configuredFeeds("Gaming", defaultFeeds.Gaming)),
+    loadRssCategory("Technology", configuredFeeds("Technology", defaultFeeds.Technology)),
     loadRssCategory("Finance", configuredFeeds("Finance", defaultFeeds.Finance)),
     loadFinnhubFinanceNews(),
     loadRssCategory("Australia", configuredFeeds("Australia", defaultFeeds.Australia)),
     loadNewsApiCategory("Gaming"),
+    loadNewsApiCategory("Technology"),
     loadNewsApiCategory("Finance"),
     loadNewsApiCategory("Australia"),
     loadNewsApiCategory("Breaking Worldwide"),
     loadMediastackCategory("Gaming"),
+    loadMediastackCategory("Technology"),
     loadMediastackCategory("Finance"),
     loadMediastackCategory("Australia"),
     loadMediastackCategory("Breaking Worldwide"),
@@ -992,14 +1015,17 @@ async function buildNewsItems() {
   const mergedItems = mergeNewsSources([
     ...breakingRss,
     ...gamingRss,
+    ...technologyRss,
     ...financeRss,
     ...financeFinnhub,
     ...australiaRss,
     ...gamingNewsApi,
+    ...technologyNewsApi,
     ...financeNewsApi,
     ...australiaNewsApi,
     ...breakingNewsApi,
     ...gamingMediastack,
+    ...technologyMediastack,
     ...financeMediastack,
     ...australiaMediastack,
     ...breakingMediastack,
@@ -1036,7 +1062,7 @@ async function buildNewsItems() {
   const sourceQuotas = {
     "Breaking Worldwide": { NewsAPI: 5, Mediastack: 5, RSS: 4 },
     Gaming: { NewsAPI: 4, Mediastack: 4, RSS: 4 },
-    Technology: { "Hacker News": 12 },
+    Technology: { NewsAPI: 3, Mediastack: 3, RSS: 3, "Hacker News": 3 },
     Finance: { Finnhub: 4, NewsAPI: 3, Mediastack: 3, RSS: 2 },
     Australia: { NewsAPI: 4, Mediastack: 4, RSS: 4 }
   };
@@ -1057,6 +1083,7 @@ async function buildNewsItems() {
     Object.entries(sourceQuotas[category] || {}).forEach(([api, limit]) => {
       sorted.filter((item) => sourceHas(item, api)).slice(0, limit).forEach(add);
     });
+    if (category === "Technology") return picked;
     sorted.forEach(add);
     return picked;
   }
