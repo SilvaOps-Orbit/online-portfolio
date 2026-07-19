@@ -244,7 +244,7 @@ function SteamActivityDashboard() {
   const watch = useMemo(() => steam.preorderWatch || [], [steam.preorderWatch]);
 
   useEffect(() => {
-    const receive = (event: Event) => setSteam(mergeSteamData(steamFallback, (event as CustomEvent<SteamData>).detail));
+    const receive = (event: Event) => setSteam((current) => mergeSteamData(current, (event as CustomEvent<SteamData>).detail));
     document.addEventListener("echoops:steam-data", receive);
     const controller = new AbortController();
     const isLocal = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
