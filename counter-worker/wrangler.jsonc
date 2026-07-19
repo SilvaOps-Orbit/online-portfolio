@@ -5,7 +5,7 @@
   "compatibility_date": "2026-07-19",
   "vars": {
     "ALLOWED_ORIGIN": "https://silvaops-orbit.github.io",
-    "COUNTERAPI_WORKSPACE": "web-portfolio-tracker",
-    "COUNTERAPI_COUNTER": "page-views"
+    "COUNTERAPI_WORKSPACE": "echoopss-team-4774",
+    "COUNTERAPI_COUNTER": "A-online-portfolio"
   }
 }
