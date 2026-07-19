@@ -2,9 +2,10 @@ const WORKSPACE_PATTERN = /^[a-zA-Z0-9._ -]{1,80}$/;
 const COUNTER_PATTERN = /^[a-zA-Z0-9._-]{1,80}$/;
 
 class CounterProviderError extends Error {
-  constructor(status) {
-    super(`CounterAPI returned ${status}`);
+  constructor(stage, status = null) {
+    super(status ? `CounterAPI returned ${status}` : `CounterAPI failed during ${stage}`);
     this.name = "CounterProviderError";
+    this.stage = stage;
     this.status = status;
   }
 }
@@ -66,16 +67,32 @@ async function requestCounter(env, action) {
 
   const suffix = action === "up" ? "/up" : "";
   const url = `https://api.counterapi.dev/v2/${encodeURIComponent(env.COUNTERAPI_WORKSPACE)}/${encodeURIComponent(env.COUNTERAPI_COUNTER)}${suffix}`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${env.COUNTERAPI_TOKEN}`
-    },
-    redirect: "error"
-  });
-  if (!response.ok) throw new CounterProviderError(response.status);
-  return counterValue(await response.json());
+  let response;
+  try {
+    response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${env.COUNTERAPI_TOKEN}`
+      },
+      redirect: "error"
+    });
+  } catch {
+    throw new CounterProviderError("network");
+  }
+  if (!response.ok) throw new CounterProviderError("response", response.status);
+
+  let payload;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new CounterProviderError("json", response.status);
+  }
+  try {
+    return counterValue(payload);
+  } catch {
+    throw new CounterProviderError("value", response.status);
+  }
 }
 
 export default {
@@ -99,7 +116,8 @@ export default {
     } catch (error) {
       console.error("CounterAPI gateway request failed", error);
       const providerStatus = error instanceof CounterProviderError ? error.status : null;
-      return json({ error: "Counter service unavailable", providerStatus }, 502, origin);
+      const providerStage = error instanceof CounterProviderError ? error.stage : "worker";
+      return json({ error: "Counter service unavailable", providerStatus, providerStage }, 502, origin);
     }
   }
 };
