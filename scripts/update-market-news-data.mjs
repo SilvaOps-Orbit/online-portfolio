@@ -757,9 +757,7 @@ function whyNewsMatters(category, item) {
     return "Finance headlines can explain stock moves and help visitors understand the watchlist context.";
   }
   if (category === "Technology") {
-    return sourceHas(item, "Hacker News")
-      ? "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio."
-      : "Technology coverage connects current software, cyber security, AI, hardware, and open-source changes to the work behind this portfolio.";
+    return technologyWhy(item);
   }
   if (category === "Australia") {
     return "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.";
@@ -768,6 +766,45 @@ function whyNewsMatters(category, item) {
     return `Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: ${inferAffectedRegion(item)}.`;
   }
   return "This item was kept because it may affect the wider story the portfolio is tracking.";
+}
+
+function technologyWhy(item) {
+  const text = `${item.title || ""} ${item.snippet || ""}`.toLowerCase();
+  const reasons = [
+    {
+      patterns: ["transcrib", "speech recognition", "text to speech", "tts", "audio"],
+      reason: "This highlights practical speech and audio tooling that can make apps more accessible, interactive, and useful."
+    },
+    {
+      patterns: ["gpt", "claude", "llm", "artificial intelligence", " ai ", "ai ", "kimi", "model"],
+      reason: "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated."
+    },
+    {
+      patterns: ["security", "cyber", "privacy", "vulnerability", "malware", "breach", "exploit"],
+      reason: "It changes how developers should think about security, privacy, and safer defaults."
+    },
+    {
+      patterns: ["open source", "github", "repository", "license"],
+      reason: "This is relevant to open-source development, where licensing, collaboration, and maintainability shape real projects."
+    },
+    {
+      patterns: ["developer", "programming", "software", "compiler", "code", ".cpp", "python", "javascript", "typescript", "rust"],
+      reason: "This connects to developer tooling and programming practices that can improve how software is built and maintained."
+    },
+    {
+      patterns: ["cloud", "server", "database", "linux", "infrastructure", "network"],
+      reason: "This affects the infrastructure and networking layer that reliable, secure applications depend on."
+    },
+    {
+      patterns: ["chip", "gpu", "processor", "hardware", "device"],
+      reason: "This hardware change can influence performance, cost, and what future software can do locally."
+    },
+    {
+      patterns: ["startup", "funding", "acquisition"],
+      reason: "This offers a useful signal about where technology companies and investors are placing their attention."
+    }
+  ];
+  return reasons.find(({ patterns }) => patterns.some((pattern) => text.includes(pattern)))?.reason || "";
 }
 
 async function loadRssCategory(category, urls) {
@@ -1037,11 +1074,13 @@ async function buildNewsItems() {
     const apis = apiList(item);
     const breaking = item.category === "Breaking Worldwide";
     const warArticle = breaking && isWarArticle(item);
+    const why = item.crossReference || whyNewsMatters(item.category, item);
+    if (sourceHas(item, "Hacker News") && !why) return null;
     return {
       ...item,
       importance: warArticle ? "War / conflict" : importance.label,
       importanceScore: importance.score + (item.regionPriority ? 3 : 0) + (warArticle ? 2 : 0),
-      why: item.crossReference || whyNewsMatters(item.category, item),
+      why,
       sourceApi: apis.join(" + "),
       sourceApis: apis,
       affectedRegion: breaking ? inferAffectedRegion(item) : item.affectedRegion,
@@ -1057,7 +1096,7 @@ async function buildNewsItems() {
         ...(Array.isArray(item.sourceGroups) ? item.sourceGroups : [])
       ])
     };
-  });
+  }).filter(Boolean);
 
   const sourceQuotas = {
     "Breaking Worldwide": { NewsAPI: 5, Mediastack: 5, RSS: 4 },

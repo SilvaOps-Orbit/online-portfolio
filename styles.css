@@ -4970,37 +4970,6 @@ a.provider-pulse-item:focus-visible {
   background: color-mix(in srgb, var(--bg) 58%, var(--panel));
 }
 
-.news-preview-fallback {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 10px;
-  padding: 20px;
-  color: var(--muted);
-  text-align: center;
-}
-
-.news-preview-mark {
-  display: grid;
-  width: 54px;
-  aspect-ratio: 1;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 60%, var(--line));
-  border-radius: 8px;
-  color: var(--accent);
-  font: 800 1.1rem/1 var(--font-display);
-}
-
-.news-preview-label {
-  overflow: hidden;
-  max-width: 100%;
-  font-weight: 700;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .news-image {
   position: absolute;
   inset: 0;
@@ -5008,10 +4977,6 @@ a.provider-pulse-item:focus-visible {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.news-preview.has-image .news-preview-fallback {
-  visibility: hidden;
 }
 
 .news-importance {

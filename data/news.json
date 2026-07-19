@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-19T09:44:25.723Z",
+  "generatedAt": "2026-07-19T09:57:32.252Z",
   "source": "Hacker News + RSS",
   "stale": false,
-  "lastGoodAt": "2026-07-19T09:44:25.723Z",
+  "lastGoodAt": "2026-07-19T09:57:32.252Z",
   "status": "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, technology, finance, and Australia rows.",
   "items": [
     {
@@ -20,7 +20,7 @@
         "RSS"
       ],
       "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/856a/live/4c968bc0-8346-11f1-9454-a31108ec7e77.png",
-      "publishedAt": "Sun, 19 Jul 2026 08:37:48 GMT",
+      "publishedAt": "Sun, 19 Jul 2026 09:54:50 GMT",
       "importance": "War / conflict",
       "importanceScore": 10,
       "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Ukraine / Russia.",
@@ -615,7 +615,7 @@
       "publishedAt": "Thu, 16 Jul 2026 20:41:45 +0000",
       "importance": "Important",
       "importanceScore": 7,
-      "why": "Technology coverage connects current software, cyber security, AI, hardware, and open-source changes to the work behind this portfolio.",
+      "why": "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
@@ -638,7 +638,7 @@
       "publishedAt": "Fri, 17 Jul 2026 15:21:17 +0000",
       "importance": "Important",
       "importanceScore": 6,
-      "why": "Technology coverage connects current software, cyber security, AI, hardware, and open-source changes to the work behind this portfolio.",
+      "why": "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
@@ -661,7 +661,7 @@
       "publishedAt": "Fri, 17 Jul 2026 22:55:09 +0000",
       "importance": "Important",
       "importanceScore": 5,
-      "why": "Technology coverage connects current software, cyber security, AI, hardware, and open-source changes to the work behind this portfolio.",
+      "why": "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
@@ -669,7 +669,7 @@
     {
       "category": "Technology",
       "title": "NYC may require landlords and realtors to disclose the use of AI in listings",
-      "snippet": "468 points, 206 comments, submitted by gnabgib.",
+      "snippet": "471 points, 206 comments, submitted by gnabgib.",
       "url": "https://petapixel.com/2026/07/16/mayor-mamdani-says-landlords-cant-secretly-use-ai-images-to-advertise-properties/",
       "discussionUrl": "https://news.ycombinator.com/item?id=48962983",
       "source": "Hacker News",
@@ -686,11 +686,11 @@
       "regionalScope": "Global",
       "publishedAt": "2026-07-18T22:13:39.000Z",
       "hackerNewsId": 48962983,
-      "hackerNewsPoints": 468,
+      "hackerNewsPoints": 471,
       "hackerNewsComments": 206,
       "importance": "High impact",
       "importanceScore": 11,
-      "why": "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio.",
+      "why": "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
@@ -698,7 +698,7 @@
     {
       "category": "Technology",
       "title": "GPT-5.6 used a prompt to close a 30-year gap in convex optimization",
-      "snippet": "561 points, 358 comments, submitted by mbustamanter.",
+      "snippet": "562 points, 360 comments, submitted by mbustamanter.",
       "url": "https://old.reddit.com/r/math/comments/1uxj3cy/after_openais_cdc_proof_announcement_gpt56_used_a/",
       "discussionUrl": "https://news.ycombinator.com/item?id=48957779",
       "source": "Hacker News",
@@ -715,11 +715,11 @@
       "regionalScope": "Global",
       "publishedAt": "2026-07-18T13:00:52.000Z",
       "hackerNewsId": 48957779,
-      "hackerNewsPoints": 561,
-      "hackerNewsComments": 358,
+      "hackerNewsPoints": 562,
+      "hackerNewsComments": 360,
       "importance": "High impact",
       "importanceScore": 9,
-      "why": "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio.",
+      "why": "This tracks a concrete shift in AI models or tooling that may change how software is designed, automated, or evaluated.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
@@ -727,7 +727,7 @@
     {
       "category": "Technology",
       "title": "Transcribe.cpp",
-      "snippet": "517 points, 105 comments, submitted by sebjones.",
+      "snippet": "525 points, 109 comments, submitted by sebjones.",
       "url": "https://workshop.cjpais.com/projects/transcribe-cpp",
       "discussionUrl": "https://news.ycombinator.com/item?id=48963879",
       "source": "Hacker News",
@@ -744,11 +744,11 @@
       "regionalScope": "Global",
       "publishedAt": "2026-07-19T00:38:26.000Z",
       "hackerNewsId": 48963879,
-      "hackerNewsPoints": 517,
-      "hackerNewsComments": 105,
+      "hackerNewsPoints": 525,
+      "hackerNewsComments": 109,
       "importance": "High impact",
       "importanceScore": 8,
-      "why": "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio.",
+      "why": "This highlights practical speech and audio tooling that can make apps more accessible, interactive, and useful.",
       "isBreaking": false,
       "isWar": false,
       "tags": []
