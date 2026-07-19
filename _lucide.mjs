@@ -1,0 +1,18 @@
+import React from 'react';
+const Icon = (props) => React.createElement('svg', props);
+export const CalendarClock = Icon;
+export const Clock3 = Icon;
+export const Coins = Icon;
+export const Dice5 = Icon;
+export const Flame = Icon;
+export const Gamepad2 = Icon;
+export const Grid3X3 = Icon;
+export const Keyboard = Icon;
+export const Layers3 = Icon;
+export const LibraryBig = Icon;
+export const Mouse = Icon;
+export const Sparkles = Icon;
+export const TrendingUp = Icon;
+export const Trophy = Icon;
+export const WalletCards = Icon;
+export default Icon;

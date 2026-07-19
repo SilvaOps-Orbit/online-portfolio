@@ -341,3 +341,7 @@ function SteamActivityDashboard() {
 export function mountSteamActivityDashboard(target: HTMLElement) {
   createRoot(target).render(<StrictMode><IslandBoundary label="Steam activity dashboard"><SteamActivityDashboard /></IslandBoundary></StrictMode>);
 }
+
+/* TEST-ONLY EXPORTS */
+export { PlaystyleView };
+

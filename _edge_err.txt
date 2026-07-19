@@ -1,0 +1,3 @@
+
+DevTools remote debugging requires a non-default data directory. Specify this using --user-data-dir.
+[15352:41108:0720/082021.386:ERROR:components\device_event_log\device_event_log_impl.cc:246] [08:20:21.387] USB: usb_service_win.cc:108 SetupDiGetDeviceProperty({{A45C254E-DF1C-4EFD-8020-67D146A850E0}, 6}) failed: Element not found. (0x490)
