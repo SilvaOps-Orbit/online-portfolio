@@ -606,9 +606,10 @@ window.PORTFOLIO_CONFIG = {
     "online-portfolio": ["React.js", "TypeScript"]
   },
   analytics: {
-    // After deploying analytics-worker, paste its HTTPS URL here and add its exact origin to connect-src in index.html and _headers.
-    endpoint: "",
-    refreshMs: 120000
+    // The browser calls this Worker without a secret. D1 access and private values stay inside Cloudflare.
+    endpoint: "https://silvaops-api.alvis-dev.workers.dev",
+    refreshMs: 120000,
+    provider: "Cloudflare Worker + D1"
   },
   steam: {
     steamId: "76561199192411740",
@@ -1037,8 +1038,8 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Privacy-Preserving Audience Analytics",
       body:
-        "The audience panel counts unique browsers, daily visits, coarse device/browser categories, and Easter egg discoveries. The browser sends a random local identifier over HTTPS; the Worker stores only a secret-peppered SHA-256 hash and never stores the raw identifier, raw IP address, or full user-agent string.",
-      why: "It provides useful reach and interaction evidence without using advertising cookies or invasive fingerprinting.",
+        "The audience panel reads aggregate page-view, referrer, and Easter egg totals from a Cloudflare Worker backed by D1. The browser uses no API key, sends only a small typed telemetry payload over HTTPS, and never publishes visitor-level records in the portfolio.",
+      why: "It provides useful reach and interaction evidence without advertising cookies, browser fingerprinting, or pretending an aggregate view count is an exact count of people.",
       docs: [
         {
           label: "Cloudflare D1",
@@ -1047,6 +1048,18 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Worker Secrets",
           url: "https://developers.cloudflare.com/workers/configuration/secrets/"
+        }
+      ]
+    },
+    {
+      title: "Snake Leaderboard Input Boundaries",
+      body:
+        "The hidden Snake leaderboard accepts a maximum ten-character operator tag, allowlists letters, numbers, underscores, and hyphens, clamps impossible client scores, limits the board to ten entries, and renders every remote value with DOM text nodes instead of raw HTML.",
+      why: "It reduces accidental or malicious markup reaching the interface, while the public Worker remains responsible for repeating validation, rate limiting submissions, and treating every browser score as untrusted.",
+      docs: [
+        {
+          label: "OWASP Input Validation",
+          url: "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html"
         }
       ]
     },
@@ -1090,8 +1103,8 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Anonymous Discovery Analytics",
       body:
-        "A TypeScript client records one qualifying visit per anonymous browser each day and sends allowlisted Easter egg unlock events to a Cloudflare Worker. A React dashboard renders only aggregate browser, device, finder, and completion totals from D1.",
-      why: "It proves event-driven React/TypeScript, privacy-aware analytics design, server-side hashing, SQL aggregation, CORS boundaries, and resilient cached state in one visible feature.",
+        "A TypeScript client sends page-view and allowlisted Easter egg events to a Cloudflare Worker, while a React dashboard normalizes the current D1 totals and a richer optional analytics schema without exposing a browser key.",
+      why: "It demonstrates event-driven React and TypeScript, schema-aware API adapters, CORS boundaries, aggregate SQL data, and resilient last-good state in one visible feature.",
       docs: [
         {
           label: "Cloudflare Workers TypeScript",
@@ -1099,6 +1112,18 @@ window.PORTFOLIO_CONFIG = {
         },
         {
           label: "D1 Worker API",
+          url: "https://developers.cloudflare.com/d1/worker-api/"
+        }
+      ]
+    },
+    {
+      title: "Live D1 Snake Leaderboard",
+      body:
+        "The sandboxed Ops Console Snake game now loads a top-ten D1 leaderboard beneath its controls. Game over reveals a one-run score form, successful submissions refresh the table, and a sanitized last-good snapshot keeps standings visible during a temporary API failure.",
+      why: "It turns a hidden canvas game into a small full-stack feature demonstrating state transitions, resilient fetch handling, accessible status updates, strict DOM rendering, and a Cloudflare Worker plus D1 data path.",
+      docs: [
+        {
+          label: "Cloudflare D1 Worker API",
           url: "https://developers.cloudflare.com/d1/worker-api/"
         }
       ]

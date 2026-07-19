@@ -155,9 +155,16 @@ function articleSearchText(item) {
   return ` ${item?.title || ""} ${item?.snippet || ""} ${item?.source || ""} `.toLowerCase();
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function isWarArticle(item) {
   const text = articleSearchText(item);
-  return conflictTerms.some((term) => text.includes(term));
+  return conflictTerms.some((term) => {
+    const phrase = escapeRegExp(term).replace(/\s+/g, "\\s+");
+    return new RegExp(`(?:^|[^a-z0-9])${phrase}(?=$|[^a-z0-9])`, "i").test(text);
+  });
 }
 
 function inferAffectedRegion(item) {

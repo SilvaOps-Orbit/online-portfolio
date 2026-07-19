@@ -55,6 +55,11 @@ jobs:
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
           STEAM_ID: "76561199192411740"
 
+      - name: Refresh Steam Replay snapshot
+        run: node scripts/update-steam-replay.mjs
+        env:
+          STEAM_REPLAY_URL: "https://s.team/y25/gnkcbvhr?l=english"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

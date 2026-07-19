@@ -13,6 +13,7 @@ function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData
     ...fallback,
     ...live,
     profile: { ...(fallback.profile || {}), ...(live.profile || {}) },
+    replay: { ...(fallback.replay || {}), ...(live.replay || {}) },
     accountValue: fallback.accountValue?.manual ? fallback.accountValue : { ...(fallback.accountValue || {}), ...(live.accountValue || {}) }
   };
   (["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "preorderWatch", "stats"] as const).forEach((key) => {
@@ -68,8 +69,44 @@ function editionText(edition: NonNullable<SteamItem["editions"]>[number]): strin
   return edition.price ? `${label}: ${edition.price}` : label;
 }
 
+function artworkCandidates(item: SteamItem): string[] {
+  const candidates: string[] = [];
+  const primary = String(item.image || "").trim().replace(/^http:\/\//i, "https://");
+  if (primary) {
+    candidates.push(primary.replace("shared.akamai.steamstatic.com", "shared.fastly.steamstatic.com"));
+    if (primary.includes("shared.fastly.steamstatic.com")) {
+      candidates.push(primary.replace("shared.fastly.steamstatic.com", "shared.akamai.steamstatic.com"));
+    }
+  }
+  if (item.appid) candidates.push(`https://cdn.cloudflare.steamstatic.com/steam/apps/${item.appid}/header.jpg`);
+  return [...new Set(candidates)];
+}
+
+function SteamArtwork({ item, title, className = "game-art" }: { item: SteamItem; title: string; className?: string }) {
+  const candidates = useMemo(() => artworkCandidates(item), [item.appid, item.image]);
+  const [candidateIndex, setCandidateIndex] = useState(0);
+
+  useEffect(() => setCandidateIndex(0), [candidates]);
+
+  if (!candidates[candidateIndex]) {
+    return <span className={`${className} game-art-placeholder`} role="img" aria-label={`${title} artwork unavailable`}>Steam</span>;
+  }
+
+  return (
+    <img
+      className={className}
+      src={candidates[candidateIndex]}
+      alt={`${title} artwork`}
+      loading="lazy"
+      decoding="async"
+      onError={() => setCandidateIndex((value) => value + 1)}
+    />
+  );
+}
+
 function GameItem({ item, index = 0 }: { item: SteamItem; index?: number }) {
   const title = item.title || item.name || "Untitled game";
+  const hasArtwork = Boolean(item.image || item.appid);
   const body = (
     <>
       {item.url ? <a className="game-title" href={item.url} target="_blank" rel="noopener noreferrer">{title}</a> : <span className="game-title">{title}</span>}
@@ -79,14 +116,41 @@ function GameItem({ item, index = 0 }: { item: SteamItem; index?: number }) {
       {Boolean(item.editions?.length) && <span className="game-editions">{item.editions?.slice(0, 3).map((edition, index) => <span className="edition-chip" key={`${editionText(edition)}-${index}`}>{editionText(edition)}</span>)}</span>}
     </>
   );
-  return <li className={`game-item${item.image ? " has-art" : ""}`} style={{ "--item-index": index } as CSSProperties}>{item.image && <img className="game-art" src={item.image.replace(/^http:\/\//i, "https://")} alt={`${title} artwork`} loading="lazy" />}<div className="game-body">{body}</div></li>;
+  return <li className={`game-item${hasArtwork ? " has-art" : ""}`} style={{ "--item-index": index } as CSSProperties}>{hasArtwork && <SteamArtwork item={item} title={title} />}<div className="game-body">{body}</div></li>;
 }
 
 interface GameListProps { items?: SteamItem[]; label: string; pageSize?: number; }
 function GameList({ items = [], label, pageSize = 6 }: GameListProps) {
   const games = useMemo(() => items.filter(Boolean), [items]);
   const { visible, swapping, start } = useCyclingWindow(games, pageSize);
-  return <ul className={`game-list cycle-list react-cycle-list${games.length > pageSize ? " is-cycling" : " is-static-animated"}${swapping ? " is-swapping" : ""}`} aria-label={label}>{visible.map((item, index) => <GameItem key={`${start}-${item.appid || item.title || item.name}-${index}`} item={item} index={index} />)}</ul>;
+  return <ul className={`game-list cycle-list react-cycle-list${pageSize === 3 && games.length >= 3 ? " is-triple" : ""}${games.length > pageSize ? " is-cycling" : " is-static-animated"}${swapping ? " is-swapping" : ""}`} aria-label={label}>{visible.map((item, index) => <GameItem key={`${start}-${item.appid || item.title || item.name}-${index}`} item={item} index={index} />)}</ul>;
+}
+
+function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]> }) {
+  const topGames = replay.topGames || [];
+  const metrics = [
+    { label: "Playtime", value: `${Number(replay.totalHours || 0).toLocaleString("en-AU")} hrs` },
+    { label: "Sessions", value: Number(replay.totalSessions || 0).toLocaleString("en-AU") },
+    { label: "Games played", value: Number(replay.gamesPlayed || 0).toLocaleString("en-AU") },
+    { label: "New games", value: Number(replay.newGames || 0).toLocaleString("en-AU") },
+    { label: "Achievements", value: Number(replay.achievements || 0).toLocaleString("en-AU") },
+    { label: "Longest streak", value: `${Number(replay.longestStreak || 0)} days` }
+  ];
+
+  return (
+    <section className="steam-replay" aria-labelledby="steam-replay-title">
+      <div className="steam-replay-heading">
+        <div><span className="steam-label">Latest Steam Replay</span><h3 id="steam-replay-title">The {replay.year || 2025} campaign log</h3><p>Steam's public year-in-review snapshot, kept as a last-good local record between refreshes.</p></div>
+        {replay.sourceUrl && <a className="button ghost" href={replay.sourceUrl} target="_blank" rel="noopener noreferrer">Open full Replay</a>}
+      </div>
+      <div className="steam-replay-board">
+        <div className="steam-replay-year" aria-hidden="true"><span>REPLAY</span><strong>{replay.year || 2025}</strong><small>{replay.stale ? "Saved snapshot" : "Steam verified"}</small></div>
+        <div className="steam-replay-metrics">{metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong></div>)}</div>
+      </div>
+      {topGames.length > 0 && <div className="steam-replay-top"><div className="steam-replay-subheading"><span>Top games</span><small>{replay.controllerPercent ? `${replay.controllerPercent}% of playtime used a controller` : "Ranked by Steam playtime"}</small></div><ol>{topGames.slice(0, 3).map((game, index) => { const title = game.title || game.name || "Steam game"; return <li key={game.appid || title}><span className="steam-replay-rank">0{index + 1}</span><SteamArtwork item={game} title={title} className="steam-replay-game-art" /><div><a href={game.url} target="_blank" rel="noopener noreferrer">{title}</a><span>{Number(game.hours || 0).toLocaleString("en-AU")} hrs · {Number(game.sessions || 0)} sessions</span><span className="steam-replay-share"><i style={{ width: `${Math.min(100, Number(game.playtimePercent || 0))}%` }} />{Number(game.playtimePercent || 0).toFixed(1)}% of the year</span></div></li>; })}</ol></div>}
+      <div className="steam-replay-footer"><span>{Number(replay.rareAchievements || 0)} rare achievements</span><span>More games than {Number(replay.gamesPercentile || 0)}% of Steam players</span><span>{replay.lastGoodAt ? `Snapshot ${formatDate(replay.lastGoodAt)}` : "Public Steam Replay"}</span></div>
+    </section>
+  );
 }
 
 function SteamActivityDashboard() {
@@ -131,11 +195,12 @@ function SteamActivityDashboard() {
           <div className="steam-watch"><span className="steam-label">Pre-Order / Top 20 Games Watch</span>{watchItem ? <ul className="game-list watch-list"><GameItem item={watchItem} /></ul> : <p className="game-note">Steam store watch is waiting for its next snapshot.</p>}</div>
         </article>
         <div className="steam-grid">
-          <article className="steam-card steam-card-large"><h3>Achievements ({steam.achievements?.length || 0})</h3><GameList items={steam.achievements} label="Achievements" pageSize={1} /></article>
-          <article className="steam-card"><h3>Most Played</h3><GameList items={steam.mostPlayed} label="Most played games" pageSize={1} /></article>
-          <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" pageSize={1} /></article>
+          <article className="steam-card steam-card-large"><h3>Achievements ({steam.achievements?.length || 0})</h3><GameList items={steam.achievements} label="Achievements" pageSize={3} /></article>
+          <article className="steam-card"><h3>Most Played</h3><GameList items={steam.mostPlayed} label="Most played games" pageSize={3} /></article>
+          <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" pageSize={3} /></article>
         </div>
       </div>
+      {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>
     </>
   );

@@ -102,15 +102,14 @@
       ],
       "image": "https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/5f9c/live/53967ec0-79fb-11f1-bee8-53ce494e1abc.jpg",
       "publishedAt": "Thu, 09 Jul 2026 22:41:08 GMT",
-      "importance": "War / conflict",
-      "importanceScore": 6,
+      "importance": "Briefing",
+      "importanceScore": 4,
       "why": "Breaking worldwide items are kept short so visitors can spot urgent events and the affected region fast: Worldwide.",
       "affectedRegion": "Worldwide",
       "isBreaking": true,
-      "isWar": true,
+      "isWar": false,
       "tags": [
-        "Breaking",
-        "War"
+        "Breaking"
       ]
     },
     {

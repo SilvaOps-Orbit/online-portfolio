@@ -103,6 +103,34 @@ export interface SteamItem {
   editions?: Array<string | { label?: string; name?: string; price?: string }>;
 }
 
+export interface SteamReplayGame extends SteamItem {
+  hours?: number;
+  sessions?: number;
+  playtimePercent?: number;
+}
+
+export interface SteamReplay {
+  year?: number;
+  generatedAt?: string;
+  lastGoodAt?: string;
+  stale?: boolean;
+  status?: string;
+  source?: string;
+  sourceUrl?: string;
+  totalHours?: number;
+  totalSessions?: number;
+  gamesPlayed?: number;
+  newGames?: number;
+  achievements?: number;
+  rareAchievements?: number;
+  longestStreak?: number;
+  controllerPercent?: number;
+  gamesPercentile?: number;
+  achievementsPercentile?: number;
+  streakPercentile?: number;
+  topGames?: SteamReplayGame[];
+}
+
 export interface SteamData {
   summary?: string;
   status?: string;
@@ -120,6 +148,7 @@ export interface SteamData {
   completedGames?: SteamItem[];
   storeHighlights?: SteamItem[];
   preorderWatch?: SteamItem[];
+  replay?: SteamReplay;
 }
 
 export interface GitHubRepository {
@@ -162,6 +191,7 @@ export interface PortfolioConfig {
   analytics?: {
     endpoint?: string;
     refreshMs?: number;
+    provider?: string;
   };
 }
 

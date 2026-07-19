@@ -17,7 +17,7 @@ The main idea is simple: make the site feel alive with animation, Steam, Spotify
 - For the Nerds section showing security choices and unique features.
 - Lazy-loaded React and TypeScript islands for the Career Roadmap, Steam, GitHub, Security Snapshot, Technical Achievement Vault, integration status, and anonymous visitor insights.
 - Privacy-preserving browser/device and Easter egg discovery analytics through a separate Cloudflare Worker and D1 database.
-- Layered technical easter eggs with a sandbox console, Web Crypto audit, architecture map, and achievement vault.
+- Layered technical easter eggs with a sandbox console, hidden Snake protocol, Web Crypto audit, architecture map, and achievement vault.
 - GitHub Actions workflows that refresh data without exposing secrets.
 
 ## Main files
@@ -75,6 +75,10 @@ https://silvaops-orbit.github.io/online-portfolio/sitemap.xml
 ```
 
 SEO files help search engines understand the site, but they do not guarantee a ranking. Useful portfolio copy and real project updates still matter most.
+
+## Hidden Ops Console game
+
+Snake is intentionally absent from the normal navigation. After discovering the sandboxed Ops Console, run `games`, `snake`, `play snake`, or `game snake`. The game supports arrow keys, WASD, touch controls, pause/restart controls, and a local-only best score. Reaching 50 points unlocks the fourth Technical Achievement Vault entry.
 
 ## GitHub setup
 

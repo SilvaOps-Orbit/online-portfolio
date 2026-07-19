@@ -1,8 +1,10 @@
 # Anonymous portfolio analytics
 
-This Worker powers the React and TypeScript audience panel in **For the Nerds**. It counts anonymous browsers, one qualifying view per browser each UTC day, coarse browser/device categories, Easter egg finders, and full Technical Achievement Vault completions.
+This Worker powers the React and TypeScript audience panel in **For the Nerds**. D1 counts anonymous browsers, one qualifying view per browser each UTC day, coarse browser/device categories, Easter egg finders, and full Technical Achievement Vault completions.
 
 It does **not** store raw IP addresses, full user-agent strings, cookies, names, email addresses, or the raw browser identifier. The browser creates a random local ID; the Worker combines it with the private `ANALYTICS_PEPPER` secret and stores only the resulting SHA-256 hash.
+
+> Existing Worker safeguard: the live `silvaops-api` Worker currently uses a separately created D1 schema and returns `{ views, easter_eggs }`. The portfolio client supports that response directly. Do not run this folder's schema or deploy this richer Worker over the live service until the existing D1 tables have been compared and backed up.
 
 ## First setup
 
@@ -33,13 +35,23 @@ Paste the generated value only into the Wrangler secret prompt. Never put it in 
 npm run deploy
 ```
 
+When upgrading an existing analytics database from the original three achievements to the Snake-enabled four-achievement vault, run this once before deploying:
+
+```powershell
+npm run db:migrate
+```
+
+Fresh databases created with `npm run db:init` already include Snake and do not need that migration.
+
 ## Connect the portfolio
 
 1. Copy the deployed HTTPS Worker URL into `analytics.endpoint` in `portfolio.config.js`.
 2. Add that exact Worker origin to `connect-src` in both the CSP meta tag in `index.html` and the CSP line in `_headers`.
 3. Rebuild with `npm run build:react`, then deploy the portfolio normally.
 
-The allowed production origin is already set to `https://silvaops-orbit.github.io`. Localhost origins are accepted for development.
+The allowed production origin is already set to `https://silvaops-orbit.github.io`. Localhost origins are accepted for development. The browser calls `/api/track`, `/api/easter-egg`, and `/api/stats` without a secret; the Worker validates the origin and accesses D1 through its private binding. The previous `/api/view` and `/api/achievement` routes remain as compatibility aliases.
+
+Never put an `X-API-Key`, Cloudflare token, or Worker secret in `portfolio.config.js` or browser JavaScript. Browser-delivered values are visible in DevTools. If one has been published or shared, rotate it before deploying this Worker.
 
 ## Accuracy and abuse limits
 

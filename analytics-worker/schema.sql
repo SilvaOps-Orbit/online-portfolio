@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS daily_views (
 
 CREATE TABLE IF NOT EXISTS achievements (
   visitor_hash TEXT NOT NULL,
-  achievement_id TEXT NOT NULL CHECK (achievement_id IN ('console', 'integrity', 'architecture')),
+  achievement_id TEXT NOT NULL CHECK (achievement_id IN ('console', 'integrity', 'architecture', 'snake')),
   discovered_at TEXT NOT NULL,
   PRIMARY KEY (visitor_hash, achievement_id)
 );

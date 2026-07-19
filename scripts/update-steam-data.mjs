@@ -81,7 +81,10 @@ function normalizeSteamImageUrl(value) {
     return "";
   }
 
-  return value.trim().replace(/^http:\/\//i, "https://");
+  return value
+    .trim()
+    .replace(/^http:\/\//i, "https://")
+    .replace("shared.akamai.steamstatic.com", "shared.fastly.steamstatic.com");
 }
 
 function editionLabel(sub, group) {
@@ -234,6 +237,17 @@ async function loadAppDetails(appid) {
   }
 }
 
+async function enrichGameArtwork(items = []) {
+  return Promise.all(items.map(async (item) => {
+    if (!item?.appid) return item;
+    const details = await loadAppDetails(item.appid);
+    return {
+      ...item,
+      image: normalizeSteamImageUrl(details?.header_image || details?.capsule_image || item.image || headerImage(item.appid))
+    };
+  }));
+}
+
 async function enrichStoreWatchItem(item) {
   const details = await loadAppDetails(item.appid);
   if (!details) {
@@ -352,6 +366,10 @@ function withLastValues(output, previous) {
       result.stale = true;
     }
   });
+
+  if (!result.replay && previous.replay) {
+    result.replay = previous.replay;
+  }
 
   if ((!Array.isArray(result.stats) || !result.stats.length) && Array.isArray(previous.stats) && previous.stats.length) {
     result.stats = previous.stats;
@@ -628,6 +646,7 @@ async function main() {
   }
 
   output = withLastValues(output, previous);
+  output.currentlyPlaying = await enrichGameArtwork(output.currentlyPlaying);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
   console.log(`Wrote Steam data for ${steamId} to ${outputPath.pathname}`);

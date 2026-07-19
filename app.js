@@ -2705,8 +2705,11 @@
       }
       const meta = createElement("div", "news-meta");
       const category = createElement("span", `news-category${isBreaking ? " news-breaking-tag" : ""}`, isBreaking ? "Breaking News" : String(item.category || "News"));
-      const importance = createElement("span", "news-importance", String(item.importance || "Important"));
-      meta.append(category, importance);
+      const importanceText = String(item.importance || "Important");
+      meta.append(category);
+      if (!(isWar && /war|conflict/i.test(importanceText))) {
+        meta.append(createElement("span", "news-importance", importanceText));
+      }
       if (isBreaking && item.affectedRegion) {
         meta.append(createElement("span", "news-region-tag", `Affects: ${item.affectedRegion}`));
       }

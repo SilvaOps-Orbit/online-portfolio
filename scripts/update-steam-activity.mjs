@@ -71,7 +71,10 @@ function normalizeSteamImageUrl(value) {
     return "";
   }
 
-  return value.trim().replace(/^http:\/\//i, "https://");
+  return value
+    .trim()
+    .replace(/^http:\/\//i, "https://")
+    .replace("shared.akamai.steamstatic.com", "shared.fastly.steamstatic.com");
 }
 
 function editionLabel(sub, group) {
@@ -213,6 +216,17 @@ async function loadAppDetails(appid) {
   } catch (error) {
     return null;
   }
+}
+
+async function enrichGameArtwork(items = []) {
+  return Promise.all(items.map(async (item) => {
+    if (!item?.appid) return item;
+    const details = await loadAppDetails(item.appid);
+    return {
+      ...item,
+      image: normalizeSteamImageUrl(details?.header_image || details?.capsule_image || item.image || headerImage(item.appid))
+    };
+  }));
 }
 
 async function enrichStoreWatchItem(item) {
@@ -388,9 +402,11 @@ async function main() {
   };
 
   if (!apiKey) {
+    const currentlyPlaying = await enrichGameArtwork(previous.currentlyPlaying);
     await writeSteamData({
       ...previous,
       ...storeUpdates,
+      currentlyPlaying,
       generatedAt,
       source: previous.source || "steam-store",
       status: "Steam store watch refreshed. Active game detection needs STEAM_API_KEY.",
@@ -417,6 +433,7 @@ async function main() {
     : recentGames.length
       ? recentGames.map((game) => ({ ...toRecentGame(game), lastObservedAt: generatedAt }))
       : [activeGame];
+  const currentGamesWithArtwork = await enrichGameArtwork(currentGames);
 
   await writeSteamData({
     ...previous,
@@ -432,7 +449,7 @@ async function main() {
       visibilityState: profile.communityvisibilitystate
     },
     profileUrl: profile.profileurl || previous.profileUrl || `https://steamcommunity.com/profiles/${steamId}`,
-    currentlyPlaying: currentGames,
+    currentlyPlaying: currentGamesWithArtwork,
     status: activeGame.appid
       ? "Steam activity refreshed. Active game is shown from Steam profile status."
       : "Steam activity refreshed. No active game detected, so recently played games are shown.",

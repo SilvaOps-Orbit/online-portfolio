@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "echoops-portfolio-analytics",
+  "name": "silvaops-api",
   "main": "src/index.ts",
   "compatibility_date": "2026-07-11",
   "workers_dev": true,

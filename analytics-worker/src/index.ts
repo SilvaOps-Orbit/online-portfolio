@@ -9,6 +9,10 @@ interface VisitorPayload {
   browser?: unknown;
   device?: unknown;
   achievementId?: unknown;
+  egg_id?: unknown;
+  action?: unknown;
+  path?: unknown;
+  referrer?: unknown;
 }
 
 interface CountRow { count: number; }
@@ -20,7 +24,8 @@ const DEVICES = new Set(["Desktop", "Mobile", "Tablet", "Unknown"]);
 const ACHIEVEMENTS = new Map([
   ["console", "Local Operator"],
   ["integrity", "Integrity Analyst"],
-  ["architecture", "Systems Mapper"]
+  ["architecture", "Systems Mapper"],
+  ["snake", "Packet Wrangler"]
 ]);
 
 function permittedOrigin(request: Request, env: Env): string {
@@ -75,7 +80,13 @@ function normalizePayload(payload: VisitorPayload) {
     : "";
   const browser = typeof payload.browser === "string" && BROWSERS.has(payload.browser) ? payload.browser : "Other";
   const device = typeof payload.device === "string" && DEVICES.has(payload.device) ? payload.device : "Unknown";
-  const achievementId = typeof payload.achievementId === "string" && ACHIEVEMENTS.has(payload.achievementId) ? payload.achievementId : "";
+  const requestedAchievement = typeof payload.achievementId === "string"
+    ? payload.achievementId
+    : typeof payload.egg_id === "string"
+      ? payload.egg_id
+      : "";
+  const action = typeof payload.action === "string" ? payload.action : "";
+  const achievementId = (!action || action === "unlocked") && ACHIEVEMENTS.has(requestedAchievement) ? requestedAchievement : "";
   return { visitorId, browser, device, achievementId };
 }
 
@@ -124,7 +135,8 @@ async function getStats(env: Env) {
     browsers: await breakdown(env, "browser", uniqueVisitors),
     devices: await breakdown(env, "device", uniqueVisitors),
     achievements: Array.from(ACHIEVEMENTS, ([id, label]) => ({ id, label, count: counts.get(id) || 0 })),
-    updatedAt: updated?.updated_at || new Date().toISOString()
+    updatedAt: updated?.updated_at || new Date().toISOString(),
+    viewProvider: "Cloudflare D1 daily dedupe"
   };
 }
 
@@ -135,10 +147,8 @@ async function recordView(request: Request, env: Env, origin: string): Promise<R
   if (!value.visitorId) return json({ error: "Invalid anonymous browser identifier" }, 400, origin);
   const now = new Date().toISOString();
   const hash = await hashVisitor(value.visitorId, env.ANALYTICS_PEPPER);
-  await env.DB.batch([
-    upsertVisitor(env, hash, value.browser, value.device, now),
-    env.DB.prepare("INSERT OR IGNORE INTO daily_views (visitor_hash, view_date, viewed_at) VALUES (?, ?, ?)").bind(hash, now.slice(0, 10), now)
-  ]);
+  await upsertVisitor(env, hash, value.browser, value.device, now).run();
+  await env.DB.prepare("INSERT OR IGNORE INTO daily_views (visitor_hash, view_date, viewed_at) VALUES (?, ?, ?)").bind(hash, now.slice(0, 10), now).run();
   return json({ stats: await getStats(env) }, 200, origin);
 }
 
@@ -168,8 +178,8 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: responseHeaders(origin) });
     const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
     if (request.method === "GET" && path === "/api/stats") return json({ stats: await getStats(env) }, 200, origin);
-    if (request.method === "POST" && path === "/api/view") return recordView(request, env, origin);
-    if (request.method === "POST" && path === "/api/achievement") return recordAchievement(request, env, origin);
+    if (request.method === "POST" && ["/api/track", "/api/view"].includes(path)) return recordView(request, env, origin);
+    if (request.method === "POST" && ["/api/easter-egg", "/api/achievement"].includes(path)) return recordAchievement(request, env, origin);
     return json({ error: "Not found" }, 404, origin);
   }
 } satisfies ExportedHandler<Env>;

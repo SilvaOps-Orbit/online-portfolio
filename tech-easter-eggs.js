@@ -2,6 +2,8 @@
   "use strict";
 
   const storageKey = "echoops-technical-achievements-v1";
+  const snakeLeaderboardCacheKey = "echoops-snake-leaderboard-v1";
+  const snakeLeaderboardLimit = 10;
   const sourceFiles = ["index.html", "styles.css", "app.js", "portfolio.config.js", "tech-easter-eggs.js"];
   const snapshotFiles = ["steam.json", "spotify.json", "github.json", "market.json", "news.json"];
   const languageSequence = ["react.js", "typescript", "javascript"];
@@ -142,6 +144,49 @@
     output.scrollTop = output.scrollHeight;
   }
 
+  function configuredApiEndpoint() {
+    const value = String(window.PORTFOLIO_CONFIG?.analytics?.endpoint || "").trim().replace(/\/+$/, "");
+    if (!value) return "";
+    try {
+      const url = new URL(value);
+      const local = ["127.0.0.1", "localhost"].includes(url.hostname);
+      return url.protocol === "https:" || (local && url.protocol === "http:") ? url.href.replace(/\/+$/, "") : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function normalizeSnakeUsername(value) {
+    return String(value || "").trim().replace(/[^a-z0-9_-]/gi, "").slice(0, 10);
+  }
+
+  function normalizeSnakeLeaderboard(value) {
+    if (!Array.isArray(value)) return [];
+    return value.flatMap((entry) => {
+      if (!entry || typeof entry !== "object") return [];
+      const username = normalizeSnakeUsername(entry.username);
+      const score = Math.floor(Number(entry.score));
+      if (!username || !Number.isFinite(score) || score < 0 || score > 3800) return [];
+      return [{ username, score }];
+    }).sort((left, right) => right.score - left.score).slice(0, snakeLeaderboardLimit);
+  }
+
+  function readSnakeLeaderboardCache() {
+    try {
+      return normalizeSnakeLeaderboard(JSON.parse(window.localStorage.getItem(snakeLeaderboardCacheKey) || "[]"));
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveSnakeLeaderboardCache(entries) {
+    try {
+      window.localStorage.setItem(snakeLeaderboardCacheKey, JSON.stringify(entries));
+    } catch (error) {
+      return;
+    }
+  }
+
   async function probeSnapshots(output) {
     appendTerminalLine(output, "probe :: checking same-origin snapshots...", "is-command");
     const results = await Promise.all(snapshotFiles.map(async (file) => {
@@ -209,7 +254,60 @@
       return button;
     });
     controls.append(actionControls, directionControls);
-    shell.append(header, canvas, controls);
+
+    const gameOverPanel = createElement("section", "ops-snake-gameover");
+    gameOverPanel.hidden = true;
+    gameOverPanel.setAttribute("aria-labelledby", "ops-snake-gameover-title");
+    const gameOverCopy = createElement("div", "ops-snake-gameover-copy");
+    const gameOverTitle = createElement("strong", "", "Run complete");
+    gameOverTitle.id = "ops-snake-gameover-title";
+    const gameOverScore = createElement("span", "", "Final score 0");
+    gameOverCopy.append(gameOverTitle, gameOverScore);
+
+    const scoreForm = createElement("form", "ops-snake-score-form");
+    const usernameField = createElement("div", "ops-snake-username-field");
+    const usernameLabel = createElement("label", "", "Operator tag");
+    usernameLabel.htmlFor = "ops-snake-username";
+    const usernameInputRow = createElement("div", "ops-snake-username-row");
+    const usernameInput = createElement("input", "ops-snake-username");
+    usernameInput.id = "ops-snake-username";
+    usernameInput.type = "text";
+    usernameInput.maxLength = 10;
+    usernameInput.minLength = 1;
+    usernameInput.required = true;
+    usernameInput.pattern = "[A-Za-z0-9_-]{1,10}";
+    usernameInput.autocomplete = "nickname";
+    usernameInput.placeholder = "OPERATOR";
+    usernameInput.value = normalizeSnakeUsername(state.snakeUsername);
+    usernameInput.setAttribute("aria-describedby", "ops-snake-username-help");
+    const usernameCount = createElement("span", "ops-snake-username-count", `${usernameInput.value.length}/10`);
+    usernameCount.id = "ops-snake-username-help";
+    usernameInputRow.append(usernameInput, usernameCount);
+    usernameField.append(usernameLabel, usernameInputRow);
+    const submitScoreButton = createElement("button", "ops-snake-score-submit", "Submit score");
+    submitScoreButton.type = "submit";
+    const scoreSubmitStatus = createElement("p", "ops-snake-submit-status", "Enter a tag to join the board.");
+    scoreSubmitStatus.setAttribute("role", "status");
+    scoreSubmitStatus.setAttribute("aria-live", "polite");
+    scoreForm.append(usernameField, submitScoreButton, scoreSubmitStatus);
+    gameOverPanel.append(gameOverCopy, scoreForm);
+
+    const leaderboard = createElement("section", "ops-snake-leaderboard");
+    leaderboard.setAttribute("aria-labelledby", "ops-snake-leaderboard-title");
+    const leaderboardHeader = createElement("div", "ops-snake-leaderboard-header");
+    const leaderboardHeading = createElement("h3", "", "Signal leaderboard");
+    leaderboardHeading.id = "ops-snake-leaderboard-title";
+    const refreshLeaderboardButton = createElement("button", "ops-snake-leaderboard-refresh", "↻");
+    refreshLeaderboardButton.type = "button";
+    refreshLeaderboardButton.title = "Refresh leaderboard";
+    refreshLeaderboardButton.setAttribute("aria-label", "Refresh Snake leaderboard");
+    leaderboardHeader.append(leaderboardHeading, refreshLeaderboardButton);
+    const leaderboardStatus = createElement("p", "ops-snake-leaderboard-status", "Loading live standings...");
+    leaderboardStatus.setAttribute("role", "status");
+    leaderboardStatus.setAttribute("aria-live", "polite");
+    const leaderboardList = createElement("ol", "ops-snake-leaderboard-list");
+    leaderboard.append(leaderboardHeader, leaderboardStatus, leaderboardList);
+    shell.append(header, canvas, controls, gameOverPanel, leaderboard);
 
     const context = canvas.getContext("2d");
     let snake = [];
@@ -221,21 +319,96 @@
     let gameOver = false;
     let destroyed = false;
     let timer = 0;
+    let runNumber = 0;
+    let submissionState = "idle";
+    let leaderboardRequest = 0;
+
+    function renderLeaderboard(entries) {
+      leaderboardList.replaceChildren();
+      if (!entries.length) {
+        leaderboardList.append(createElement("li", "ops-snake-leaderboard-empty", "No scores transmitted yet. First signal gets the crown."));
+        return;
+      }
+      entries.forEach((entry, index) => {
+        const item = createElement("li", `ops-snake-leaderboard-entry${index < 3 ? " is-podium" : ""}`);
+        const rank = createElement("span", "ops-snake-leaderboard-rank", `#${index + 1}`);
+        const username = createElement("strong", "ops-snake-leaderboard-name", entry.username);
+        const points = createElement("span", "ops-snake-leaderboard-points", `${entry.score} pts`);
+        item.append(rank, username, points);
+        leaderboardList.append(item);
+      });
+    }
+
+    async function loadLeaderboard() {
+      const endpoint = configuredApiEndpoint();
+      const request = ++leaderboardRequest;
+      refreshLeaderboardButton.disabled = true;
+      leaderboardList.setAttribute("aria-busy", "true");
+      leaderboardStatus.textContent = "Loading live standings...";
+      if (!endpoint) {
+        leaderboardStatus.textContent = "Leaderboard endpoint unavailable.";
+        refreshLeaderboardButton.disabled = false;
+        leaderboardList.removeAttribute("aria-busy");
+        return;
+      }
+      try {
+        const response = await fetch(`${endpoint}/api/snake/leaderboard?limit=${snakeLeaderboardLimit}`, {
+          cache: "no-store",
+          credentials: "omit",
+          referrerPolicy: "no-referrer"
+        });
+        if (!response.ok) throw new Error(`Leaderboard returned ${response.status}`);
+        const payload = await response.json();
+        const entries = normalizeSnakeLeaderboard(payload?.leaderboard);
+        if (destroyed || request !== leaderboardRequest) return;
+        renderLeaderboard(entries);
+        saveSnakeLeaderboardCache(entries);
+        leaderboardStatus.textContent = entries.length ? `Top ${entries.length} live D1 scores` : "Awaiting the first live score";
+      } catch (error) {
+        if (destroyed || request !== leaderboardRequest) return;
+        const cached = readSnakeLeaderboardCache();
+        renderLeaderboard(cached);
+        leaderboardStatus.textContent = cached.length
+          ? "Live board unavailable · showing last saved standings"
+          : "Live board unavailable in this preview";
+      } finally {
+        if (!destroyed && request === leaderboardRequest) {
+          refreshLeaderboardButton.disabled = false;
+          leaderboardList.removeAttribute("aria-busy");
+        }
+      }
+    }
+
+    function showScoreSubmission() {
+      gameOverPanel.hidden = false;
+      gameOverPanel.classList.remove("is-submitted");
+      gameOverScore.textContent = `Final score ${score}`;
+      submitScoreButton.textContent = "Submit score";
+      submitScoreButton.disabled = score < 1;
+      usernameInput.disabled = false;
+      submissionState = "idle";
+      scoreSubmitStatus.textContent = score < 1
+        ? "Score at least 10 points to enter the leaderboard."
+        : "Choose a 1–10 character tag, then transmit this run.";
+    }
 
     function reset() {
       window.clearTimeout(timer);
+      runNumber += 1;
       snake = [{ x: 7, y: 8 }, { x: 6, y: 8 }, { x: 5, y: 8 }, { x: 4, y: 8 }];
       direction = { x: 1, y: 0 };
       queuedDirection = { x: 1, y: 0 };
       score = 0;
-      running = true;
+      running = false;
       gameOver = false;
       scoreLabel.textContent = "Score 0";
-      status.textContent = "Running";
-      pauseButton.textContent = "Ⅱ";
+      status.textContent = "Ready";
+      pauseButton.textContent = "▶";
+      gameOverPanel.hidden = true;
+      gameOverPanel.classList.remove("is-submitted");
+      submissionState = "idle";
       placeFood();
       draw();
-      schedule();
       canvas.focus();
     }
 
@@ -283,7 +456,17 @@
         context.fillText("SIGNAL LOST", canvas.width / 2, (canvas.height / 2) - 8);
         context.fillStyle = "#f7b955";
         context.font = "700 19px Consolas, monospace";
-        context.fillText(`SCORE ${score} · PRESS R`, canvas.width / 2, (canvas.height / 2) + 34);
+        context.fillText(`SCORE ${score} · SUBMIT BELOW OR PRESS R`, canvas.width / 2, (canvas.height / 2) + 34);
+      } else if (status.textContent === "Ready") {
+        context.fillStyle = "rgba(7, 11, 14, 0.72)";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "#f4f1e8";
+        context.font = "900 30px Consolas, monospace";
+        context.textAlign = "center";
+        context.fillText("PACKET SNAKE", canvas.width / 2, (canvas.height / 2) - 8);
+        context.fillStyle = "#56d0be";
+        context.font = "700 17px Consolas, monospace";
+        context.fillText("PRESS AN ARROW, WASD, OR PLAY", canvas.width / 2, (canvas.height / 2) + 30);
       }
     }
 
@@ -305,6 +488,7 @@
         status.textContent = "Signal lost";
         pauseButton.textContent = "▶";
         draw();
+        showScoreSubmission();
         return;
       }
       snake.unshift(head);
@@ -368,11 +552,73 @@
       if (document.hidden && running) togglePause();
     }
 
+    usernameInput.addEventListener("input", () => {
+      const normalized = normalizeSnakeUsername(usernameInput.value);
+      if (usernameInput.value !== normalized) usernameInput.value = normalized;
+      usernameInput.setCustomValidity("");
+      usernameCount.textContent = `${usernameInput.value.length}/10`;
+    });
+
+    scoreForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!gameOver || score < 1 || submissionState !== "idle") return;
+      const username = normalizeSnakeUsername(usernameInput.value);
+      usernameInput.value = username;
+      usernameCount.textContent = `${username.length}/10`;
+      if (!username || !/^[a-z0-9_-]{1,10}$/i.test(username)) {
+        usernameInput.setCustomValidity("Use 1–10 letters, numbers, underscores, or hyphens.");
+        usernameInput.reportValidity();
+        return;
+      }
+      const endpoint = configuredApiEndpoint();
+      if (!endpoint) {
+        scoreSubmitStatus.textContent = "Score service unavailable.";
+        return;
+      }
+
+      const submittedRun = runNumber;
+      submissionState = "submitting";
+      submitScoreButton.disabled = true;
+      submitScoreButton.textContent = "Transmitting...";
+      scoreSubmitStatus.textContent = "Sending score to the D1 leaderboard...";
+      try {
+        const response = await fetch(`${endpoint}/api/snake/score`, {
+          method: "POST",
+          cache: "no-store",
+          credentials: "omit",
+          referrerPolicy: "no-referrer",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, score: Math.min(3800, Math.max(0, Math.floor(score))) })
+        });
+        if (!response.ok) throw new Error(`Score submission returned ${response.status}`);
+        await response.json().catch(() => null);
+        state.snakeUsername = username;
+        saveState();
+        if (!destroyed && submittedRun === runNumber) {
+          submissionState = "submitted";
+          gameOverPanel.classList.add("is-submitted");
+          submitScoreButton.textContent = "Score submitted";
+          scoreSubmitStatus.textContent = `${username} transmitted ${score} points.`;
+        }
+        await loadLeaderboard();
+      } catch (error) {
+        if (!destroyed && submittedRun === runNumber) {
+          submissionState = "idle";
+          submitScoreButton.disabled = false;
+          submitScoreButton.textContent = "Retry score";
+          scoreSubmitStatus.textContent = "Transmission failed. Your run is still available to retry.";
+        }
+      }
+    });
+
     canvas.addEventListener("keydown", onKeyDown);
     pauseButton.addEventListener("click", togglePause);
     restartButton.addEventListener("click", reset);
+    refreshLeaderboardButton.addEventListener("click", loadLeaderboard);
     directionButtons.forEach((button) => button.addEventListener("click", () => setDirection(Number(button.dataset.x), Number(button.dataset.y))));
     document.addEventListener("visibilitychange", onVisibilityChange);
+    renderLeaderboard(readSnakeLeaderboardCache());
+    void loadLeaderboard();
     reset();
 
     return {
@@ -404,6 +650,10 @@
     input.autocomplete = "off";
     input.spellcheck = false;
     input.setAttribute("aria-label", "Sandbox command");
+    const submit = createElement("button", "ops-console-submit", "›");
+    submit.type = "submit";
+    submit.title = "Run command";
+    submit.setAttribute("aria-label", "Run sandbox command");
     const history = [];
     let historyIndex = 0;
     const snakeHost = createElement("div", "ops-snake-host");
@@ -497,7 +747,7 @@
       }
     });
 
-    form.append(prompt, input);
+    form.append(prompt, input, submit);
     dialog.addEventListener("close", closeSnake, { once: true });
     content.append(output, form, snakeHost);
     unlock("console");
@@ -733,6 +983,28 @@
     }
   }
 
+  function bindDelegatedMultiTap(selector, tapsNeeded, timeout, callback) {
+    let taps = 0;
+    let timer = 0;
+    document.addEventListener("click", (event) => {
+      const target = event.target?.closest?.(selector);
+      if (!target) return;
+      taps += 1;
+      window.clearTimeout(timer);
+      target.classList.toggle("is-tech-primed", taps > 1);
+      if (taps >= tapsNeeded) {
+        taps = 0;
+        target.classList.remove("is-tech-primed");
+        callback();
+        return;
+      }
+      timer = window.setTimeout(() => {
+        taps = 0;
+        target.classList.remove("is-tech-primed");
+      }, timeout);
+    });
+  }
+
   function normalizeLanguageLabel(value) {
     return String(value || "").replace(/\s+\d+(?:\.\d+)?%$/, "").trim().toLowerCase();
   }
@@ -778,10 +1050,7 @@
   }
 
   function init() {
-    const brand = document.getElementById("brand-name");
-    if (brand) {
-      bindMultiTap(brand, 5, 3600, openOpsConsole, false);
-    }
+    bindDelegatedMultiTap("#brand-name", 5, 3600, openOpsConsole);
 
     const footerNote = document.querySelector(".footer-note");
     if (footerNote) {
