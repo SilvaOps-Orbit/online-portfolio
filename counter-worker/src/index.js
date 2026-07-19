@@ -67,15 +67,24 @@ async function requestCounter(env, action) {
 
   const suffix = action === "up" ? "/up" : "";
   const url = `https://api.counterapi.dev/v2/${encodeURIComponent(env.COUNTERAPI_WORKSPACE)}/${encodeURIComponent(env.COUNTERAPI_COUNTER)}${suffix}`;
+  const token = String(env.COUNTERAPI_TOKEN).trim();
+  if (!token || /[^\x21-\x7e]/.test(token)) throw new CounterProviderError("token-format");
+
+  let headers;
+  try {
+    headers = new Headers({
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`
+    });
+  } catch {
+    throw new CounterProviderError("headers");
+  }
+
   let response;
   try {
     response = await fetch(url, {
       method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${env.COUNTERAPI_TOKEN}`
-      },
-      redirect: "error"
+      headers
     });
   } catch {
     throw new CounterProviderError("network");
