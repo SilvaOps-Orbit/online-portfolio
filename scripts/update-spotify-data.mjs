@@ -163,6 +163,31 @@ function withLastValues(output, previous) {
     }
   }
 
+  if (previous.insights) {
+    if (!result.insights || !Object.keys(result.insights).length) {
+      result.insights = previous.insights;
+      result.stale = true;
+    } else {
+      const currentTaste = result.insights.taste || {};
+      const previousTaste = previous.insights.taste || {};
+      ["shortTerm", "mediumTerm", "longTerm"].forEach((range) => {
+        if (!currentTaste[range]?.artists?.length && previousTaste[range]?.artists?.length) {
+          currentTaste[range] = previousTaste[range];
+        }
+      });
+      result.insights.taste = currentTaste;
+      if (!result.insights.recentlyPlayed?.length && previous.insights.recentlyPlayed?.length) {
+        result.insights.recentlyPlayed = previous.insights.recentlyPlayed;
+      }
+      if (!result.insights.discovery?.length && previous.insights.discovery?.length) {
+        result.insights.discovery = previous.insights.discovery;
+      }
+      if (!result.insights.playlistAnalytics?.sampledTracks && previous.insights.playlistAnalytics?.sampledTracks) {
+        result.insights.playlistAnalytics = previous.insights.playlistAnalytics;
+      }
+    }
+  }
+
   if (!result.profile?.url && previous.profile) {
     result.profile = previous.profile;
     result.stale = true;
@@ -550,6 +575,127 @@ async function loadPlaylists(token, profileId) {
   return playlists;
 }
 
+function toInsightTrack(item, extra = {}) {
+  if (!item) return null;
+  return {
+    id: item.id || "",
+    title: item.name || "Spotify track",
+    meta: (item.artists || []).map((artist) => artist.name).filter(Boolean).join(", ") || "Spotify",
+    artists: (item.artists || []).map((artist) => artist.name).filter(Boolean),
+    image: imageFrom(item.album?.images || item.images),
+    url: externalUrl(item),
+    releaseDate: item.album?.release_date || item.release_date || "",
+    durationMs: Number(item.duration_ms || 0),
+    popularity: Number(item.popularity || 0),
+    ...extra
+  };
+}
+
+function toInsightArtist(item) {
+  return {
+    id: item.id || "",
+    title: item.name || "Spotify artist",
+    meta: Array.isArray(item.genres) && item.genres.length ? item.genres.slice(0, 2).join(" / ") : "Top artist",
+    genres: item.genres || [],
+    image: imageFrom(item.images),
+    url: externalUrl(item),
+    popularity: Number(item.popularity || 0)
+  };
+}
+
+async function loadTaste(token) {
+  const ranges = [["shortTerm", "short_term"], ["mediumTerm", "medium_term"], ["longTerm", "long_term"]];
+  const output = {};
+  let successfulRanges = 0;
+  await Promise.all(ranges.map(async ([key, timeRange]) => {
+    try {
+      const [artists, tracks] = await Promise.all([
+        spotifyGet("me/top/artists", token, { time_range: timeRange, limit: 10 }),
+        spotifyGet("me/top/tracks", token, { time_range: timeRange, limit: 10 })
+      ]);
+      output[key] = {
+        artists: (artists?.items || []).map(toInsightArtist),
+        tracks: (tracks?.items || []).map((item) => toInsightTrack(item)).filter(Boolean)
+      };
+      successfulRanges += 1;
+    } catch (error) {
+      output[key] = { artists: [], tracks: [] };
+    }
+  }));
+  return { ranges: output, ready: successfulRanges > 0 };
+}
+
+async function loadRecentlyPlayed(token) {
+  try {
+    const page = await spotifyGet("me/player/recently-played", token, { limit: 20 });
+    return (page?.items || []).map((entry) => toInsightTrack(entry.track, { playedAt: entry.played_at || "" })).filter(Boolean);
+  } catch (error) {
+    return [];
+  }
+}
+
+async function loadPlaylistAnalytics(token, playlists, taste) {
+  const sample = playlists.slice(0, 8);
+  const artistCounts = new Map();
+  const decadeCounts = new Map();
+  let sampledTracks = 0;
+  let durationMs = 0;
+  await Promise.all(sample.map(async (playlist) => {
+    try {
+      const page = await spotifyGet(`playlists/${encodeURIComponent(playlist.id)}/items`, token, {
+        limit: 100,
+        fields: "items(item(id,name,duration_ms,artists(name),album(release_date)))"
+      });
+      (page?.items || []).forEach((entry) => {
+        const track = entry.item || entry.track;
+        if (!track) return;
+        sampledTracks += 1;
+        durationMs += Number(track.duration_ms || 0);
+        (track.artists || []).forEach((artist) => artist.name && artistCounts.set(artist.name, (artistCounts.get(artist.name) || 0) + 1));
+        const year = Number(String(track.album?.release_date || "").slice(0, 4));
+        if (year) {
+          const decade = `${Math.floor(year / 10) * 10}s`;
+          decadeCounts.set(decade, (decadeCounts.get(decade) || 0) + 1);
+        }
+      });
+    } catch (error) {
+      // A private or unavailable playlist should not block the rest of the snapshot.
+    }
+  }));
+  const genreCounts = new Map();
+  Object.values(taste || {}).flatMap((range) => range.artists || []).forEach((artist) => {
+    (artist.genres || []).forEach((genre) => genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1));
+  });
+  const sorted = (map) => [...map.entries()].sort((a, b) => b[1] - a[1]);
+  return {
+    playlistCount: playlists.length,
+    trackCount: playlists.reduce((sum, playlist) => sum + Number(String(playlist.meta || "").match(/\d+/)?.[0] || 0), 0),
+    estimatedHours: Number((durationMs / 3600000).toFixed(1)),
+    recurringArtists: sorted(artistCounts).slice(0, 8).map(([title, count]) => ({ title, meta: `${count} sampled appearances`, count })),
+    genres: sorted(genreCounts).slice(0, 8).map(([label, value]) => ({ label, value })),
+    decades: sorted(decadeCounts).map(([label, value]) => ({ label, value })),
+    sampledPlaylists: sample.length,
+    sampledTracks
+  };
+}
+
+async function loadDiscovery(token, taste) {
+  const artists = taste?.shortTerm?.artists?.length ? taste.shortTerm.artists : taste?.mediumTerm?.artists || [];
+  const releases = [];
+  await Promise.all(artists.slice(0, 6).map(async (artist) => {
+    if (!artist.id) return;
+    try {
+      const page = await spotifyGet(`artists/${encodeURIComponent(artist.id)}/albums`, token, { include_groups: "album,single", market: "AU", limit: 4 });
+      const newest = (page?.items || []).sort((a, b) => String(b.release_date || "").localeCompare(String(a.release_date || "")))[0];
+      const release = toInsightTrack(newest, { meta: `${artist.title} · ${newest?.album_type || "release"}` });
+      if (release) releases.push(release);
+    } catch (error) {
+      // Discovery is additive; the rest of Spotify should still publish.
+    }
+  }));
+  return releases.sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
+}
+
 async function main() {
   const previous = await readExistingData();
 
@@ -567,6 +713,12 @@ async function main() {
     spotifyGet("me/player", token, { additional_types: "track,episode" }).catch(() => null)
   ]);
   const playlists = await loadPlaylists(token, profile?.id);
+  const tasteResult = await loadTaste(token);
+  const [recentlyPlayed, playlistAnalytics, discovery] = await Promise.all([
+    loadRecentlyPlayed(token),
+    loadPlaylistAnalytics(token, playlists, tasteResult.ranges),
+    loadDiscovery(token, tasteResult.ranges)
+  ]);
   const generatedAt = new Date().toISOString();
   const selectedPlayback = selectActivePlayback(currentlyPlaying, playbackState);
   const current = await toCurrentTrack(selectedPlayback, token, generatedAt);
@@ -589,7 +741,14 @@ async function main() {
       },
       current: current || idleTrack(previous),
       lastTrack,
-      playlists
+      playlists,
+      insights: {
+        taste: tasteResult.ranges,
+        recentlyPlayed,
+        playlistAnalytics,
+        discovery,
+        scopesReady: tasteResult.ready && recentlyPlayed.length > 0
+      }
     },
     previous
   );

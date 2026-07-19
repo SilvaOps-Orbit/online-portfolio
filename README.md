@@ -169,7 +169,7 @@ $env:SPOTIFY_AUTH_CODE="the-code-from-the-url"
 The scopes I use:
 
 ```text
-user-read-currently-playing user-read-playback-state playlist-read-private
+user-read-currently-playing user-read-playback-state user-read-recently-played user-top-read user-follow-read playlist-read-private
 ```
 
 If Spotify starts saying `invalid_grant`, redo the auth flow and replace `SPOTIFY_REFRESH_TOKEN`.

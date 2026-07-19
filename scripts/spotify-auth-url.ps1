@@ -1,7 +1,7 @@
 param(
   [string]$ClientId = $env:SPOTIFY_CLIENT_ID,
   [string]$RedirectUri = $(if ($env:SPOTIFY_REDIRECT_URI) { $env:SPOTIFY_REDIRECT_URI } else { "http://127.0.0.1:3000" }),
-  [string]$Scopes = $(if ($env:SPOTIFY_SCOPES) { $env:SPOTIFY_SCOPES } else { "user-read-currently-playing user-read-playback-state playlist-read-private" })
+  [string]$Scopes = $(if ($env:SPOTIFY_SCOPES) { $env:SPOTIFY_SCOPES } else { "user-read-currently-playing user-read-playback-state user-read-recently-played user-top-read user-follow-read playlist-read-private" })
 )
 
 Set-StrictMode -Version Latest

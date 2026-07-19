@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
-import { CalendarClock, Gamepad2, Keyboard, Mouse, TrendingUp, Trophy } from "lucide-react";
+import { CalendarClock, Dice5, Gamepad2, Grid3X3, Keyboard, LibraryBig, Mouse, Sparkles, Target, TrendingUp, Trophy } from "lucide-react";
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
 import { getPortfolioConfig } from "./portfolio-types";
@@ -15,6 +15,7 @@ function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData
     ...live,
     profile: { ...(fallback.profile || {}), ...(live.profile || {}) },
     replay: { ...(fallback.replay || {}), ...(live.replay || {}) },
+    insights: { ...(fallback.insights || {}), ...(live.insights || {}) },
     accountValue: fallback.accountValue?.manual ? fallback.accountValue : { ...(fallback.accountValue || {}), ...(live.accountValue || {}) }
   };
   (["currentlyPlaying", "mostPlayed", "achievements", "completedGames", "storeHighlights", "preorderWatch", "stats"] as const).forEach((key) => {
@@ -22,6 +23,44 @@ function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData
     if (!Array.isArray(liveValue) || !liveValue.length) merged[key] = fallback[key] as never;
   });
   return merged;
+}
+
+type SteamInsightView = "pulse" | "cabinet" | "playstyle" | "picker";
+
+function InsightMeterList({ items = [] }: { items?: Array<{ label?: string; value?: number; note?: string }> }) {
+  const max = Math.max(1, ...items.map((item) => Number(item.value || 0)));
+  return <div className="insight-meter-list">{items.slice(0, 7).map((item) => <div key={item.label}><span><b>{item.label}</b><small>{item.note || Number(item.value || 0).toLocaleString("en-AU")}</small></span><i><em style={{ width: `${Math.max(7, Number(item.value || 0) / max * 100)}%` }} /></i></div>)}</div>;
+}
+
+function SteamInsightsDeck({ steam }: { steam: SteamData }) {
+  const [active, setActive] = useState<SteamInsightView>("pulse");
+  const [pickIndex, setPickIndex] = useState(0);
+  const insights = steam.insights || {};
+  const recent = insights.recentGames?.length ? insights.recentGames : (steam.currentlyPlaying || []).filter((item) => item.meta !== "Playing now");
+  const owned = insights.ownedGames?.length ? insights.ownedGames : steam.mostPlayed || [];
+  const cabinet = insights.rareAchievements?.length ? insights.rareAchievements : steam.achievements || [];
+  const pickerPool = owned.filter((game) => Number(game.playtimeMinutes || 0) < 1800).length ? owned.filter((game) => Number(game.playtimeMinutes || 0) < 1800) : owned;
+  const pick = pickerPool[pickIndex % Math.max(1, pickerPool.length)];
+  const recentMinutes = recent.reduce((sum, item) => sum + Number(item.recentMinutes || 0), 0);
+  const pulse = Array.from({ length: 14 }, (_, index) => {
+    const game = recent[index % Math.max(1, recent.length)];
+    const value = recent.length ? Math.max(1, Math.round(Number(game?.recentMinutes || recentMinutes / recent.length || 0) / 60)) : 0;
+    return { value, label: game?.title || game?.name || "No activity" };
+  });
+  const tabs: Array<{ id: SteamInsightView; label: string; icon: typeof LibraryBig }> = [
+    { id: "pulse", label: "Library Pulse", icon: Grid3X3 },
+    { id: "cabinet", label: "Rare Cabinet", icon: Trophy },
+    { id: "playstyle", label: "Playstyle", icon: Gamepad2 },
+    { id: "picker", label: "Pick a Game", icon: Dice5 }
+  ];
+  const pulseMax = Math.max(1, ...pulse.map((item) => item.value));
+  const renderPanel = () => {
+    if (active === "pulse") return <div className="steam-pulse-view"><div className="insight-stat-row"><div><strong>{recent.length}</strong><span>recent games</span></div><div><strong>{Math.round(recentMinutes / 60)}</strong><span>hours in 2 weeks</span></div><div><strong>{steam.replay?.longestStreak || 0}</strong><span>day Replay streak</span></div></div><div className="steam-pulse-grid"><div><div className="insight-subhead"><span>14-slot activity signal</span><small>relative recent-game intensity, not a daily calendar</small></div><div className="steam-heatmap" aria-label="Recent library activity signal">{pulse.map((item, index) => <span key={index} title={`${item.label}: ${item.value} hour signal`} style={{ "--pulse": item.value / pulseMax } as CSSProperties} />)}</div></div><div><div className="insight-subhead"><span>Genre mix</span><small>{insights.metadataSampleSize ? `${insights.metadataSampleSize} games sampled` : "saved metadata"}</small></div><InsightMeterList items={insights.genreMix || []} /></div></div></div>;
+    if (active === "cabinet") return <div className="achievement-cabinet"><div className="insight-subhead"><span>Achievement cabinet</span><small>lowest global unlock rate first when Steam rarity is available</small></div><div className="achievement-cabinet-grid">{cabinet.slice(0, 6).map((item, index) => <article key={`${item.appid}-${item.title}-${index}`}><SteamArtwork item={item} title={item.title || "Achievement"} className="cabinet-art" /><span><strong>{item.title}</strong><small>{item.meta}</small><b>{item.achievementPercent !== undefined ? `${item.achievementPercent.toFixed(1)}% global unlock` : item.note}</b></span></article>)}</div></div>;
+    if (active === "playstyle") return <div className="steam-playstyle"><div className="steam-playstyle-visual"><Gamepad2 aria-hidden="true" /><span><strong>{Number(steam.replay?.controllerPercent || 0)}%</strong><small>controller playtime in Replay</small></span></div><div><div className="insight-subhead"><span>Playstyle profile</span><small>sampled Store categories + public playtime</small></div><InsightMeterList items={insights.playstyle || [{ label: "Controller", value: Number(steam.replay?.controllerPercent || 0), note: `${Number(steam.replay?.controllerPercent || 0)}% of Replay` }, { label: "Keyboard, mouse + other", value: 100 - Number(steam.replay?.controllerPercent || 0), note: `${100 - Number(steam.replay?.controllerPercent || 0)}% of Replay` }]} /></div></div>;
+    return <div className="game-picker"><div className="game-picker-stage">{pick ? <><SteamArtwork item={pick} title={pick.title || pick.name || "Steam game"} className="game-picker-art" /><span><small>THE SELECTOR CHOSE</small><strong>{pick.title || pick.name}</strong><b>{pick.genres?.slice(0, 2).join(" / ") || pick.meta || "From the owned library snapshot"}</b>{pick.note && <em>{pick.note}</em>}</span></> : <p className="insight-empty">Owned-game choices will appear after the next Steam refresh.</p>}</div><button className="button primary game-picker-button" type="button" onClick={() => setPickIndex((value) => pickerPool.length ? (value + 1 + Math.floor(Math.random() * Math.max(1, pickerPool.length - 1))) % pickerPool.length : 0)}><Dice5 aria-hidden="true" /> Roll another</button></div>;
+  };
+  return <section className="insight-deck steam-insight-deck" aria-labelledby="steam-insights-title"><div className="insight-deck-heading"><div><span className="steam-label"><Sparkles aria-hidden="true" /> Library intelligence</span><h3 id="steam-insights-title">Four ways into the library</h3><p>Activity, rarity, playstyle, and one decisive answer to “what should I play?”</p></div></div><div className="insight-tabs" role="tablist" aria-label="Steam insight views">{tabs.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className="insight-panel" role="tabpanel" key={active}>{renderPanel()}</div></section>;
 }
 
 function formatDate(value?: string): string {
@@ -204,6 +243,7 @@ function SteamActivityDashboard() {
           <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" pageSize={3} /></article>
         </div>
       </div>
+      <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>
     </>

@@ -20,6 +20,11 @@ const islands: IslandDefinition[] = [
     load: async () => (await import("./SteamActivityDashboard")).mountSteamActivityDashboard
   },
   {
+    id: "react-spotify-insights-root",
+    label: "Spotify insights dashboard",
+    load: async () => (await import("./SpotifyInsightsDashboard")).mountSpotifyInsightsDashboard
+  },
+  {
     id: "react-github-dashboard-root",
     label: "GitHub insights dashboard",
     load: async () => (await import("./GitHubInsightsDashboard")).mountGitHubInsightsDashboard

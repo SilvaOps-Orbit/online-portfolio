@@ -101,6 +101,21 @@ export interface SteamItem {
   tag?: string;
   category?: string;
   editions?: Array<string | { label?: string; name?: string; price?: string }>;
+  playtimeMinutes?: number;
+  recentMinutes?: number;
+  genres?: string[];
+  categories?: string[];
+  controllerSupport?: string;
+  achievementPercent?: number;
+}
+
+export interface SteamInsights {
+  ownedGames?: SteamItem[];
+  recentGames?: SteamItem[];
+  genreMix?: Array<{ label?: string; value?: number }>;
+  playstyle?: Array<{ label?: string; value?: number; note?: string }>;
+  rareAchievements?: SteamItem[];
+  metadataSampleSize?: number;
 }
 
 export interface SteamReplayGame extends SteamItem {
@@ -149,6 +164,59 @@ export interface SteamData {
   storeHighlights?: SteamItem[];
   preorderWatch?: SteamItem[];
   replay?: SteamReplay;
+  insights?: SteamInsights;
+}
+
+export interface SpotifyItem {
+  id?: string;
+  title?: string;
+  name?: string;
+  meta?: string;
+  note?: string;
+  image?: string;
+  url?: string;
+  artists?: string[];
+  genres?: string[];
+  releaseDate?: string;
+  durationMs?: number;
+  playedAt?: string;
+  popularity?: number;
+  count?: number;
+}
+
+export interface SpotifyRange {
+  artists?: SpotifyItem[];
+  tracks?: SpotifyItem[];
+}
+
+export interface SpotifyInsights {
+  taste?: Record<string, SpotifyRange>;
+  recentlyPlayed?: SpotifyItem[];
+  playlistAnalytics?: {
+    playlistCount?: number;
+    trackCount?: number;
+    estimatedHours?: number;
+    recurringArtists?: SpotifyItem[];
+    genres?: Array<{ label?: string; value?: number }>;
+    decades?: Array<{ label?: string; value?: number }>;
+    sampledPlaylists?: number;
+    sampledTracks?: number;
+  };
+  discovery?: SpotifyItem[];
+  scopesReady?: boolean;
+}
+
+export interface SpotifyData {
+  summary?: string;
+  status?: string;
+  generatedAt?: string;
+  lastGoodAt?: string;
+  stale?: boolean;
+  profile?: { id?: string; displayName?: string; url?: string; image?: string };
+  current?: SpotifyItem & Record<string, unknown>;
+  lastTrack?: SpotifyItem & Record<string, unknown>;
+  playlists?: SpotifyItem[];
+  insights?: SpotifyInsights;
 }
 
 export interface GitHubRepository {
@@ -185,6 +253,7 @@ export interface PortfolioConfig {
   profile?: { githubUsername?: string };
   careerRoadmap?: CareerRoadmapConfig;
   steam?: SteamData;
+  spotify?: SpotifyData;
   security?: SecurityItem[];
   securitySnapshot?: { label?: string; posture?: string; summary?: string };
   githubRepoTechnologies?: Record<string, string[]>;

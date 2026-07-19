@@ -371,6 +371,20 @@ function withLastValues(output, previous) {
     result.replay = previous.replay;
   }
 
+  if (previous.insights) {
+    if (!result.insights) {
+      result.insights = previous.insights;
+      result.stale = true;
+    } else {
+      ["ownedGames", "recentGames", "genreMix", "playstyle", "rareAchievements"].forEach((key) => {
+        if (!result.insights[key]?.length && previous.insights[key]?.length) {
+          result.insights[key] = previous.insights[key];
+        }
+      });
+      result.insights.metadataSampleSize ||= previous.insights.metadataSampleSize;
+    }
+  }
+
   if ((!Array.isArray(result.stats) || !result.stats.length) && Array.isArray(previous.stats) && previous.stats.length) {
     result.stats = previous.stats;
     result.stale = true;
@@ -474,7 +488,7 @@ async function loadAchievementCollections(ownedGames) {
 
   for (const game of gamesToScan) {
     try {
-      const [player, schema] = await Promise.all([
+      const [player, schema, globalPercentages] = await Promise.all([
         steamApi("ISteamUserStats/GetPlayerAchievements/v0001/", {
           steamid: steamId,
           appid: game.appid,
@@ -483,12 +497,16 @@ async function loadAchievementCollections(ownedGames) {
         steamApi("ISteamUserStats/GetSchemaForGame/v2/", {
           appid: game.appid,
           l: "english"
+        }).catch(() => null),
+        steamApi("ISteamUserStats/GetGlobalAchievementPercentagesForApp/v0002/", {
+          gameid: game.appid
         }).catch(() => null)
       ]);
 
       const playerAchievements = player?.playerstats?.achievements || [];
       const schemaAchievements = schema?.game?.availableGameStats?.achievements || [];
       const schemaByName = new Map(schemaAchievements.map((achievement) => [achievement.name, achievement]));
+      const globalByName = new Map((globalPercentages?.achievementpercentages?.achievements || []).map((achievement) => [achievement.name, Number(achievement.percent || 0)]));
       const achievementTotal = schemaAchievements.length || playerAchievements.length;
       const unlocked = playerAchievements.filter(achievementUnlocked);
 
@@ -522,6 +540,7 @@ async function loadAchievementCollections(ownedGames) {
           note: unlocktime ? `Unlocked ${formatDate(unlocktime)}` : "Unlocked",
           image: details.icon || headerImage(game.appid),
           url: gameUrl(game.appid),
+          achievementPercent: globalByName.get(key),
           unlocktime
         });
       });
@@ -535,12 +554,74 @@ async function loadAchievementCollections(ownedGames) {
 
   return {
     achievements: visibleAchievements.map(({ unlocktime, ...achievement }) => achievement),
+    rareAchievements: [...visibleAchievements]
+      .filter((achievement) => Number.isFinite(achievement.achievementPercent))
+      .sort((a, b) => Number(a.achievementPercent) - Number(b.achievementPercent))
+      .slice(0, 12)
+      .map(({ unlocktime, ...achievement }) => achievement),
     completedGames: completedGames.sort((a, b) => Number.parseInt(b.meta, 10) - Number.parseInt(a.meta, 10)),
     stats: [
       { label: "Achievement Games", value: new Intl.NumberFormat("en-US").format(achievementGameCount), note: "Visible achievement data" },
       { label: "Achievements", value: `${new Intl.NumberFormat("en-US").format(unlockedAchievements)}/${new Intl.NumberFormat("en-US").format(totalAchievements)}` },
       { label: "100% Games", value: new Intl.NumberFormat("en-US").format(completedGames.length) }
     ]
+  };
+}
+
+async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
+  const sample = [...ownedGames]
+    .filter((game) => game.appid)
+    .sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0))
+    .slice(0, 24);
+  const details = await Promise.all(sample.map(async (game) => ({ game, details: await loadAppDetails(game.appid) })));
+  const metadata = new Map();
+  const genreCounts = new Map();
+  let sampledMinutes = 0;
+  let singleMinutes = 0;
+  let multiMinutes = 0;
+  let controllerMinutes = 0;
+
+  details.forEach(({ game, details: app }) => {
+    if (!app) return;
+    const genres = (app.genres || []).map((genre) => genre.description).filter(Boolean);
+    const categories = (app.categories || []).map((category) => category.description).filter(Boolean);
+    const minutes = Number(game.playtime_forever || 0);
+    sampledMinutes += minutes;
+    genres.forEach((genre) => genreCounts.set(genre, (genreCounts.get(genre) || 0) + minutes));
+    if (categories.some((category) => /single-player/i.test(category))) singleMinutes += minutes;
+    if (categories.some((category) => /multi-player|co-op/i.test(category))) multiMinutes += minutes;
+    if (categories.some((category) => /controller/i.test(category))) controllerMinutes += minutes;
+    metadata.set(String(game.appid), {
+      genres,
+      categories,
+      controllerSupport: app.controller_support || (categories.some((category) => /controller/i.test(category)) ? "supported" : "")
+    });
+  });
+
+  const percent = (value) => sampledMinutes ? Math.round(value / sampledMinutes * 100) : 0;
+  const toOwned = (game) => ({
+    appid: game.appid,
+    title: game.name || "Steam game",
+    meta: formatHours(game.playtime_forever),
+    note: Number(game.playtime_forever || 0) < 120 ? "Low-playtime library pick" : "Owned library game",
+    image: headerImage(game.appid),
+    url: gameUrl(game.appid),
+    playtimeMinutes: Number(game.playtime_forever || 0),
+    recentMinutes: Number(game.playtime_2weeks || 0),
+    ...(metadata.get(String(game.appid)) || {})
+  });
+
+  return {
+    ownedGames: ownedGames.map(toOwned),
+    recentGames: recentGames.map(toOwned),
+    genreMix: [...genreCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, minutes]) => ({ label, value: Math.round(minutes / 60) })),
+    playstyle: [
+      { label: "Single-player", value: percent(singleMinutes), note: `${percent(singleMinutes)}% of sampled playtime` },
+      { label: "Multiplayer / co-op", value: percent(multiMinutes), note: `${percent(multiMinutes)}% of sampled playtime` },
+      { label: "Controller-friendly", value: percent(controllerMinutes), note: `${percent(controllerMinutes)}% of sampled playtime` }
+    ],
+    rareAchievements: achievementData.rareAchievements || [],
+    metadataSampleSize: metadata.size
   };
 }
 
@@ -589,6 +670,7 @@ async function main() {
     const recentMinutes = recentGames.reduce((sum, game) => sum + Number(game.playtime_2weeks || 0), 0);
     const mostPlayed = [...ownedGames].sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0)).slice(0, 6);
     const achievementData = await loadAchievementCollections(ownedGames);
+    const insights = await loadLibraryInsights(ownedGames, recentGames, achievementData);
 
     const generatedAt = new Date().toISOString();
     const activeAppId = profile?.gameid ? String(profile.gameid) : "";
@@ -633,6 +715,7 @@ async function main() {
       mostPlayed: mostPlayed.map((game) => toGame(game, `${formatHours(game.playtime_windows_forever || 0)} on Windows`)),
       achievements: achievementData.achievements,
       completedGames: achievementData.completedGames,
+      insights,
       storeHighlights,
       preorderWatch
     };
