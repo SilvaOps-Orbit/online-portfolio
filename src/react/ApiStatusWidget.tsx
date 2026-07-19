@@ -1,7 +1,13 @@
 import { Component, StrictMode, type ErrorInfo, type PropsWithChildren, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { StatusCard } from "./StatusCard";
-import { createCheckingStatuses, loadIntegrationStatuses, type IntegrationStatus } from "./status-utils";
+import {
+  createCheckingStatuses,
+  loadIntegrationStatuses,
+  loadProviderStatuses,
+  type IntegrationStatus,
+  type ProviderStatus
+} from "./status-utils";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -32,6 +38,7 @@ class WidgetErrorBoundary extends Component<PropsWithChildren, ErrorBoundaryStat
 
 function ApiStatusWidget() {
   const [statuses, setStatuses] = useState<IntegrationStatus[]>(createCheckingStatuses);
+  const [providers, setProviders] = useState<ProviderStatus[]>([]);
   const [refreshKey, setRefreshKey] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(true);
   const [lastCheckedAt, setLastCheckedAt] = useState<Date | null>(null);
@@ -39,9 +46,10 @@ function ApiStatusWidget() {
   useEffect(() => {
     const controller = new AbortController();
     setIsRefreshing(true);
-    loadIntegrationStatuses(controller.signal)
-      .then((nextStatuses) => {
+    Promise.all([loadIntegrationStatuses(controller.signal), loadProviderStatuses(controller.signal)])
+      .then(([nextStatuses, nextProviders]) => {
         setStatuses(nextStatuses);
+        setProviders(nextProviders);
         setLastCheckedAt(new Date());
       })
       .catch((error: unknown) => {
@@ -71,6 +79,15 @@ function ApiStatusWidget() {
   const respondingCount = statuses.filter(
     (status) => !["checking", "offline"].includes(status.state)
   ).length;
+  const externallyMonitored = providers.filter((provider) => provider.coverage === "external");
+  const externalUp = externallyMonitored.filter((provider) => provider.status === "up").length;
+
+  const providerLabel = (provider: ProviderStatus) => {
+    if (provider.coverage === "external") return provider.status === "up" ? "Up" : provider.status;
+    if (provider.coverage === "snapshot") return provider.status === "up" ? "Snapshot OK" : "Snapshot stale";
+    if (provider.coverage === "setup") return "Setup";
+    return "On use";
+  };
 
   return (
     <section className="react-api-pulse" aria-labelledby="react-api-pulse-title">
@@ -87,6 +104,25 @@ function ApiStatusWidget() {
       <div className="react-api-grid" aria-live="polite" aria-busy={isRefreshing}>
         {statuses.map((status) => <StatusCard key={status.id} status={status} />)}
       </div>
+      {providers.length ? (
+        <section className="provider-pulse" aria-labelledby="provider-pulse-title">
+          <div className="provider-pulse-heading">
+            <div>
+              <h5 id="provider-pulse-title">Provider network</h5>
+              <p>{externalUp} of {externallyMonitored.length} API Status Check providers report up. Other services are labelled by their real check method.</p>
+            </div>
+            <a href="https://apistatuscheck.com/" target="_blank" rel="noopener noreferrer">API Status Check</a>
+          </div>
+          <div className="provider-pulse-grid">
+            {providers.map((provider) => {
+              const content = <><i aria-hidden="true" /><span><strong>{provider.label}</strong><small>{providerLabel(provider)}</small></span></>;
+              return provider.statusUrl
+                ? <a key={provider.id} className={`provider-pulse-item is-${provider.status}`} href={provider.statusUrl} target="_blank" rel="noopener noreferrer" title={`${provider.role}. ${provider.source}`}>{content}</a>
+                : <span key={provider.id} className={`provider-pulse-item is-${provider.status}`} title={`${provider.role}. ${provider.source}`}>{content}</span>;
+            })}
+          </div>
+        </section>
+      ) : null}
       <p className="react-api-pulse-footer">
         {lastCheckedAt ? `Checked ${lastCheckedAt.toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit" })}.` : "Initial check in progress."}
         {" "}Only public endpoints and generated snapshots are read in the browser.

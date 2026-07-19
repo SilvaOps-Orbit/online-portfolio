@@ -2680,7 +2680,7 @@
       return;
     }
 
-    const preferredRows = ["Breaking Worldwide", "Gaming", "Finance", "Australia"];
+    const preferredRows = ["Breaking Worldwide", "Gaming", "Technology", "Finance", "Australia"];
     const grouped = items.reduce((groups, item) => {
       const category = String(item.category || "Other");
       if (!groups.has(category)) {
@@ -2741,13 +2741,22 @@
 
       const footer = createElement("div", "news-footer");
       footer.append(createElement("span", "news-source", String(item.source || "Source pending")));
+      const footerActions = createElement("div", "news-footer-actions");
       if (item.url) {
         const link = createElement("a", "text-link", "Read more");
         link.href = safeUrl(item.url);
         link.target = "_blank";
         link.rel = "noopener noreferrer";
-        footer.append(link);
+        footerActions.append(link);
       }
+      if (item.discussionUrl && item.discussionUrl !== item.url) {
+        const discussionLink = createElement("a", "text-link", "HN discussion");
+        discussionLink.href = safeUrl(item.discussionUrl);
+        discussionLink.target = "_blank";
+        discussionLink.rel = "noopener noreferrer";
+        footerActions.append(discussionLink);
+      }
+      footer.append(footerActions);
       card.append(footer);
       return card;
     }
@@ -3722,22 +3731,83 @@
 
   function bindNavigation() {
     const nav = document.getElementById("site-nav");
+    const menu = document.getElementById("header-menu");
     const toggle = document.getElementById("nav-toggle");
     const header = qs(".site-header");
+    const languageSelect = document.getElementById("language-select");
+    let measureFrame = 0;
 
-    if (toggle && nav) {
+    const setMenuOpen = (open) => {
+      if (!toggle || !menu || !header) return;
+      const isOpen = Boolean(open && header.classList.contains("is-compact-menu"));
+      menu.classList.toggle("is-open", isOpen);
+      menu.setAttribute("aria-hidden", String(header.classList.contains("is-compact-menu") && !isOpen));
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      toggle.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+      toggle.title = isOpen ? "Close menu" : "Open menu";
+    };
+
+    const measureNavigation = () => {
+      if (!header || !menu || !toggle) return;
+      cancelAnimationFrame(measureFrame);
+      measureFrame = requestAnimationFrame(() => {
+        const wasOpen = menu.classList.contains("is-open");
+        header.classList.remove("is-compact-menu");
+        menu.classList.remove("is-open");
+        menu.setAttribute("aria-hidden", "false");
+        const menuRect = menu.getBoundingClientRect();
+        const navRect = nav.getBoundingClientRect();
+        const actionsRect = header.querySelector(".header-actions")?.getBoundingClientRect();
+        const controlsOverlap = Boolean(actionsRect && (
+          navRect.left < menuRect.left - 2
+          || navRect.right + 8 > actionsRect.left
+        ));
+        const contentOverflows = header.scrollWidth > header.clientWidth + 2
+          || menu.scrollWidth > menu.clientWidth + 2
+          || controlsOverlap;
+        header.classList.toggle("is-compact-menu", contentOverflows);
+        setMenuOpen(contentOverflows && wasOpen);
+      });
+    };
+
+    if (toggle && nav && menu && header) {
       toggle.addEventListener("click", () => {
-        const isOpen = nav.classList.toggle("is-open");
-        toggle.setAttribute("aria-expanded", String(isOpen));
+        setMenuOpen(toggle.getAttribute("aria-expanded") !== "true");
       });
 
       qsa("a", nav).forEach((link) => {
         link.addEventListener("click", () => {
           setActiveNav(link.getAttribute("href"));
-          nav.classList.remove("is-open");
-          toggle.setAttribute("aria-expanded", "false");
+          setMenuOpen(false);
         });
       });
+
+      document.addEventListener("click", (event) => {
+        if (toggle.getAttribute("aria-expanded") === "true" && !header.contains(event.target)) {
+          setMenuOpen(false);
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+          setMenuOpen(false);
+          toggle.focus();
+        }
+      });
+
+      window.addEventListener("resize", measureNavigation, { passive: true });
+      languageSelect?.addEventListener("change", measureNavigation);
+
+      if ("MutationObserver" in window) {
+        const widthObserver = new MutationObserver(measureNavigation);
+        widthObserver.observe(nav, { childList: true, characterData: true, subtree: true });
+        if (languageSelect) {
+          widthObserver.observe(languageSelect, { childList: true, subtree: true });
+        }
+      }
+
+      document.fonts?.ready.then(measureNavigation).catch(() => {});
+      measureNavigation();
     }
 
     const updateHeader = () => {

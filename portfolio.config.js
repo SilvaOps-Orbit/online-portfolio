@@ -611,12 +611,42 @@ window.PORTFOLIO_CONFIG = {
     refreshMs: 120000,
     provider: "Cloudflare Worker + D1"
   },
+  services: {
+    translation: {
+      // The RapidAPI key stays in Cloudflare; this is only the public translation gateway URL.
+      endpoint: "https://echoops-translation-gateway.alvis-dev.workers.dev",
+      provider: "RapidAPI via Cloudflare Worker",
+      languages: [
+        { code: "en", label: "English", target: "English" },
+        { code: "es", label: "Spanish", target: "Spanish" },
+        { code: "fr", label: "French", target: "French" },
+        { code: "de", label: "German", target: "German" },
+        { code: "it", label: "Italian", target: "Italian" },
+        { code: "pt", label: "Portuguese", target: "Portuguese" },
+        { code: "zh", label: "Chinese", target: "Chinese" },
+        { code: "ja", label: "Japanese", target: "Japanese" },
+        { code: "ko", label: "Korean", target: "Korean" },
+        { code: "ar", label: "Arabic", target: "Arabic" },
+        { code: "hi", label: "Hindi", target: "Hindi" }
+      ]
+    },
+    uselessFacts: {
+      endpoint: "https://uselessfacts.jsph.pl/api/v2/facts/today?language=en"
+    },
+    analyticsCrossReference: {
+      // CounterAPI credentials stay inside the gateway. Both counters remain raw, non-authoritative references.
+      gatewayEndpoint: "https://echoops-counter-gateway.alvis-dev.workers.dev",
+      namespace: "silvaops-orbit-online-portfolio",
+      key: "page-views",
+      productionHosts: ["silvaops-orbit.github.io"]
+    }
+  },
   steam: {
     steamId: "76561199192411740",
     profileUrl: "https://steamcommunity.com/profiles/76561199192411740",
     steamDbUrl: "https://steamdb.info/calculator/76561199192411740/",
     accountValue: {
-      value: "Account Value A$ 910.00",
+      value: "Account Value A$ 1,073.00",
       note: "Manual value. Update this in portfolio.config.js whenever you want it changed.",
       manual: true
     },
@@ -880,9 +910,9 @@ window.PORTFOLIO_CONFIG = {
   },
   news: {
     summary:
-      "A compact feed for breaking worldwide, gaming, finance, and Australian government news. Breaking news is English-only and tagged by affected country or region; Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results. Feed cards use publisher names and photos when the source provides them.",
+      "A compact feed for breaking worldwide, gaming, technology, finance, and Australian government news. Hacker News adds developer, cyber security, AI, startup, and open-source stories; breaking news is English-only and tagged by affected country or region. Australian news is AU-only, while Gaming and Finance prioritize Australian sources before wider results.",
     status:
-      "News data refreshes through GitHub Actions from NewsAPI, Mediastack, Finnhub, and RSS fallbacks. The browser only receives sanitized article JSON with source labels.",
+      "News data refreshes through GitHub Actions from Hacker News, NewsAPI, Mediastack, Finnhub, and RSS fallbacks. The browser only receives sanitized article JSON with source labels.",
     items: [
       {
         category: "Breaking Worldwide",
@@ -906,6 +936,18 @@ window.PORTFOLIO_CONFIG = {
         why: "Useful for showing personality and keeping the portfolio current.",
         source: "Pending source",
         url: "https://www.ign.com/"
+      },
+      {
+        category: "Technology",
+        importance: "Watch",
+        title: "Hacker News technology feed pending",
+        snippet:
+          "The generated feed will rank current developer, cyber security, AI, startup, and open-source stories using Hacker News points and comments.",
+        why: "Adds a live technical pulse using a public API that needs no browser token.",
+        source: "Hacker News",
+        sourceApi: "Hacker News",
+        sourceApis: ["Hacker News"],
+        url: "https://news.ycombinator.com/"
       },
       {
         category: "Finance",
@@ -932,7 +974,7 @@ window.PORTFOLIO_CONFIG = {
   securitySnapshot: {
     label: "Site Hardening Snapshot",
     summary:
-      "A quick security scorecard for the portfolio itself: static-first, no browser secrets, DOM-safe rendering, public API data only, and ongoing GitHub security automation.",
+      "A quick security scorecard for the portfolio itself: static-first, no browser secrets, DOM-safe rendering, a credential-isolated translation gateway, explicit public-counter trust boundaries, and ongoing GitHub security automation.",
     posture: "Strong static-site posture"
   },
   security: [
@@ -1016,7 +1058,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Finance and News Boundaries",
       body:
-        "Market prices, AI-style signals, and news snippets are generated into local JSON files from Finnhub, yfinance, NewsAPI, Mediastack, and RSS feeds. The browser never receives paid API keys, model tokens, private prompts, or personal financial advice logic."
+        "Market prices, AI-style signals, and news snippets are generated into local JSON files from Finnhub, yfinance, Hacker News, NewsAPI, Mediastack, and RSS feeds. Hacker News needs no credential; the browser never receives paid API keys, model tokens, private prompts, or personal financial advice logic."
     },
     {
       title: "Small Supply Chain",
@@ -1048,6 +1090,42 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Worker Secrets",
           url: "https://developers.cloudflare.com/workers/configuration/secrets/"
+        }
+      ]
+    },
+    {
+      title: "Credential-Isolated Translation",
+      body:
+        "The site language selector never receives a RapidAPI key. Translation requests go through a dedicated Cloudflare Worker that validates the site origin, limits languages, batch size, text length, and payload size, then caches successful public-page translations at the edge.",
+      why: "It enables visitor-selected languages without publishing a paid credential or turning the Worker into an open translation relay.",
+      docs: [
+        {
+          label: "Cloudflare Worker Secrets",
+          url: "https://developers.cloudflare.com/workers/configuration/secrets/"
+        },
+        {
+          label: "RapidAPI Translator",
+          url: "https://rapidapi.com/vintarok-vintarok-default/api/advanced-multilanguage-ai-translator-api-with-fast-responses"
+        }
+      ]
+    },
+    {
+      title: "Public Counter Trust Boundary",
+      body:
+        "CounterAPI V2 is called through a dedicated Cloudflare gateway whose token is deployed from the CounterAPI GitHub secret; the browser never receives it. CounterAPI and Abacus remain raw page-load references that can be inflated, so Cloudflare D1 stays the authoritative aggregate source and V1 is retained only as an automatic outage fallback.",
+      why: "A fallback is useful only when visitors can tell what it measures and what it cannot prove.",
+      docs: [
+        {
+          label: "CounterAPI V2",
+          url: "https://docs.counterapi.dev/api/endpoints/v2/"
+        },
+        {
+          label: "CounterAPI Authentication",
+          url: "https://docs.counterapi.dev/api/authentication/"
+        },
+        {
+          label: "Abacus",
+          url: "https://v2.jasoncameron.dev/abacus"
         }
       ]
     },
@@ -1113,6 +1191,42 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "D1 Worker API",
           url: "https://developers.cloudflare.com/d1/worker-api/"
+        }
+      ]
+    },
+    {
+      title: "Provider Status Mesh",
+      body:
+        "A generated data/api-status.json snapshot cross-references GitHub, Cloudflare, Steam, Spotify, and Discord against API Status Check, while generated snapshots report providers such as Hacker News. The React status island clearly separates external results from build snapshots, browser checks, and services that still need setup.",
+      why: "It gives visitors one honest operational view without browser CORS workarounds or claiming third-party coverage that does not exist.",
+      docs: [
+        {
+          label: "API Status Check API",
+          url: "https://apistatuscheck.com/docs"
+        }
+      ]
+    },
+    {
+      title: "Safe Console Humour Controls",
+      body:
+        "The sandboxed Ops Console can request JokeAPI results through a fixed HTTPS endpoint. It starts in safe Programming mode and exposes allowlisted category, single/two-part, and explicit-content preferences without eval, arbitrary URLs, or raw HTML rendering.",
+      why: "It adds personality while still demonstrating input allowlists, network boundaries, timeouts, local preferences, and safe output handling.",
+      docs: [
+        {
+          label: "JokeAPI",
+          url: "https://jokeapi.dev/"
+        }
+      ]
+    },
+    {
+      title: "Daily Useless Fact",
+      body:
+        "A compact header action loads the public fact of the day from Useless Facts, caches it by Melbourne date, validates the returned link, and falls back to a local fact if the service is unavailable.",
+      why: "It gives the navigation a small playful interaction while showing resilient public-API design.",
+      docs: [
+        {
+          label: "Useless Facts API",
+          url: "https://uselessfacts.jsph.pl/"
         }
       ]
     },
@@ -1213,7 +1327,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Market and News Intelligence",
       body:
-        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks and one-week chart history, movement-aware rotating market research prompts, English-only breaking worldwide headlines with affected-region tags, AU-priority NewsAPI and Mediastack article search, publisher-labeled RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
+        "The markets and news sections are built around generated JSON files: Finnhub quotes/news, yfinance cross-checks and one-week chart history, movement-aware rotating market research prompts, English-only breaking worldwide headlines with affected-region tags, a point-and-comment-ranked Hacker News technology row, AU-priority NewsAPI and Mediastack article search, publisher-labeled RSS fallbacks, stock/index watchlists, AI-style research signals, and short important-news summaries can update without exposing API keys in the public site.",
       why: "It makes the portfolio feel current while keeping finance outputs educational and keeping data-fetching secrets out of the browser.",
       docs: [
         {
@@ -1231,6 +1345,10 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Mediastack",
           url: "https://mediastack.com/documentation"
+        },
+        {
+          label: "Hacker News API",
+          url: "https://github.com/HackerNews/API"
         },
         {
           label: "yfinance",

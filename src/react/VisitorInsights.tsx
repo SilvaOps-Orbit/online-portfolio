@@ -10,6 +10,27 @@ import {
   type AnalyticsStats
 } from "./analytics-client";
 
+interface CounterCrossReferences {
+  counterApi?: number;
+  counterApiSource?: string;
+  abacus?: number;
+  updatedAt?: string;
+  mode?: string;
+}
+
+const COUNTER_CACHE_KEY = "echoops-counter-crossrefs-v1";
+const COUNTER_EVENT = "echoops:counter-crossrefs";
+
+function readCounterCrossReferences(): CounterCrossReferences | null {
+  try {
+    const value = JSON.parse(localStorage.getItem(COUNTER_CACHE_KEY) || "null") as CounterCrossReferences | null;
+    const hasCounter = Number.isFinite(value?.counterApi) || Number.isFinite(value?.abacus);
+    return value && hasCounter ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 function formatUpdatedAt(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
@@ -36,13 +57,34 @@ function Breakdown({ title, items }: { title: string; items: AnalyticsBreakdown[
   );
 }
 
+function CounterCrossReferencePanel({ value }: { value: CounterCrossReferences | null }) {
+  const counterApi = Number.isFinite(value?.counterApi) ? Number(value?.counterApi).toLocaleString("en-AU") : "Pending";
+  const abacus = Number.isFinite(value?.abacus) ? Number(value?.abacus).toLocaleString("en-AU") : "Pending";
+
+  return (
+    <section className="visitor-crossrefs" aria-labelledby="visitor-crossrefs-title">
+      <div>
+        <span className="react-api-tech-label">Independent Cross-Check</span>
+        <h5 id="visitor-crossrefs-title">Independent raw page counters</h5>
+        <p>CounterAPI V2 uses a credential-isolated gateway and Abacus is a direct public reference. Both count loads rather than people, so D1 remains primary.</p>
+      </div>
+      <dl>
+        <div><dt title={value?.counterApiSource || "CounterAPI V2 gateway"}>CounterAPI V2</dt><dd>{counterApi}</dd></div>
+        <div><dt>Abacus raw</dt><dd>{abacus}</dd></div>
+      </dl>
+    </section>
+  );
+}
+
 function VisitorInsights() {
   const endpoint = analyticsEndpoint();
+  const isLocalPreview = ["127.0.0.1", "localhost"].includes(window.location.hostname);
   const provider = String(window.PORTFOLIO_CONFIG?.analytics?.provider || "Cloudflare Worker + D1");
   const technologyLabel = `React + TypeScript + ${provider}`;
   const [stats, setStats] = useState<AnalyticsStats | null>(readCachedAnalyticsStats);
   const [loading, setLoading] = useState(Boolean(endpoint));
   const [live, setLive] = useState(false);
+  const [crossReferences, setCrossReferences] = useState<CounterCrossReferences | null>(readCounterCrossReferences);
 
   useEffect(() => {
     if (!endpoint) return;
@@ -65,6 +107,14 @@ function VisitorInsights() {
       window.clearInterval(timer);
     };
   }, [endpoint]);
+
+  useEffect(() => {
+    const receiveCrossReferences = (event: Event) => {
+      setCrossReferences((event as CustomEvent<CounterCrossReferences>).detail);
+    };
+    document.addEventListener(COUNTER_EVENT, receiveCrossReferences);
+    return () => document.removeEventListener(COUNTER_EVENT, receiveCrossReferences);
+  }, []);
 
   if (!endpoint) {
     return (
@@ -113,9 +163,22 @@ function VisitorInsights() {
               ? stats.achievements.map((item) => <span key={item.id}><b>{item.count.toLocaleString("en-AU")}</b>{item.label}</span>)
               : <p className="visitor-empty">No Easter egg discoveries recorded yet.</p>}
           </div>
+          <CounterCrossReferencePanel value={crossReferences} />
           <p className="visitor-insights-footer">Checked {formatUpdatedAt(stats.updatedAt)}. {basic ? "These are aggregate Worker totals, not a verified count of individual people." : "Clearing site storage or using another browser creates a new anonymous browser count, so this is not an exact count of human beings."}</p>
         </>
-      ) : <div className="react-api-status-fallback is-error" role="status">The analytics service is temporarily unavailable and no last-good aggregate is saved on this browser yet.</div>}
+      ) : crossReferences ? (
+        <div className="visitor-fallback-counters" role="status">
+          <strong>Primary Worker unavailable</strong>
+          <span>CounterAPI {Number(crossReferences.counterApi || 0).toLocaleString("en-AU")} / Abacus {Number(crossReferences.abacus || 0).toLocaleString("en-AU")}</span>
+          <small>Fallback raw page-load references only. The CounterAPI token remains behind the gateway, and neither value is a unique-person count.</small>
+        </div>
+      ) : (
+        <div className="visitor-fallback-counters" role="status">
+          <strong>{isLocalPreview ? "Production analytics preview" : "Primary Worker unavailable"}</strong>
+          <span>CounterAPI / Abacus: awaiting the first deployed page view</span>
+          <small>{isLocalPreview ? "The Worker intentionally accepts the deployed GitHub Pages origin, not localhost. Public counters are read-only in preview so testing does not inflate them." : "D1 remains primary. These public counters initialise as raw page-load references when production traffic reaches the site."}</small>
+        </div>
+      )}
       <p className="visitor-privacy-note">The browser sends no API key. It submits the page path, referrer origin, an anonymous local ID, and coarse browser and device categories; the public panel renders only aggregate totals returned by the Worker.</p>
     </section>
   );

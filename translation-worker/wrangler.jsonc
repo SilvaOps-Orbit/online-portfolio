@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "echoops-translation-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-19",
+  "vars": {
+    "ALLOWED_ORIGIN": "https://silvaops-orbit.github.io"
+  }
+}

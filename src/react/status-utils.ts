@@ -9,6 +9,20 @@ export interface IntegrationStatus {
   detail: string;
 }
 
+export type ProviderCoverage = "external" | "snapshot" | "browser" | "setup";
+export type ProviderState = "up" | "degraded" | "down" | "unknown";
+
+export interface ProviderStatus {
+  id: string;
+  label: string;
+  role: string;
+  coverage: ProviderCoverage;
+  status: ProviderState;
+  source: string;
+  checkedAt: string | null;
+  statusUrl: string;
+}
+
 interface SnapshotDefinition {
   id: string;
   label: string;
@@ -30,6 +44,10 @@ interface GitHubHourlyCache {
   status?: "checking" | "live" | "error";
   repositories?: unknown[];
   remaining?: number;
+}
+
+interface ProviderSnapshotPayload {
+  providers?: unknown[];
 }
 
 const SNAPSHOT_DEFINITIONS: SnapshotDefinition[] = [
@@ -145,6 +163,45 @@ export function createCheckingStatuses(): IntegrationStatus[] {
 
 export async function loadIntegrationStatuses(signal: AbortSignal): Promise<IntegrationStatus[]> {
   return Promise.all(SNAPSHOT_DEFINITIONS.map((definition) => loadSnapshot(definition, signal)));
+}
+
+function providerStatus(value: unknown): ProviderStatus | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const item = value as Record<string, unknown>;
+  const id = typeof item.id === "string" ? item.id.trim().slice(0, 80) : "";
+  const label = typeof item.label === "string" ? item.label.trim().slice(0, 100) : "";
+  const role = typeof item.role === "string" ? item.role.trim().slice(0, 160) : "";
+  const coverage = ["external", "snapshot", "browser", "setup"].includes(String(item.coverage))
+    ? item.coverage as ProviderCoverage
+    : "browser";
+  const status = ["up", "degraded", "down", "unknown"].includes(String(item.status))
+    ? item.status as ProviderState
+    : "unknown";
+  const source = typeof item.source === "string" ? item.source.trim().slice(0, 180) : "Status source unavailable";
+  const checkedAt = typeof item.checkedAt === "string" && item.checkedAt.trim() ? item.checkedAt : null;
+  const statusUrl = typeof item.statusUrl === "string" && /^https:\/\/apistatuscheck\.com\//.test(item.statusUrl)
+    ? item.statusUrl
+    : "";
+  return id && label ? { id, label, role, coverage, status, source, checkedAt, statusUrl } : null;
+}
+
+export async function loadProviderStatuses(signal: AbortSignal): Promise<ProviderStatus[]> {
+  try {
+    const response = await fetch("data/api-status.json", {
+      cache: "no-store",
+      credentials: "same-origin",
+      referrerPolicy: "no-referrer",
+      signal
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json() as ProviderSnapshotPayload;
+    return Array.isArray(payload.providers)
+      ? payload.providers.flatMap((item) => providerStatus(item) || [])
+      : [];
+  } catch (error) {
+    if (signal.aborted) throw error;
+    return [];
+  }
 }
 
 export function formatRelativeTime(value: string | null): string {

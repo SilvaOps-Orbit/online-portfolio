@@ -1,0 +1,62 @@
+name: Deploy Translation Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "translation-worker/**"
+      - ".github/workflows/translation-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-worker-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: translation-worker/package-lock.json
+
+      - name: Install Worker dependencies
+        working-directory: translation-worker
+        run: npm ci
+
+      - name: Check Worker TypeScript
+        working-directory: translation-worker
+        run: npm run check
+
+      - name: Verify deployment secrets
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RAPIDAPI_KEY: ${{ secrets.X_RAPIDAPI_KEY }}
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Add CLOUDFLARE_API_TOKEN to repository secrets."; exit 1; }
+          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Add CLOUDFLARE_ACCOUNT_ID to repository secrets."; exit 1; }
+          test -n "$RAPIDAPI_KEY" || { echo "::error::Add X_RAPIDAPI_KEY to repository secrets."; exit 1; }
+
+      - name: Deploy credential-isolated translation gateway
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: translation-worker
+          command: deploy
+          secrets: |
+            RAPIDAPI_KEY
+        env:
+          RAPIDAPI_KEY: ${{ secrets.X_RAPIDAPI_KEY }}

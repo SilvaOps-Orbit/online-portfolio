@@ -31,7 +31,7 @@ jobs:
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json"
+          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,api-status.json"
 
       - name: Refresh GitHub snapshot
         run: node scripts/update-github-data.mjs

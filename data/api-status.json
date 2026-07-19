@@ -1,0 +1,205 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-19T07:40:59.103Z",
+  "lastGoodAt": "2026-07-19T07:40:59.103Z",
+  "source": "API Status Check public JSON plus portfolio snapshot coverage",
+  "status": "3 of 5 externally monitored providers currently report up.",
+  "stale": false,
+  "externalLastUpdated": "2026-07-18T14:07:48.369Z",
+  "providers": [
+    {
+      "id": "github",
+      "label": "GitHub",
+      "role": "Repositories and activity",
+      "slug": "github",
+      "coverage": "external",
+      "status": "up",
+      "checkedAt": "2026-07-18T14:07:48.369Z",
+      "source": "API Status Check",
+      "statusUrl": "https://apistatuscheck.com/api/github"
+    },
+    {
+      "id": "cloudflare",
+      "label": "Cloudflare",
+      "role": "Workers and D1",
+      "slug": "cloudflare",
+      "coverage": "external",
+      "status": "degraded",
+      "checkedAt": "2026-07-18T14:07:48.369Z",
+      "source": "API Status Check",
+      "statusUrl": "https://apistatuscheck.com/api/cloudflare"
+    },
+    {
+      "id": "steam",
+      "label": "Steam",
+      "role": "Profile and game data",
+      "slug": "steam",
+      "coverage": "external",
+      "status": "up",
+      "checkedAt": "2026-07-18T14:07:48.369Z",
+      "source": "API Status Check",
+      "statusUrl": "https://apistatuscheck.com/api/steam"
+    },
+    {
+      "id": "spotify",
+      "label": "Spotify",
+      "role": "Playback and playlists",
+      "slug": "spotify",
+      "coverage": "external",
+      "status": "unknown",
+      "checkedAt": "2026-07-18T14:07:48.369Z",
+      "source": "API Status Check",
+      "statusUrl": "https://apistatuscheck.com/api/spotify"
+    },
+    {
+      "id": "discord",
+      "label": "Discord",
+      "role": "Community connection",
+      "slug": "discord",
+      "coverage": "external",
+      "status": "up",
+      "checkedAt": "2026-07-18T14:07:48.369Z",
+      "source": "API Status Check",
+      "statusUrl": "https://apistatuscheck.com/api/discord"
+    },
+    {
+      "id": "finnhub",
+      "label": "Finnhub",
+      "role": "Market quotes",
+      "snapshot": "market.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-10T04:28:24.171Z",
+      "source": "market.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "yfinance",
+      "label": "yfinance",
+      "role": "Market cross-reference",
+      "snapshot": "market.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-10T04:28:24.171Z",
+      "source": "market.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "newsapi",
+      "label": "NewsAPI",
+      "role": "News aggregation",
+      "snapshot": "news.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-19T07:35:55.343Z",
+      "source": "news.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "mediastack",
+      "label": "MediaStack",
+      "role": "News cross-reference",
+      "snapshot": "news.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-19T07:35:55.343Z",
+      "source": "news.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "hacker-news",
+      "label": "Hacker News",
+      "role": "Technology news",
+      "snapshot": "news.json",
+      "requiredSource": "Hacker News",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-19T07:35:55.343Z",
+      "source": "news.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "rss",
+      "label": "RSS feeds",
+      "role": "Publisher fallbacks",
+      "snapshot": "news.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-19T07:35:55.343Z",
+      "source": "news.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "genius",
+      "label": "Genius",
+      "role": "Song and artist context",
+      "snapshot": "spotify.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-08T00:00:00.000Z",
+      "source": "spotify.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "audiodb",
+      "label": "TheAudioDB",
+      "role": "Artist cross-reference",
+      "snapshot": "spotify.json",
+      "coverage": "snapshot",
+      "status": "up",
+      "checkedAt": "2026-07-08T00:00:00.000Z",
+      "source": "spotify.json generated snapshot",
+      "statusUrl": ""
+    },
+    {
+      "id": "jokeapi",
+      "label": "JokeAPI",
+      "role": "Ops Console jokes",
+      "coverage": "browser",
+      "status": "unknown",
+      "checkedAt": null,
+      "source": "Checked by the browser when used",
+      "statusUrl": ""
+    },
+    {
+      "id": "uselessfacts",
+      "label": "Useless Facts",
+      "role": "Daily fact",
+      "coverage": "browser",
+      "status": "unknown",
+      "checkedAt": null,
+      "source": "Checked by the browser when used",
+      "statusUrl": ""
+    },
+    {
+      "id": "counterapi",
+      "label": "CounterAPI",
+      "role": "Credential-isolated raw counter",
+      "coverage": "browser",
+      "status": "unknown",
+      "checkedAt": null,
+      "source": "Checked by the browser when used",
+      "statusUrl": ""
+    },
+    {
+      "id": "abacus",
+      "label": "Abacus",
+      "role": "Raw-hit cross-check",
+      "coverage": "browser",
+      "status": "unknown",
+      "checkedAt": null,
+      "source": "Checked by the browser when used",
+      "statusUrl": ""
+    },
+    {
+      "id": "rapidapi",
+      "label": "RapidAPI Translator",
+      "role": "Site language gateway",
+      "coverage": "setup",
+      "status": "unknown",
+      "checkedAt": null,
+      "source": "Secure gateway setup pending",
+      "statusUrl": ""
+    }
+  ]
+}

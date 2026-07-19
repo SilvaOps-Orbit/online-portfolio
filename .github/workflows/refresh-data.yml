@@ -48,7 +48,7 @@ jobs:
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,github.json"
+          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,github.json,api-status.json"
 
       - name: Generate Steam data
         run: node scripts/update-steam-data.mjs
@@ -83,6 +83,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_USERNAME: "SilvaOps-Orbit"
+
+      - name: Generate integration status snapshot
+        run: node scripts/update-api-status.mjs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

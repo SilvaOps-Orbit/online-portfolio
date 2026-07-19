@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "echoops-counter-gateway",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-19",
+  "vars": {
+    "ALLOWED_ORIGIN": "https://silvaops-orbit.github.io",
+    "COUNTERAPI_WORKSPACE": "silvaops-orbit-online-portfolio",
+    "COUNTERAPI_COUNTER": "page-views"
+  }
+}

@@ -1,0 +1,56 @@
+name: Deploy CounterAPI Gateway
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "counter-worker/**"
+      - ".github/workflows/counter-worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: counter-worker-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check deployment readiness
+        id: readiness
+        shell: bash
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          COUNTERAPI_TOKEN: ${{ secrets.COUNTERAPI }}
+        run: |
+          if test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$COUNTERAPI_TOKEN"; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CounterAPI gateway deployment skipped. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID; COUNTERAPI is already configured."
+          fi
+
+      - name: Check Worker JavaScript
+        if: steps.readiness.outputs.ready == 'true'
+        run: node --check counter-worker/src/index.js
+
+      - name: Deploy credential-isolated CounterAPI gateway
+        if: steps.readiness.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: counter-worker
+          command: deploy
+          secrets: |
+            COUNTERAPI_TOKEN
+        env:
+          COUNTERAPI_TOKEN: ${{ secrets.COUNTERAPI }}

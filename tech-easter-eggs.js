@@ -4,6 +4,17 @@
   const storageKey = "echoops-technical-achievements-v1";
   const snakeLeaderboardCacheKey = "echoops-snake-leaderboard-v1";
   const snakeLeaderboardLimit = 10;
+  const jokePreferencesKey = "echoops-joke-preferences-v1";
+  const jokeCategories = new Map([
+    ["any", "Any"],
+    ["misc", "Misc"],
+    ["programming", "Programming"],
+    ["dark", "Dark"],
+    ["pun", "Pun"],
+    ["spooky", "Spooky"],
+    ["christmas", "Christmas"]
+  ]);
+  const jokeTypes = new Set(["any", "single", "twopart"]);
   const sourceFiles = ["index.html", "styles.css", "app.js", "portfolio.config.js", "tech-easter-eggs.js"];
   const snapshotFiles = ["steam.json", "spotify.json", "github.json", "market.json", "news.json"];
   const languageSequence = ["react.js", "typescript", "javascript"];
@@ -142,6 +153,126 @@
     const line = createElement("div", className, text);
     output.append(line);
     output.scrollTop = output.scrollHeight;
+  }
+
+  function readJokePreferences() {
+    try {
+      const value = JSON.parse(window.localStorage.getItem(jokePreferencesKey) || "null");
+      const category = jokeCategories.has(value?.category) ? value.category : "programming";
+      const type = jokeTypes.has(value?.type) ? value.type : "any";
+      return { category, type, nsfw: value?.nsfw === true };
+    } catch (error) {
+      return { category: "programming", type: "any", nsfw: false };
+    }
+  }
+
+  function saveJokePreferences(value) {
+    try {
+      window.localStorage.setItem(jokePreferencesKey, JSON.stringify(value));
+    } catch (error) {
+      return;
+    }
+  }
+
+  function jokeSettingsLine(value) {
+    return `category=${value.category} · type=${value.type} · nsfw=${value.nsfw ? "on" : "off (safe mode)"}`;
+  }
+
+  async function fetchConsoleJoke(preferences, output) {
+    const category = jokeCategories.get(preferences.category) || "Programming";
+    const url = new URL(`https://v2.jokeapi.dev/joke/${encodeURIComponent(category)}`);
+    url.searchParams.set("lang", "en");
+    if (preferences.type !== "any") url.searchParams.set("type", preferences.type);
+    if (!preferences.nsfw) url.searchParams.set("safe-mode", "");
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), 8000);
+    appendTerminalLine(output, `requesting ${category.toLowerCase()} humour :: ${preferences.nsfw ? "content filters relaxed" : "safe mode active"}`);
+    try {
+      const response = await fetch(url, {
+        cache: "no-store",
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload = await response.json();
+      if (payload?.error) throw new Error(String(payload.message || "No matching joke was returned"));
+      const categoryLabel = String(payload?.category || category).slice(0, 40);
+      appendTerminalLine(output, `[${categoryLabel} #${Number(payload?.id || 0)}]`, "is-command");
+      if (payload?.type === "twopart") {
+        appendTerminalLine(output, String(payload.setup || "Setup unavailable").slice(0, 500));
+        await new Promise((resolve) => window.setTimeout(resolve, 650));
+        appendTerminalLine(output, String(payload.delivery || "Punchline unavailable").slice(0, 500));
+      } else {
+        appendTerminalLine(output, String(payload?.joke || "Joke unavailable").slice(0, 700));
+      }
+    } catch (error) {
+      const detail = error?.name === "AbortError" ? "request timed out" : String(error?.message || "request failed");
+      appendTerminalLine(output, `joke service unavailable :: ${detail}`, "is-error");
+      appendTerminalLine(output, "Try another category, or leave Dark mode for when the NSFW switch is enabled.");
+    } finally {
+      window.clearTimeout(timer);
+    }
+  }
+
+  async function runJokeCommand(argumentsList, output) {
+    const preferences = readJokePreferences();
+    const action = argumentsList[0] || "get";
+    const value = argumentsList[1] || "";
+
+    if (["get", "another"].includes(action)) {
+      await fetchConsoleJoke(preferences, output);
+      return;
+    }
+    if (action === "help") {
+      appendTerminalLine(output, "joke · joke another · joke status · joke categories");
+      appendTerminalLine(output, "joke category <name> · joke type <any|single|twopart> · joke nsfw <on|off>");
+      return;
+    }
+    if (action === "status") {
+      appendTerminalLine(output, jokeSettingsLine(preferences));
+      return;
+    }
+    if (action === "categories") {
+      appendTerminalLine(output, Array.from(jokeCategories.keys()).join(" · "));
+      return;
+    }
+    if (action === "category") {
+      if (!jokeCategories.has(value)) {
+        appendTerminalLine(output, `unknown joke category: ${value || "missing"}`, "is-error");
+        appendTerminalLine(output, Array.from(jokeCategories.keys()).join(" · "));
+        return;
+      }
+      preferences.category = value;
+      saveJokePreferences(preferences);
+      appendTerminalLine(output, `joke category updated :: ${jokeSettingsLine(preferences)}`);
+      return;
+    }
+    if (action === "type") {
+      if (!jokeTypes.has(value)) {
+        appendTerminalLine(output, "joke type must be any, single, or twopart", "is-error");
+        return;
+      }
+      preferences.type = value;
+      saveJokePreferences(preferences);
+      appendTerminalLine(output, `joke type updated :: ${jokeSettingsLine(preferences)}`);
+      return;
+    }
+    if (action === "nsfw") {
+      if (!['on', 'off'].includes(value)) {
+        appendTerminalLine(output, "usage :: joke nsfw <on|off>", "is-error");
+        return;
+      }
+      preferences.nsfw = value === "on";
+      saveJokePreferences(preferences);
+      appendTerminalLine(output, preferences.nsfw
+        ? "NSFW filtering disabled for JokeAPI results. Use at your own discretion."
+        : "Safe mode restored. Explicit and unsafe results are filtered.");
+      return;
+    }
+    appendTerminalLine(output, `unknown joke option: ${action}`, "is-error");
+    appendTerminalLine(output, "type joke help for the allowed joke controls");
   }
 
   function configuredApiEndpoint() {
@@ -679,6 +810,7 @@
 
     appendTerminalLine(output, "EchoOps local sandbox v1.0");
     appendTerminalLine(output, "Type help to inspect the allowed command surface.");
+    appendTerminalLine(output, "JokeAPI starts in safe Programming mode. Type joke help for filters.");
 
     async function runCommand(rawValue) {
       const parts = rawValue.trim().toLowerCase().split(/\s+/);
@@ -687,7 +819,8 @@
       if (!command) return;
       appendTerminalLine(output, `${prompt.textContent} ${rawValue.trim()}`, "is-command");
       if (command === "help") {
-        appendTerminalLine(output, "help · whoami · stack · security · probe · uptime · achievements · games · clear · exit");
+        appendTerminalLine(output, "help · whoami · stack · security · probe · uptime · achievements · games · joke · clear · exit");
+        appendTerminalLine(output, "joke help exposes category, type, and NSFW controls. Safe mode is the default.");
       } else if (command === "whoami") {
         const profile = window.PORTFOLIO_CONFIG?.profile || {};
         appendTerminalLine(output, `${profile.name || "Alvis Leslie Gordon"} // ${profile.alias || "EchoOps"}`);
@@ -711,6 +844,8 @@
       } else if (command === "games") {
         appendTerminalLine(output, "installed :: snake");
         appendTerminalLine(output, "launch    :: snake | play snake | game snake");
+      } else if (command === "joke") {
+        await runJokeCommand(parts.slice(1), output);
       } else if (command === "snake" || ((command === "play" || command === "game") && argument === "snake")) {
         appendTerminalLine(output, "snake protocol :: local canvas initialised", "is-command");
         launchSnake();

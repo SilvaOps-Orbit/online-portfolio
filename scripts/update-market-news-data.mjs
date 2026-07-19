@@ -13,6 +13,9 @@ const marketOutputPath = new URL("../data/market.json", import.meta.url);
 const newsOutputPath = new URL("../data/news.json", import.meta.url);
 const generatedAt = new Date().toISOString();
 const fetchTimeoutMs = 12000;
+const hackerNewsBaseUrl = "https://hacker-news.firebaseio.com/v0";
+const hackerNewsCandidateLimit = 30;
+const newsCategoryOrder = ["Breaking Worldwide", "Gaming", "Technology", "Finance", "Australia"];
 
 const quoteTargets = [
   { symbol: "SPX", name: "S&P 500 Index", type: "index", yahoo: "^GSPC", finnhub: "SPY", sector: "Broad market" },
@@ -712,12 +715,17 @@ function newsImportance(category, item) {
   const text = `${item.title} ${item.snippet}`.toLowerCase();
   const keywordSets = {
     Gaming: ["steam", "xbox", "playstation", "nintendo", "release", "delay", "studio", "layoffs", "acquisition", "ai", "security"],
+    Technology: ["security", "cyber", "open source", "developer", "programming", "software", "hardware", "ai", "startup", "cloud", "privacy"],
     Finance: ["s&p", "stock", "market", "earnings", "inflation", "interest", "rate", "rba", "fed", "ai", "nvidia", "recession"],
     Australia: ["government", "defence", "cyber", "security", "budget", "policy", "legislation", "australia", "jobs", "digital"],
     "Breaking Worldwide": ["breaking", "emergency", "evacuation", "earthquake", "wildfire", "cyclone", "war", "conflict", "missile", "sanctions", "attack"]
   };
+  const engagementScore = category === "Technology"
+    ? Math.min(8, Math.floor(Number(item.hackerNewsPoints || 0) / 50) + Math.floor(Number(item.hackerNewsComments || 0) / 35))
+    : 0;
   const score = (keywordSets[category] || []).reduce((total, keyword) => total + (text.includes(keyword) ? 2 : 0), 0)
-    + Math.min(4, Math.floor(text.length / 120));
+    + Math.min(4, Math.floor(text.length / 120))
+    + engagementScore;
 
   if (category === "Breaking Worldwide" && score >= 5) return { label: "Breaking", score: score + 3 };
   if (category === "Breaking Worldwide") return { label: "Developing", score: score + 1 };
@@ -732,6 +740,9 @@ function whyNewsMatters(category, item) {
   }
   if (category === "Finance") {
     return "Finance headlines can explain stock moves and help visitors understand the watchlist context.";
+  }
+  if (category === "Technology") {
+    return "Hacker News adds developer, cyber security, AI, startup, and open-source signals that connect directly to the work behind this portfolio.";
   }
   if (category === "Australia") {
     return "Australian updates connect the site to local policy, defence, cyber, jobs, and public life.";
@@ -909,6 +920,42 @@ async function loadFinnhubFinanceNews() {
   })).filter((item) => item.title && item.url);
 }
 
+async function loadHackerNewsTechnology() {
+  const storyIds = await fetchJson(`${hackerNewsBaseUrl}/topstories.json`).catch(() => []);
+  if (!Array.isArray(storyIds) || !storyIds.length) return [];
+
+  const stories = await Promise.all(storyIds.slice(0, hackerNewsCandidateLimit).map(async (id) => {
+    const item = await fetchJson(`${hackerNewsBaseUrl}/item/${encodeURIComponent(id)}.json`).catch(() => null);
+    if (!item || item.type !== "story" || item.deleted || item.dead || !item.title) return null;
+
+    const discussionUrl = `https://news.ycombinator.com/item?id=${encodeURIComponent(item.id)}`;
+    const points = Math.max(0, Number(item.score) || 0);
+    const comments = Math.max(0, Number(item.descendants) || 0);
+    const author = cleanText(item.by || "community member", 60);
+    return {
+      category: "Technology",
+      title: cleanText(item.title),
+      snippet: `${points.toLocaleString("en-AU")} points, ${comments.toLocaleString("en-AU")} comments, submitted by ${author}.`,
+      url: cleanUrl(item.url) || discussionUrl,
+      discussionUrl,
+      source: "Hacker News",
+      sourceApi: "Hacker News",
+      sourceApis: ["Hacker News"],
+      sourceGroup: "Hacker News",
+      sourceGroups: ["Hacker News"],
+      image: "",
+      language: "en",
+      regionalScope: "Global",
+      publishedAt: item.time ? new Date(Number(item.time) * 1000).toISOString() : generatedAt,
+      hackerNewsId: Number(item.id),
+      hackerNewsPoints: points,
+      hackerNewsComments: comments
+    };
+  }));
+
+  return stories.filter(Boolean);
+}
+
 async function buildNewsItems() {
   const [
     breakingRss,
@@ -923,7 +970,8 @@ async function buildNewsItems() {
     gamingMediastack,
     financeMediastack,
     australiaMediastack,
-    breakingMediastack
+    breakingMediastack,
+    hackerNewsTechnology
   ] = await Promise.all([
     loadRssCategory("Breaking Worldwide", configuredFeeds("Breaking Worldwide", defaultFeeds["Breaking Worldwide"])),
     loadRssCategory("Gaming", configuredFeeds("Gaming", defaultFeeds.Gaming)),
@@ -937,7 +985,8 @@ async function buildNewsItems() {
     loadMediastackCategory("Gaming"),
     loadMediastackCategory("Finance"),
     loadMediastackCategory("Australia"),
-    loadMediastackCategory("Breaking Worldwide")
+    loadMediastackCategory("Breaking Worldwide"),
+    loadHackerNewsTechnology()
   ]);
 
   const mergedItems = mergeNewsSources([
@@ -953,7 +1002,8 @@ async function buildNewsItems() {
     ...gamingMediastack,
     ...financeMediastack,
     ...australiaMediastack,
-    ...breakingMediastack
+    ...breakingMediastack,
+    ...hackerNewsTechnology
   ]);
 
   const withScoring = mergedItems.map((item) => {
@@ -986,6 +1036,7 @@ async function buildNewsItems() {
   const sourceQuotas = {
     "Breaking Worldwide": { NewsAPI: 5, Mediastack: 5, RSS: 4 },
     Gaming: { NewsAPI: 4, Mediastack: 4, RSS: 4 },
+    Technology: { "Hacker News": 12 },
     Finance: { Finnhub: 4, NewsAPI: 3, Mediastack: 3, RSS: 2 },
     Australia: { NewsAPI: 4, Mediastack: 4, RSS: 4 }
   };
@@ -1010,11 +1061,22 @@ async function buildNewsItems() {
     return picked;
   }
 
-  return ["Breaking Worldwide", "Gaming", "Finance", "Australia"].flatMap(pickCategory);
+  return newsCategoryOrder.flatMap(pickCategory);
 }
 
 function fallbackNewsItems(previous) {
   return Array.isArray(previous.items) && previous.items.length ? previous.items : [];
+}
+
+function preserveMissingNewsRows(currentItems, previousItems) {
+  const currentCategories = new Set(currentItems.map((item) => cleanText(item?.category || "Other")));
+  const missingCategories = newsCategoryOrder.filter((category) => !currentCategories.has(category));
+  const preserved = previousItems.filter((item) => missingCategories.includes(cleanText(item?.category || "Other")));
+  const merged = [...currentItems, ...preserved];
+  return {
+    items: newsCategoryOrder.flatMap((category) => merged.filter((item) => item.category === category)),
+    preservedCategories: missingCategories.filter((category) => preserved.some((item) => item.category === category))
+  };
 }
 
 async function main() {
@@ -1033,8 +1095,9 @@ async function main() {
     return fallbackNewsItems(previousNews);
   });
   const previousNewsItems = fallbackNewsItems(previousNews);
-  const outputNewsItems = newsItems.length ? newsItems : previousNewsItems;
-  const newsUsingSnapshot = !newsItems.length && outputNewsItems.length;
+  const mergedNewsRows = preserveMissingNewsRows(newsItems, previousNewsItems);
+  const outputNewsItems = mergedNewsRows.items.length ? mergedNewsRows.items : previousNewsItems;
+  const newsUsingSnapshot = mergedNewsRows.preservedCategories.length > 0 || (!newsItems.length && outputNewsItems.length > 0);
 
   const marketOutput = {
     generatedAt,
@@ -1055,12 +1118,15 @@ async function main() {
       finnhubApiKey ? "Finnhub" : "",
       newsApiKey ? "NewsAPI" : "",
       mediastackApiKey ? "Mediastack" : "",
+      outputNewsItems.some((item) => item.sourceGroup === "Hacker News") ? "Hacker News" : "",
       "RSS"
     ].filter(Boolean).join(" + "),
     stale: newsUsingSnapshot,
     lastGoodAt: newsItems.length ? generatedAt : previousNews.lastGoodAt || previousNews.generatedAt || null,
-    status: newsItems.length
-      ? "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, finance, and Australia rows."
+    status: newsItems.length && !newsUsingSnapshot
+      ? "News refreshed, cross-referenced, and ranked into breaking worldwide, gaming, technology, finance, and Australia rows."
+      : newsItems.length && newsUsingSnapshot
+        ? `News refreshed with the last saved ${mergedNewsRows.preservedCategories.join(", ")} row${mergedNewsRows.preservedCategories.length === 1 ? "" : "s"} preserved while its source catches up.`
       : newsUsingSnapshot
         ? "News refresh did not return articles. Showing the last saved RSS/API snapshot while GitHub refresh catches up."
         : "News refresh did not return articles. Showing saved values when available.",
