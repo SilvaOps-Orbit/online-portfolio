@@ -1,4 +1,5 @@
-const SEGMENT_PATTERN = /^[a-zA-Z0-9._-]{1,80}$/;
+const WORKSPACE_PATTERN = /^[a-zA-Z0-9._ -]{1,80}$/;
+const COUNTER_PATTERN = /^[a-zA-Z0-9._-]{1,80}$/;
 
 function permittedOrigin(request, env) {
   const origin = request.headers.get("Origin") || "";
@@ -51,7 +52,7 @@ function counterValue(payload) {
 
 async function requestCounter(env, action) {
   if (!env.COUNTERAPI_TOKEN) throw new Error("CounterAPI token is not configured");
-  if (!SEGMENT_PATTERN.test(env.COUNTERAPI_WORKSPACE || "") || !SEGMENT_PATTERN.test(env.COUNTERAPI_COUNTER || "")) {
+  if (!WORKSPACE_PATTERN.test(env.COUNTERAPI_WORKSPACE || "") || !COUNTER_PATTERN.test(env.COUNTERAPI_COUNTER || "")) {
     throw new Error("CounterAPI workspace or counter name is invalid");
   }
 

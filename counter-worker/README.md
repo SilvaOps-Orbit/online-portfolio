@@ -9,6 +9,6 @@ Before the first deployment, add these repository secrets as well:
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-If the workspace shown in the CounterAPI dashboard is different, change `COUNTERAPI_WORKSPACE` in `wrangler.jsonc`. Workspace names are case-sensitive. The configured counter name is `page-views`.
+The configured CounterAPI workspace is `web portfolio tracker` and the counter name is `page-views`. Workspace names are case-sensitive; spaces are validated and URL-encoded by the Worker.
 
 The gateway is still a public raw page-load counter and can be intentionally inflated. Cloudflare D1 remains the portfolio's primary anonymous aggregate source.
