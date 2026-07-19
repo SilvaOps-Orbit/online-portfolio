@@ -10,6 +10,7 @@ const storeCountry = process.env.STEAM_STORE_COUNTRY || "AU";
 const steamDbUrl = `https://steamdb.info/calculator/${steamId}/`;
 const profileUrl = `https://steamcommunity.com/profiles/${steamId}`;
 const outputPath = new URL("../data/steam.json", import.meta.url);
+const spendingConfigPath = new URL("../steam-spending.config.json", import.meta.url);
 
 function gameUrl(appid) {
   return `https://store.steampowered.com/app/${appid}/`;
@@ -107,6 +108,18 @@ async function readExistingData() {
     return JSON.parse(await readFile(outputPath, "utf8"));
   } catch (error) {
     return {};
+  }
+}
+
+async function readSpendingConfig() {
+  try {
+    const config = JSON.parse(await readFile(spendingConfigPath, "utf8"));
+    return {
+      currency: stripPriceText(config.currency || "AUD").toUpperCase(),
+      ownedDlc: Array.isArray(config.ownedDlc) ? config.ownedDlc : []
+    };
+  } catch (error) {
+    return { currency: "AUD", ownedDlc: [] };
   }
 }
 
@@ -572,7 +585,7 @@ async function loadAchievementCollections(ownedGames) {
   };
 }
 
-async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
+async function loadLibraryInsights(ownedGames, recentGames, achievementData, spendingConfig) {
   const sample = [...ownedGames]
     .filter((game) => game.appid)
     .sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0))
@@ -602,9 +615,46 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
       genres,
       categories,
       controllerSupport: app.controller_support || (categories.some((category) => /controller/i.test(category)) ? "supported" : ""),
-      dlcAvailable
+      dlcAvailable,
+      fullPriceMinor: Number(app.price_overview?.initial || 0),
+      priceCurrency: app.price_overview?.currency || spendingConfig.currency || "AUD"
     });
   });
+
+  const confirmedDlcByGame = new Map(
+    spendingConfig.ownedDlc.map((entry) => [String(entry.baseAppId || ""), entry])
+  );
+  const retailEstimates = await Promise.all(sample.map(async (game) => {
+    const storeMeta = metadata.get(String(game.appid)) || {};
+    const configured = confirmedDlcByGame.get(String(game.appid));
+    const dlcIds = Array.isArray(configured?.dlcAppIds)
+      ? [...new Set(configured.dlcAppIds.map(Number).filter((appid) => Number.isInteger(appid) && appid > 0))]
+      : [];
+    const dlcDetails = await Promise.all(dlcIds.map((appid) => loadAppDetails(appid)));
+    const currency = storeMeta.priceCurrency || spendingConfig.currency || "AUD";
+    const dlcPriceMinor = dlcDetails.reduce((sum, app) => {
+      if (!app?.price_overview || app.price_overview.currency !== currency) return sum;
+      return sum + Number(app.price_overview.initial || 0);
+    }, 0);
+    const basePriceMinor = Number(storeMeta.fullPriceMinor || 0);
+    return {
+      appid: game.appid,
+      title: game.name || configured?.title || "Steam game",
+      url: gameUrl(game.appid),
+      image: headerImage(game.appid),
+      currency,
+      baseAmount: basePriceMinor / 100,
+      dlcAmount: dlcPriceMinor / 100,
+      amount: (basePriceMinor + dlcPriceMinor) / 100,
+      confirmedDlcCount: dlcIds.length,
+      note: dlcIds.length
+        ? `Full base price plus ${dlcIds.length} owner-confirmed DLC App ID${dlcIds.length === 1 ? "" : "s"}.`
+        : "Full base-game price only; no owned DLC App IDs confirmed."
+    };
+  }));
+  const pricedRetailEstimates = retailEstimates
+    .filter((game) => game.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
 
   const percent = (value) => sampledMinutes ? Math.round(value / sampledMinutes * 100) : 0;
   const toOwned = (game) => ({
@@ -635,6 +685,14 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
     averageHoursPerGame: ownedGames.length ? Math.round(ownedGames.reduce((sum, game) => sum + Number(game.playtime_forever || 0), 0) / ownedGames.length / 60) : 0,
     deepDiveGames: ownedGames.filter((game) => Number(game.playtime_forever || 0) >= 6000).length,
     lowPlaytimeGames: ownedGames.filter((game) => Number(game.playtime_forever || 0) < 120).length
+    ,retailEstimate: {
+      currency: spendingConfig.currency || "AUD",
+      sampledGames: sample.length,
+      pricedGames: pricedRetailEstimates.length,
+      highestGame: pricedRetailEstimates[0] || null,
+      topGames: pricedRetailEstimates.slice(0, 5),
+      method: "Full Steam Store base price plus owner-confirmed DLC App IDs; excludes discounts, keys, bundles, gifts and unconfirmed DLC."
+    }
   };
 }
 
@@ -660,6 +718,7 @@ function fallbackData(reason) {
 
 async function main() {
   const previous = await readExistingData();
+  const spendingConfig = await readSpendingConfig();
   let output = fallbackData("fallback");
   const storeCollections = await loadStoreCollections();
   const { storeHighlights, preorderWatch } = storeCollections;
@@ -683,7 +742,7 @@ async function main() {
     const recentMinutes = recentGames.reduce((sum, game) => sum + Number(game.playtime_2weeks || 0), 0);
     const mostPlayed = [...ownedGames].sort((a, b) => Number(b.playtime_forever || 0) - Number(a.playtime_forever || 0)).slice(0, 6);
     const achievementData = await loadAchievementCollections(ownedGames);
-    const insights = await loadLibraryInsights(ownedGames, recentGames, achievementData);
+    const insights = await loadLibraryInsights(ownedGames, recentGames, achievementData, spendingConfig);
 
     const generatedAt = new Date().toISOString();
     const activeAppId = profile?.gameid ? String(profile.gameid) : "";

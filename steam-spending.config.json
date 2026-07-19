@@ -1,0 +1,11 @@
+{
+  "_comment": "Steam does not expose owned DLC through its public player API. Add DLC App IDs here only after confirming ownership in Steam > Game Properties > DLC.",
+  "currency": "AUD",
+  "ownedDlc": [
+    {
+      "baseAppId": 218620,
+      "title": "PAYDAY 2",
+      "dlcAppIds": []
+    }
+  ]
+}

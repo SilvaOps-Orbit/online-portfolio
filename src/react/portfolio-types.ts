@@ -122,6 +122,22 @@ export interface SteamInsights {
   averageHoursPerGame?: number;
   deepDiveGames?: number;
   lowPlaytimeGames?: number;
+  retailEstimate?: {
+    currency?: string;
+    sampledGames?: number;
+    pricedGames?: number;
+    method?: string;
+    highestGame?: SteamRetailGame | null;
+    topGames?: SteamRetailGame[];
+  };
+}
+
+export interface SteamRetailGame extends SteamItem {
+  amount?: number;
+  baseAmount?: number;
+  dlcAmount?: number;
+  confirmedDlcCount?: number;
+  currency?: string;
 }
 
 export interface SteamSpending {
