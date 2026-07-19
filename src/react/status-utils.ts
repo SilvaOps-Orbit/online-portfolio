@@ -60,6 +60,33 @@ const SNAPSHOT_DEFINITIONS: SnapshotDefinition[] = [
 
 const SETUP_PATTERN = /needs? key|add .*secret|not connected|ready for api secrets/i;
 const GITHUB_HOURLY_CACHE_KEY = "echoops-github-hourly-cache-v1";
+const DEPLOYED_SNAPSHOT_BASE = "https://silvaops-orbit.github.io/online-portfolio/";
+
+function snapshotCandidates(path: string): string[] {
+  if (typeof window === "undefined") return [path];
+  const isLocalPreview = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+  return isLocalPreview ? [new URL(path, DEPLOYED_SNAPSHOT_BASE).toString(), path] : [path];
+}
+
+async function fetchSnapshot(path: string, signal: AbortSignal): Promise<Response> {
+  let lastError: unknown = null;
+  for (const candidate of snapshotCandidates(path)) {
+    try {
+      const response = await fetch(candidate, {
+        cache: "no-store",
+        credentials: candidate.startsWith("http") ? "omit" : "same-origin",
+        referrerPolicy: "no-referrer",
+        signal
+      });
+      if (response.ok) return response;
+      lastError = new Error(`HTTP ${response.status}`);
+    } catch (error) {
+      if (signal.aborted) throw error;
+      lastError = error;
+    }
+  }
+  throw lastError || new Error(`Snapshot unavailable: ${path}`);
+}
 
 function readGitHubHourlyCache(): GitHubHourlyCache | null {
   if (typeof window === "undefined" || !("localStorage" in window)) return null;
@@ -129,13 +156,7 @@ function snapshotToStatus(definition: SnapshotDefinition, payload: SnapshotPaylo
 
 async function loadSnapshot(definition: SnapshotDefinition, signal: AbortSignal): Promise<IntegrationStatus> {
   try {
-    const response = await fetch(definition.path, {
-      cache: "no-store",
-      credentials: "same-origin",
-      referrerPolicy: "no-referrer",
-      signal
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const response = await fetchSnapshot(definition.path, signal);
     return snapshotToStatus(definition, (await response.json()) as SnapshotPayload);
   } catch (error) {
     if (signal.aborted) throw error;
@@ -187,13 +208,7 @@ function providerStatus(value: unknown): ProviderStatus | null {
 
 export async function loadProviderStatuses(signal: AbortSignal): Promise<ProviderStatus[]> {
   try {
-    const response = await fetch("data/api-status.json", {
-      cache: "no-store",
-      credentials: "same-origin",
-      referrerPolicy: "no-referrer",
-      signal
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const response = await fetchSnapshot("data/api-status.json", signal);
     const payload = await response.json() as ProviderSnapshotPayload;
     return Array.isArray(payload.providers)
       ? payload.providers.flatMap((item) => providerStatus(item) || [])
