@@ -107,6 +107,7 @@ export interface SteamItem {
   categories?: string[];
   controllerSupport?: string;
   achievementPercent?: number;
+  dlcAvailable?: number;
 }
 
 export interface SteamInsights {
@@ -116,6 +117,18 @@ export interface SteamInsights {
   playstyle?: Array<{ label?: string; value?: number; note?: string }>;
   rareAchievements?: SteamItem[];
   metadataSampleSize?: number;
+  availableDlcCount?: number;
+  dlcHeavyGames?: SteamItem[];
+  averageHoursPerGame?: number;
+  deepDiveGames?: number;
+  lowPlaytimeGames?: number;
+}
+
+export interface SteamSpending {
+  currency?: string;
+  totalSpent?: number | null;
+  highestGame?: { title?: string; amount?: number | null; note?: string };
+  games?: Array<{ title?: string; amount?: number | null; dlcCount?: number; note?: string }>;
 }
 
 export interface SteamReplayGame extends SteamItem {
@@ -165,6 +178,7 @@ export interface SteamData {
   preorderWatch?: SteamItem[];
   replay?: SteamReplay;
   insights?: SteamInsights;
+  spending?: SteamSpending;
 }
 
 export interface SpotifyItem {

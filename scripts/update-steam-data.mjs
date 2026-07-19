@@ -376,12 +376,16 @@ function withLastValues(output, previous) {
       result.insights = previous.insights;
       result.stale = true;
     } else {
-      ["ownedGames", "recentGames", "genreMix", "playstyle", "rareAchievements"].forEach((key) => {
+      ["ownedGames", "recentGames", "genreMix", "playstyle", "rareAchievements", "dlcHeavyGames"].forEach((key) => {
         if (!result.insights[key]?.length && previous.insights[key]?.length) {
           result.insights[key] = previous.insights[key];
         }
       });
       result.insights.metadataSampleSize ||= previous.insights.metadataSampleSize;
+      result.insights.availableDlcCount ||= previous.insights.availableDlcCount;
+      result.insights.averageHoursPerGame ||= previous.insights.averageHoursPerGame;
+      result.insights.deepDiveGames ||= previous.insights.deepDiveGames;
+      result.insights.lowPlaytimeGames ||= previous.insights.lowPlaytimeGames;
     }
   }
 
@@ -580,21 +584,25 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
   let singleMinutes = 0;
   let multiMinutes = 0;
   let controllerMinutes = 0;
+  let availableDlcCount = 0;
 
   details.forEach(({ game, details: app }) => {
     if (!app) return;
     const genres = (app.genres || []).map((genre) => genre.description).filter(Boolean);
     const categories = (app.categories || []).map((category) => category.description).filter(Boolean);
     const minutes = Number(game.playtime_forever || 0);
+    const dlcAvailable = Array.isArray(app.dlc) ? app.dlc.length : 0;
     sampledMinutes += minutes;
     genres.forEach((genre) => genreCounts.set(genre, (genreCounts.get(genre) || 0) + minutes));
     if (categories.some((category) => /single-player/i.test(category))) singleMinutes += minutes;
     if (categories.some((category) => /multi-player|co-op/i.test(category))) multiMinutes += minutes;
     if (categories.some((category) => /controller/i.test(category))) controllerMinutes += minutes;
+    availableDlcCount += dlcAvailable;
     metadata.set(String(game.appid), {
       genres,
       categories,
-      controllerSupport: app.controller_support || (categories.some((category) => /controller/i.test(category)) ? "supported" : "")
+      controllerSupport: app.controller_support || (categories.some((category) => /controller/i.test(category)) ? "supported" : ""),
+      dlcAvailable
     });
   });
 
@@ -621,7 +629,12 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData) {
       { label: "Controller-friendly", value: percent(controllerMinutes), note: `${percent(controllerMinutes)}% of sampled playtime` }
     ],
     rareAchievements: achievementData.rareAchievements || [],
-    metadataSampleSize: metadata.size
+    metadataSampleSize: metadata.size,
+    availableDlcCount,
+    dlcHeavyGames: sample.map(toOwned).filter((game) => Number(game.dlcAvailable || 0) > 0).sort((a, b) => Number(b.dlcAvailable || 0) - Number(a.dlcAvailable || 0)).slice(0, 5),
+    averageHoursPerGame: ownedGames.length ? Math.round(ownedGames.reduce((sum, game) => sum + Number(game.playtime_forever || 0), 0) / ownedGames.length / 60) : 0,
+    deepDiveGames: ownedGames.filter((game) => Number(game.playtime_forever || 0) >= 6000).length,
+    lowPlaytimeGames: ownedGames.filter((game) => Number(game.playtime_forever || 0) < 120).length
   };
 }
 

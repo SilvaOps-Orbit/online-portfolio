@@ -650,6 +650,19 @@ window.PORTFOLIO_CONFIG = {
       note: "Manual value. Update this in portfolio.config.js whenever you want it changed.",
       manual: true
     },
+    spending: {
+      // Steam does not publish purchase receipts. Enter only figures you want shown publicly.
+      currency: "AUD",
+      totalSpent: null,
+      highestGame: {
+        title: "",
+        amount: null,
+        note: "Include the base game and DLC if you want a combined figure."
+      },
+      games: [
+        // Example: { title: "Game name", amount: 120, dlcCount: 3, note: "Base game + DLC" }
+      ]
+    },
     summary:
       "Gaming is part downtime, part challenge, and part systems thinking. This section can refresh from the Steam Web API during deployment without exposing API keys in the browser.",
     currentlyPlaying: [

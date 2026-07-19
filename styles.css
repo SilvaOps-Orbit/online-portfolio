@@ -3977,6 +3977,288 @@ a.provider-pulse-item:focus-visible {
 .steam-playstyle-visual small { margin-top: 6px; color: var(--muted); }
 @keyframes controller-float { 50% { transform: translateY(-7px) rotate(2deg); } }
 
+.steam-playstyle-profile {
+  display: grid;
+  gap: 22px;
+}
+
+.playstyle-block {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.genre-fingerprint {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.72fr) minmax(0, 1.28fr);
+  gap: clamp(20px, 4vw, 42px);
+  align-items: center;
+}
+
+.genre-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(250px, 100%);
+  aspect-ratio: 1;
+  margin-inline: auto;
+  border-radius: 50%;
+  background: var(--genre-ring);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--accent) 15%, transparent);
+  animation: genre-ring-arrive 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.genre-ring::before {
+  position: absolute;
+  inset: 18%;
+  border: 1px solid color-mix(in srgb, var(--line) 76%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--accent) 10%, transparent), transparent 62%),
+    var(--panel-strong);
+  content: "";
+}
+
+.genre-ring::after {
+  position: absolute;
+  inset: -8px;
+  border: 1px dashed color-mix(in srgb, var(--accent-2) 36%, transparent);
+  border-radius: 50%;
+  content: "";
+  animation: genre-orbit 18s linear infinite;
+}
+
+.genre-ring > span {
+  position: relative;
+  z-index: 1;
+  max-width: 60%;
+  text-align: center;
+}
+
+.genre-ring small,
+.genre-ring strong,
+.genre-ring b {
+  display: block;
+}
+
+.genre-ring small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.genre-ring strong {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  line-height: 1.05;
+}
+
+.genre-ring b {
+  margin-top: 5px;
+  color: var(--accent-2);
+  font-size: 1.2rem;
+}
+
+@keyframes genre-ring-arrive {
+  from { opacity: 0; transform: rotate(-40deg) scale(0.72); }
+  to { opacity: 1; transform: rotate(0) scale(1); }
+}
+
+@keyframes genre-orbit { to { transform: rotate(360deg); } }
+
+.genre-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.genre-legend > div {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 55%, transparent);
+}
+
+.genre-legend i {
+  width: 9px;
+  height: 34px;
+  border-radius: 3px;
+  box-shadow: 0 0 9px currentColor;
+}
+
+.genre-legend strong,
+.genre-legend small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.genre-legend strong { color: var(--text); font-size: 0.8rem; }
+.genre-legend small { margin-top: 2px; color: var(--muted); font-size: 0.67rem; }
+.genre-legend > div > b { color: var(--accent-2); font-size: 0.8rem; }
+
+.playstyle-balance {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.8fr) minmax(0, 1.2fr);
+  gap: 22px;
+  align-items: center;
+}
+
+.playstyle-habit-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.playstyle-habit-grid article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 58%, transparent);
+}
+
+.playstyle-habit-grid svg {
+  width: 22px;
+  color: var(--accent-3);
+}
+
+.playstyle-habit-grid strong,
+.playstyle-habit-grid b,
+.playstyle-habit-grid small {
+  display: block;
+}
+
+.playstyle-habit-grid strong { color: var(--accent-2); font-size: 1.4rem; line-height: 1; }
+.playstyle-habit-grid b { margin-top: 7px; color: var(--text); font-size: 0.78rem; }
+.playstyle-habit-grid small { margin-top: 4px; color: var(--muted); font-size: 0.68rem; line-height: 1.35; }
+
+.playstyle-lower-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 18px;
+}
+
+.dlc-profile,
+.spending-profile {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 30%, transparent);
+}
+
+.dlc-profile ol,
+.spending-game-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dlc-profile li {
+  display: grid;
+  grid-template-columns: 24px 58px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  padding: 7px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+}
+
+.dlc-profile li > span {
+  color: var(--accent-3);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.dlc-game-art {
+  width: 58px;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.dlc-profile strong,
+.dlc-profile small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dlc-profile strong { color: var(--text); font-size: 0.78rem; }
+.dlc-profile small { margin-top: 2px; color: var(--muted); font-size: 0.67rem; }
+.dlc-profile li > b { color: var(--accent-2); font-size: 0.75rem; white-space: nowrap; }
+.dlc-profile .playstyle-empty { display: block; padding: 14px; color: var(--muted); text-align: center; }
+
+.spending-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.spending-summary article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel) 62%, transparent);
+}
+
+.spending-summary svg {
+  width: 19px;
+  color: var(--accent-2);
+}
+
+.spending-summary small,
+.spending-summary strong,
+.spending-summary b { display: block; overflow-wrap: anywhere; }
+.spending-summary small { color: var(--muted); font-size: 0.64rem; }
+.spending-summary strong { margin-top: 4px; color: var(--text); font-size: 0.82rem; }
+.spending-summary b { margin-top: 3px; color: var(--accent-2); font-size: 0.76rem; }
+
+.spending-game-list {
+  margin-top: 10px;
+}
+
+.spending-game-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--line);
+}
+
+.spending-game-list strong,
+.spending-game-list small { display: block; }
+.spending-game-list strong { color: var(--text); font-size: 0.8rem; }
+.spending-game-list small { margin-top: 2px; color: var(--muted); font-size: 0.68rem; }
+.spending-game-list b { color: var(--accent-2); white-space: nowrap; }
+
+.spending-pending {
+  margin: 12px 0 0;
+  padding: 11px;
+  border-left: 3px solid var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 7%, transparent);
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.spending-pending code {
+  color: var(--accent-2);
+  font-size: 0.72rem;
+}
+
 .game-picker {
   display: grid;
   gap: 16px;
@@ -4019,6 +4301,8 @@ a.provider-pulse-item:focus-visible {
   .listening-timeline,
   .achievement-cabinet-grid { grid-template-columns: 1fr; }
   .insight-panel { min-height: 0; }
+  .playstyle-habit-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .playstyle-lower-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
@@ -4026,12 +4310,20 @@ a.provider-pulse-item:focus-visible {
   .insight-view-grid,
   .steam-pulse-grid,
   .steam-playstyle,
+  .genre-fingerprint,
+  .playstyle-balance,
   .discovery-radar,
   .game-picker-stage { grid-template-columns: 1fr; }
   .discovery-orbit { width: 150px; }
   .insight-stat-row { grid-template-columns: 1fr; }
   .discovery-grid { grid-template-columns: 1fr; }
   .steam-playstyle-visual { min-height: 160px; }
+  .genre-ring { width: min(210px, 82vw); }
+  .genre-legend { grid-template-columns: 1fr; }
+  .playstyle-habit-grid,
+  .spending-summary { grid-template-columns: 1fr; }
+  .dlc-profile li { grid-template-columns: 20px 50px minmax(0, 1fr); }
+  .dlc-profile li > b { grid-column: 3; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -4040,6 +4332,8 @@ a.provider-pulse-item:focus-visible {
   .discovery-orbit::before,
   .steam-heatmap span,
   .steam-playstyle-visual svg,
+  .genre-ring,
+  .genre-ring::after,
   .game-picker-art { animation: none !important; }
 }
 
