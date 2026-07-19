@@ -4117,7 +4117,8 @@ a.provider-pulse-item:focus-visible {
   gap: 10px;
 }
 
-.playstyle-habit-grid article {
+.playstyle-habit-grid article,
+.playstyle-habit-grid .playstyle-habit-card {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 11px;
@@ -4126,6 +4127,40 @@ a.provider-pulse-item:focus-visible {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: color-mix(in srgb, var(--panel) 58%, transparent);
+}
+
+.playstyle-habit-grid .playstyle-habit-card {
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.playstyle-habit-grid .playstyle-habit-card:hover {
+  border-color: var(--accent-3);
+  transform: translateY(-2px);
+}
+
+.playstyle-habit-grid .playstyle-habit-card.is-open {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--panel) 78%, transparent);
+}
+
+.playstyle-habit-hint {
+  margin-top: 6px !important;
+  color: var(--accent-3) !important;
+  font-size: 0.64rem !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.deep-dive-reveal {
+  margin-top: 14px;
+}
+
+.deep-dive-reveal .game-list {
+  margin-top: 4px;
 }
 
 .playstyle-habit-grid svg {
