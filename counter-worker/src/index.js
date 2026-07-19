@@ -1,6 +1,14 @@
 const WORKSPACE_PATTERN = /^[a-zA-Z0-9._ -]{1,80}$/;
 const COUNTER_PATTERN = /^[a-zA-Z0-9._-]{1,80}$/;
 
+class CounterProviderError extends Error {
+  constructor(status) {
+    super(`CounterAPI returned ${status}`);
+    this.name = "CounterProviderError";
+    this.status = status;
+  }
+}
+
 function permittedOrigin(request, env) {
   const origin = request.headers.get("Origin") || "";
   if (origin === env.ALLOWED_ORIGIN) return origin;
@@ -66,7 +74,7 @@ async function requestCounter(env, action) {
     },
     redirect: "error"
   });
-  if (!response.ok) throw new Error(`CounterAPI returned ${response.status}`);
+  if (!response.ok) throw new CounterProviderError(response.status);
   return counterValue(await response.json());
 }
 
@@ -90,7 +98,8 @@ export default {
       }, 200, origin);
     } catch (error) {
       console.error("CounterAPI gateway request failed", error);
-      return json({ error: "Counter service unavailable" }, 502, origin);
+      const providerStatus = error instanceof CounterProviderError ? error.status : null;
+      return json({ error: "Counter service unavailable", providerStatus }, 502, origin);
     }
   }
 };
