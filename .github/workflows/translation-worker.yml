@@ -38,18 +38,23 @@ jobs:
         working-directory: translation-worker
         run: npm run check
 
-      - name: Verify deployment secrets
+      - name: Check deployment readiness
+        id: readiness
         shell: bash
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           RAPIDAPI_KEY: ${{ secrets.X_RAPIDAPI_KEY }}
         run: |
-          test -n "$CLOUDFLARE_API_TOKEN" || { echo "::error::Add CLOUDFLARE_API_TOKEN to repository secrets."; exit 1; }
-          test -n "$CLOUDFLARE_ACCOUNT_ID" || { echo "::error::Add CLOUDFLARE_ACCOUNT_ID to repository secrets."; exit 1; }
-          test -n "$RAPIDAPI_KEY" || { echo "::error::Add X_RAPIDAPI_KEY to repository secrets."; exit 1; }
+          if test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$RAPIDAPI_KEY"; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Translation Worker deployment skipped. X_RAPIDAPI_KEY is configured; add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID to enable automatic deployment."
+          fi
 
       - name: Deploy credential-isolated translation gateway
+        if: steps.readiness.outputs.ready == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
