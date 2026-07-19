@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { createRoot } from "react-dom/client";
+import { CalendarClock, Gamepad2, Keyboard, Mouse, TrendingUp, Trophy } from "lucide-react";
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
 import { getPortfolioConfig } from "./portfolio-types";
@@ -128,13 +129,15 @@ function GameList({ items = [], label, pageSize = 6 }: GameListProps) {
 
 function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]> }) {
   const topGames = replay.topGames || [];
+  const controllerPercent = Math.min(100, Math.max(0, Number(replay.controllerPercent || 0)));
+  const otherInputPercent = 100 - controllerPercent;
   const metrics = [
-    { label: "Playtime", value: `${Number(replay.totalHours || 0).toLocaleString("en-AU")} hrs` },
-    { label: "Sessions", value: Number(replay.totalSessions || 0).toLocaleString("en-AU") },
-    { label: "Games played", value: Number(replay.gamesPlayed || 0).toLocaleString("en-AU") },
-    { label: "New games", value: Number(replay.newGames || 0).toLocaleString("en-AU") },
-    { label: "Achievements", value: Number(replay.achievements || 0).toLocaleString("en-AU") },
-    { label: "Longest streak", value: `${Number(replay.longestStreak || 0)} days` }
+    { label: "Playtime", value: `${Number(replay.totalHours || 0).toLocaleString("en-AU")} hrs`, note: "Total time played during the Replay year." },
+    { label: "Sessions", value: Number(replay.totalSessions || 0).toLocaleString("en-AU"), note: "Individual play sessions recorded by Steam." },
+    { label: "Games played", value: Number(replay.gamesPlayed || 0).toLocaleString("en-AU"), note: "Different games launched during the year." },
+    { label: "New games", value: Number(replay.newGames || 0).toLocaleString("en-AU"), note: "Games played for the first time that year." },
+    { label: "Achievements", value: Number(replay.achievements || 0).toLocaleString("en-AU"), note: "Achievements unlocked across your library." },
+    { label: "Longest streak", value: `${Number(replay.longestStreak || 0)} days`, note: "Longest run of consecutive days played." }
   ];
 
   return (
@@ -145,10 +148,11 @@ function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]>
       </div>
       <div className="steam-replay-board">
         <div className="steam-replay-year" aria-hidden="true"><span>REPLAY</span><strong>{replay.year || 2025}</strong><small>{replay.stale ? "Saved snapshot" : "Steam verified"}</small></div>
-        <div className="steam-replay-metrics">{metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong></div>)}</div>
+        <div className="steam-replay-metrics">{metrics.map((metric) => <div key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong><small>{metric.note}</small></div>)}</div>
       </div>
-      {topGames.length > 0 && <div className="steam-replay-top"><div className="steam-replay-subheading"><span>Top games</span><small>{replay.controllerPercent ? `${replay.controllerPercent}% of playtime used a controller` : "Ranked by Steam playtime"}</small></div><ol>{topGames.slice(0, 3).map((game, index) => { const title = game.title || game.name || "Steam game"; return <li key={game.appid || title}><span className="steam-replay-rank">0{index + 1}</span><SteamArtwork item={game} title={title} className="steam-replay-game-art" /><div><a href={game.url} target="_blank" rel="noopener noreferrer">{title}</a><span>{Number(game.hours || 0).toLocaleString("en-AU")} hrs · {Number(game.sessions || 0)} sessions</span><span className="steam-replay-share"><i style={{ width: `${Math.min(100, Number(game.playtimePercent || 0))}%` }} />{Number(game.playtimePercent || 0).toFixed(1)}% of the year</span></div></li>; })}</ol></div>}
-      <div className="steam-replay-footer"><span>{Number(replay.rareAchievements || 0)} rare achievements</span><span>More games than {Number(replay.gamesPercentile || 0)}% of Steam players</span><span>{replay.lastGoodAt ? `Snapshot ${formatDate(replay.lastGoodAt)}` : "Public Steam Replay"}</span></div>
+      {replay.controllerPercent !== undefined && <div className="steam-replay-input"><div className="steam-replay-subheading"><span>How you played</span><small>Steam reports controller time directly; the remainder includes keyboard, mouse, and other input.</small></div><div className="steam-input-grid"><div className="steam-input-card is-controller"><Gamepad2 aria-hidden="true" /><div><span>Controller</span><strong>{controllerPercent}%</strong><small>of recorded playtime</small></div><span className="steam-input-meter" aria-label={`${controllerPercent}% controller playtime`}><i style={{ width: `${controllerPercent}%` }} /></span></div><div className="steam-input-card is-keyboard"><span className="steam-input-icons"><Keyboard aria-hidden="true" /><Mouse aria-hidden="true" /></span><div><span>Keyboard, mouse + other</span><strong>{otherInputPercent}%</strong><small>remaining reported input time</small></div><span className="steam-input-meter" aria-label={`${otherInputPercent}% keyboard, mouse, and other input time`}><i style={{ width: `${otherInputPercent}%` }} /></span></div></div></div>}
+      {topGames.length > 0 && <div className="steam-replay-top"><div className="steam-replay-subheading"><span>Top games</span><small>Ranked by your Steam Replay playtime.</small></div><ol>{topGames.slice(0, 3).map((game, index) => { const title = game.title || game.name || "Steam game"; const share = Math.min(100, Number(game.playtimePercent || 0)); return <li key={game.appid || title}><span className="steam-replay-rank">0{index + 1}</span><SteamArtwork item={game} title={title} className="steam-replay-game-art" /><div className="steam-replay-game-copy"><a href={game.url} target="_blank" rel="noopener noreferrer">{title}</a><span>{Number(game.hours || 0).toLocaleString("en-AU")} hrs · {Number(game.sessions || 0)} sessions</span><div className="steam-replay-share"><span><small>Share of annual playtime</small><strong>{share.toFixed(1)}%</strong></span><span className="steam-replay-meter" aria-label={`${share.toFixed(1)}% of annual playtime`}><i style={{ width: `${share}%` }} /></span></div></div></li>; })}</ol></div>}
+      <div className="steam-replay-footer"><div><Trophy aria-hidden="true" /><span><strong>{Number(replay.rareAchievements || 0)}</strong><b>Rare achievements</b><small>Achievements Steam classifies as rare. Your overall achievement activity ranked above {Number(replay.achievementsPercentile || 0)}% of players.</small></span></div><div><TrendingUp aria-hidden="true" /><span><strong>{Number(replay.gamesPercentile || 0)}th percentile</strong><b>Game variety</b><small>You played more different games than {Number(replay.gamesPercentile || 0)}% of Steam players in this Replay.</small></span></div><div><CalendarClock aria-hidden="true" /><span><strong>{replay.lastGoodAt ? formatDate(replay.lastGoodAt) : `Replay ${replay.year || 2025}`}</strong><b>Snapshot captured</b><small>The last successful public Steam Replay refresh preserved between live updates.</small></span></div></div>
     </section>
   );
 }
