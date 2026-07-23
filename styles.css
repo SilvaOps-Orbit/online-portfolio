@@ -3693,6 +3693,10 @@ a.provider-pulse-item:focus-visible {
   min-height: 0;
 }
 
+.spotify-insight-deck .spotify-taste-panel.is-empty {
+  min-height: 0;
+}
+
 .timeline-empty {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);

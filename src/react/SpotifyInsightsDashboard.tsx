@@ -52,10 +52,9 @@ function TasteView({ data }: { data: SpotifyData }) {
   const [range, setRange] = useState("shortTerm");
   const taste = data.insights?.taste || {};
   const selected = taste[range] || taste.mediumTerm || taste.longTerm || {};
-  const playlists = data.playlists || [];
-  const artists = selected.artists?.length ? selected.artists : playlists.slice(0, 5).map((item) => ({ ...item, meta: "Playlist signal" }));
-  const tracks = selected.tracks?.length ? selected.tracks : playlists.slice(5, 10).map((item) => ({ ...item, meta: "Playlist signal" }));
-  return <div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists will appear after the next scoped Spotify refresh." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>{data.insights?.scopesReady ? "Spotify history" : "Playlist fallback"}</small></div><MiniList items={tracks} empty="Top tracks will appear after the next scoped Spotify refresh." /></div></div>;
+  const artists = selected.artists || [];
+  const tracks = selected.tracks || [];
+  return <div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists need renewed Spotify listening-history access." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>Spotify listening data</small></div><MiniList items={tracks} empty="Top tracks need renewed Spotify listening-history access." /></div></div>;
 }
 
 function TimelineView({ data }: { data: SpotifyData }) {
@@ -103,7 +102,8 @@ function SpotifyInsightsDashboard() {
     return () => controller.abort();
   }, []);
   const panel = useMemo(() => active === "taste" ? <TasteView data={data} /> : active === "timeline" ? <TimelineView data={data} /> : active === "analytics" ? <AnalyticsView data={data} /> : <DiscoveryView data={data} />, [active, data]);
-  return <section className="insight-deck spotify-insight-deck" aria-labelledby="spotify-insights-title"><div className="insight-deck-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><h3 id="spotify-insights-title">Inside the listening signal</h3><p>Four compact views, one stable panel. Live Spotify data when available, saved snapshot between refreshes.</p></div></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className={`insight-panel${active === "timeline" ? " spotify-timeline-panel" : ""}`} role="tabpanel" key={active}>{panel}</div></section>;
+  const panelClass = `insight-panel${active === "timeline" ? " spotify-timeline-panel" : ""}${active === "taste" && !data.insights?.scopesReady ? " spotify-taste-panel is-empty" : ""}`;
+  return <section className="insight-deck spotify-insight-deck" aria-labelledby="spotify-insights-title"><div className="insight-deck-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><h3 id="spotify-insights-title">Inside the listening signal</h3><p>Four compact views, one stable panel. Live Spotify data when available, saved snapshot between refreshes.</p></div></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className={panelClass} role="tabpanel" key={active}>{panel}</div></section>;
 }
 
 export function mountSpotifyInsightsDashboard(target: HTMLElement) {
