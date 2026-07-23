@@ -669,10 +669,11 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData, spe
     recentMinutes: Number(game.playtime_2weeks || 0),
     ...(metadata.get(String(game.appid)) || {})
   });
+  const recentOwnedGames = await enrichGameArtwork(recentGames.map(toOwned));
 
   return {
     ownedGames: ownedGames.map(toOwned),
-    recentGames: recentGames.map(toOwned),
+    recentGames: recentOwnedGames,
     genreMix: [...genreCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([label, minutes]) => ({ label, value: Math.round(minutes / 60) })),
     playstyle: [
       { label: "Single-player", value: percent(singleMinutes), note: `${percent(singleMinutes)}% of sampled playtime` },
