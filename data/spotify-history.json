@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T13:45:00+10:00",
+  "updatedAt": "2026-07-23T12:19:39+10:00",
   "privacy": "Curated public listening summaries only. Raw Spotify account exports and detailed play events are not stored here.",
   "snapshots": [
     {
@@ -76,6 +76,31 @@
         { "title": "cut my fingers off", "meta": "Weekly track #3" },
         { "title": "Bad Habit", "meta": "Weekly track #4" },
         { "title": "Money Trees", "meta": "Weekly track #5" }
+      ]
+    },
+    {
+      "id": "spotify-weekly-2026-06-29-07-05",
+      "periodStart": "2026-06-29",
+      "periodEnd": "2026-07-05",
+      "periodLabel": "29 Jun-5 Jul 2026",
+      "minutes": 421,
+      "scope": "Full week",
+      "note": "Curated from an official Spotify Listening Stats share.",
+      "sourceUrl": "https://www.spotify.com/listeningstats/instanceshare/38HDq57Tzso1oEdWkPSEB6",
+      "sourceImage": "https://seadragon.spotifycdn.com/share-assets/en/38HDq57Tzso1oEdWkPSEB6_1260x1260.jpeg",
+      "topArtists": [
+        { "title": "Joost", "meta": "Weekly artist #1" },
+        { "title": "Naethan Apollo", "meta": "Weekly artist #2" },
+        { "title": "ptasinski", "meta": "Weekly artist #3" },
+        { "title": "eric404", "meta": "Weekly artist #4" },
+        { "title": "Ren", "meta": "Weekly artist #5" }
+      ],
+      "topTracks": [
+        { "title": "Come a Little Closer - Dnb remix", "meta": "Weekly track #1" },
+        { "title": "R&B", "meta": "Weekly track #2" },
+        { "title": "Wasting Time", "meta": "Weekly track #3" },
+        { "title": "SAME OLD STORY", "meta": "Weekly track #4" },
+        { "title": "abolish the IRS", "meta": "Weekly track #5" }
       ]
     }
   ]
