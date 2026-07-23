@@ -61,7 +61,7 @@ jobs:
           STEAM_REPLAY_URL: "https://s.team/y25/gnkcbvhr?l=english"
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .
 

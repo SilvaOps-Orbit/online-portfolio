@@ -175,6 +175,10 @@ export interface SteamReplay {
   topGames?: SteamReplayGame[];
 }
 
+// The full shape of the Steam dashboard's data model. This is what the static
+// `window.PORTFOLIO_CONFIG.steam` fallback and the fetched `data/steam.json` snapshot both
+// conform to. The dashboard reads lists (mostPlayed, achievements, completedGames, ...),
+// a Replay year-in-review object, and a computed `insights` block.
 export interface SteamData {
   summary?: string;
   status?: string;

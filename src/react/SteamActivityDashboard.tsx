@@ -3,7 +3,7 @@ import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "re
 // `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
 // Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
-import { CalendarClock, Clock3, Coins, Dice5, Flame, Gamepad2, Grid3X3, Keyboard, Layers3, LibraryBig, Mouse, Sparkles, TrendingUp, Trophy, WalletCards } from "lucide-react";
+import { CalendarClock, Clock3, Coins, Dice5, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, Mouse, Sparkles, TrendingUp, Trophy, WalletCards } from "lucide-react";
 // Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
@@ -80,27 +80,18 @@ function parseHoursFromMeta(item: SteamItem): number {
 }
 
 function getDeepDiveGames(steam: SteamData): SteamItem[] {
-  const insights = steam.insights || {};
-  const pool = insights.ownedGames?.length ? insights.ownedGames : (steam.mostPlayed || []);
+  const pool = steam.insights?.ownedGames?.length ? steam.insights.ownedGames : (steam.mostPlayed || []);
   return pool
-    .filter((item) => {
-      const minutes = Number(item.playtimeMinutes || 0);
-      if (minutes >= 6000) return true;
-      if (minutes) return false;
-      return parseHoursFromMeta(item) >= 100;
-    })
+    .filter((item) => Number(item.playtimeMinutes || 0) >= 6000 || (!item.playtimeMinutes && parseHoursFromMeta(item) >= 100))
     .slice()
     .sort((a, b) => parseHoursFromMeta(b) - parseHoursFromMeta(a));
 }
 
-// The "Playstyle" insight panel: how the library is played rather than just what is owned.
-// Combines precomputed `insights` with Replay and Store-based spending estimates.
 function PlaystyleView({ steam }: { steam: SteamData }) {
   const [deepDiveOpen, setDeepDiveOpen] = useState(false);
   const insights = steam.insights || {};
   const spending = steam.spending || {};
   const currency = spending.currency || "AUD";
-  // Manually logged per-game spends (from the spending source), used to find the priciest title.
   const loggedGames = (spending.games || []).filter((game) => game.title && Number.isFinite(Number(game.amount)));
   const highestLogged = spending.highestGame?.title
     ? spending.highestGame
@@ -109,8 +100,6 @@ function PlaystyleView({ steam }: { steam: SteamData }) {
   const retail = insights.retailEstimate;
   const retailCurrency = retail?.currency || currency;
   const highestRetail = retail?.highestGame;
-  // Prefer the precomputed playstyle split; fall back to a simple controller/other split
-  // derived from the Replay controller percentage when no richer breakdown exists.
   const playstyle = insights.playstyle?.length ? insights.playstyle : [
     { label: "Controller", value: controller, note: `${controller}% of Replay` },
     { label: "Keyboard, mouse + other", value: 100 - controller, note: `${100 - controller}% of Replay` }
@@ -119,15 +108,42 @@ function PlaystyleView({ steam }: { steam: SteamData }) {
   const habitStats = [
     { icon: Clock3, value: `${Number(insights.averageHoursPerGame || 0)} hrs`, label: "Average per owned game", note: "Total public playtime divided by owned games." },
     { icon: Flame, value: Number(insights.deepDiveGames || 0).toLocaleString("en-AU"), label: "Deep-dive games", note: "Games with at least 100 hours played.", clickable: true },
-    { icon: LibraryBig, value: Number(insights.lowPlaytimeGames || 0).toLocaleString("en-AU"), label: "Low-playtime library", note: "Games with under two hours recorded." },
-    { icon: Layers3, value: Number(insights.availableDlcCount || 0).toLocaleString("en-AU"), label: "DLC listings detected", note: `Available across ${insights.metadataSampleSize || 0} sampled Store pages, not confirmed purchases.` }
+    { icon: LibraryBig, value: Number(insights.lowPlaytimeGames || 0).toLocaleString("en-AU"), label: "Low-playtime library", note: "Games with under two hours recorded." }
   ];
-  return <div className="steam-playstyle-profile"><section className="playstyle-block"><div className="insight-subhead"><span>Genre fingerprint</span><small>weighted by playtime across sampled Store metadata</small></div><GenreFingerprint genres={insights.genreMix} /></section><section className="playstyle-block"><div className="insight-subhead"><span>How the library gets played</span><small>Steam public playtime + Replay input data</small></div><div className="playstyle-balance"><div className="steam-playstyle-visual"><Gamepad2 aria-hidden="true" /><span><strong>{controller}%</strong><small>controller playtime in Replay</small></span></div><InsightMeterList items={playstyle} /></div></section><section className="playstyle-habit-grid">{habitStats.map(({ icon: Icon, value, label, note, clickable }) => clickable
-  ? <button key={label} type="button" className={`playstyle-habit-card${deepDiveOpen ? " is-open" : ""}`} aria-expanded={deepDiveOpen} onClick={() => setDeepDiveOpen((open) => !open)}><Icon aria-hidden="true" /><span><strong>{value}</strong><b>{label}</b><small>{note}</small><em className="playstyle-habit-hint">{deepDiveOpen ? "Hide games" : "Tap to view"}</em></span></button>
-  : <article key={label}><Icon aria-hidden="true" /><span><strong>{value}</strong><b>{label}</b><small>{note}</small></span></article>)}</section>
-{deepDiveOpen && <section className="deep-dive-reveal" aria-label="Deep-dive games list">{deepDiveGames.length
-  ? <GameList items={deepDiveGames} label="Deep-dive games" pageSize={4} />
-  : <p className="game-note">Deep-dive games will appear after the next Steam refresh.</p>}</section>}<section className="playstyle-lower-grid"><div className="dlc-profile"><div className="insight-subhead"><span>DLC-heavy game ecosystems</span><small>Store availability, not purchase history</small></div><ol>{(insights.dlcHeavyGames || []).slice(0, 5).map((game, index) => <li key={game.appid || game.title}><span>{String(index + 1).padStart(2, "0")}</span><SteamArtwork item={game} title={game.title || "Steam game"} className="dlc-game-art" /><div><strong>{game.title}</strong><small>{game.meta}</small></div><b>{Number(game.dlcAvailable || 0)} DLC</b></li>)}{!insights.dlcHeavyGames?.length && <li className="playstyle-empty">DLC metadata will appear after the next Steam refresh.</li>}</ol></div><div className="spending-profile"><div className="insight-subhead"><span>Retail value estimate</span><small>{retail?.sampledGames || 0} owned-game Store pages sampled</small></div><div className="spending-summary"><article><WalletCards aria-hidden="true" /><span><small>Library value</small><strong>{steam.accountValue?.value || "Not logged"}</strong></span></article><article><Coins aria-hidden="true" /><span><small>Total personally logged</small><strong>{money(spending.totalSpent, currency)}</strong></span></article><article><TrendingUp aria-hidden="true" /><span><small>Highest sampled retail estimate</small><strong>{highestRetail?.title || "Awaiting Store prices"}</strong><b>{money(highestRetail?.amount, retailCurrency)}</b></span></article></div>{retail?.topGames?.length ? <ol className="spending-game-list">{retail.topGames.map((game) => <li key={game.appid || game.title}><span><strong>{game.title}</strong><small>Base {money(game.baseAmount, game.currency || retailCurrency)} + {game.confirmedDlcCount || 0} confirmed DLC {money(game.dlcAmount, game.currency || retailCurrency)}</small></span><b>{money(game.amount, game.currency || retailCurrency)}</b></li>)}</ol> : <p className="spending-pending">Store-price estimates will appear after the next Steam refresh.</p>}<p className="spending-method">{retail?.method || "Full-price Store estimate only. Steam does not expose purchase receipts or public DLC ownership."}</p>{loggedGames.length > 0 && <p className="spending-method">Actual amounts manually logged for {loggedGames.length} game{loggedGames.length === 1 ? "" : "s"}; highest logged: {highestLogged?.title} at {money(highestLogged?.amount, currency)}.</p>}</div></section></div>;
+
+  return (
+    <div className="steam-playstyle-profile">
+      <section className="playstyle-block">
+        <div className="insight-subhead"><span>Genre fingerprint</span><small>weighted by playtime across sampled Store metadata</small></div>
+        <GenreFingerprint genres={insights.genreMix} />
+      </section>
+      <section className="playstyle-block">
+        <div className="insight-subhead"><span>How the library gets played</span><small>Steam public playtime + Replay input data</small></div>
+        <div className="playstyle-balance"><div className="steam-playstyle-visual"><Gamepad2 aria-hidden="true" /><span><strong>{controller}%</strong><small>controller playtime in Replay</small></span></div><InsightMeterList items={playstyle} /></div>
+      </section>
+      <section className="playstyle-habit-grid">
+        {habitStats.map(({ icon: Icon, value, label, note, clickable }) => clickable
+          ? <button key={label} type="button" className={`playstyle-habit-card${deepDiveOpen ? " is-open" : ""}`} aria-expanded={deepDiveOpen} onClick={() => setDeepDiveOpen((open) => !open)}><Icon aria-hidden="true" /><span><strong>{value}</strong><b>{label}</b><small>{note}</small><em className="playstyle-habit-hint">{deepDiveOpen ? "Hide games" : "Tap to view games"}</em></span></button>
+          : <article key={label}><Icon aria-hidden="true" /><span><strong>{value}</strong><b>{label}</b><small>{note}</small></span></article>)}
+      </section>
+      {deepDiveOpen && <section className="deep-dive-reveal" aria-label="Deep-dive games list">{deepDiveGames.length
+        ? <GameList items={deepDiveGames} label="Deep-dive games" pageSize={4} />
+        : <p className="game-note">Deep-dive games will appear after the next Steam refresh.</p>}</section>}
+      <section className="spending-profile">
+        <div className="insight-subhead"><span>Retail value estimate</span><small>{retail?.sampledGames || 0} owned-game Store pages sampled</small></div>
+        <div className="spending-summary">
+          <article><WalletCards aria-hidden="true" /><span><small>Library value</small><strong>{steam.accountValue?.value || "Not logged"}</strong></span></article>
+          <article><Coins aria-hidden="true" /><span><small>Total personally logged</small><strong>{money(spending.totalSpent, currency)}</strong></span></article>
+          <article><TrendingUp aria-hidden="true" /><span><small>Highest sampled retail estimate</small><strong>{highestRetail?.title || "Awaiting Store prices"}</strong><b>{money(highestRetail?.amount, retailCurrency)}</b></span></article>
+        </div>
+        {retail?.topGames?.length
+          ? <ol className="spending-game-list">{retail.topGames.map((game) => <li key={game.appid || game.title}><span><strong>{game.title}</strong><small>Base {money(game.baseAmount, game.currency || retailCurrency)}{Number(game.confirmedDlcCount || 0) > 0 ? ` + ${game.confirmedDlcCount} owner-confirmed DLC ${money(game.dlcAmount, game.currency || retailCurrency)}` : ""}</small></span><b>{money(game.amount, game.currency || retailCurrency)}</b></li>)}</ol>
+          : <p className="spending-pending">Store-price estimates will appear after the next Steam refresh.</p>}
+        <p className="spending-method">{retail?.method || "Full-price Store estimate only. Steam does not expose purchase receipts or public DLC ownership."}</p>
+        {loggedGames.length > 0 && <p className="spending-method">Actual amounts manually logged for {loggedGames.length} game{loggedGames.length === 1 ? "" : "s"}; highest logged: {highestLogged?.title} at {money(highestLogged?.amount, currency)}.</p>}
+      </section>
+    </div>
+  );
 }
 
 // Tabbed "Library intelligence" deck. Holds which sub-panel is active and, for the
@@ -150,7 +166,7 @@ function SteamInsightsDeck({ steam }: { steam: SteamData }) {
   const pulse = Array.from({ length: 14 }, (_, index) => {
     const game = recent[index % Math.max(1, recent.length)];
     const value = recent.length ? Math.max(1, Math.round(Number(game?.recentMinutes || recentMinutes / recent.length || 0) / 60)) : 0;
-    return { value, label: game?.title || game?.name || "No activity" };
+    return { value, label: game?.title || game?.name || "No activity", game };
   });
   // The four selectable tabs and their icons.
   const tabs: Array<{ id: SteamInsightView; label: string; icon: typeof LibraryBig }> = [
@@ -162,7 +178,7 @@ function SteamInsightsDeck({ steam }: { steam: SteamData }) {
   // Largest pulse value, used to normalise each heatmap cell's intensity.
   const pulseMax = Math.max(1, ...pulse.map((item) => item.value));
   const renderPanel = () => {
-    if (active === "pulse") return <div className="steam-pulse-view"><div className="insight-stat-row"><div><strong>{recent.length}</strong><span>recent games</span></div><div><strong>{Math.round(recentMinutes / 60)}</strong><span>hours in 2 weeks</span></div><div><strong>{steam.replay?.longestStreak || 0}</strong><span>day Replay streak</span></div></div><div className="steam-pulse-grid"><div><div className="insight-subhead"><span>14-slot activity signal</span><small>relative recent-game intensity, not a daily calendar</small></div><div className="steam-heatmap" aria-label="Recent library activity signal">{pulse.map((item, index) => <span key={index} title={`${item.label}: ${item.value} hour signal`} style={{ "--pulse": item.value / pulseMax } as CSSProperties} />)}</div></div><div><div className="insight-subhead"><span>Genre mix</span><small>{insights.metadataSampleSize ? `${insights.metadataSampleSize} games sampled` : "saved metadata"}</small></div><InsightMeterList items={insights.genreMix || []} /></div></div></div>;
+    if (active === "pulse") return <div className="steam-pulse-view"><div className="insight-stat-row"><div><strong>{recent.length}</strong><span>recent games</span></div><div><strong>{Math.round(recentMinutes / 60)}</strong><span>hours in 2 weeks</span></div><div><strong>{steam.replay?.longestStreak || 0}</strong><span>day Replay streak</span></div></div><div className="steam-pulse-grid"><div><div className="insight-subhead"><span>14-slot activity signal</span><small>recent-game covers weighted by two-week playtime</small></div><div className="steam-heatmap" aria-label="Recent library activity signal">{pulse.map((item, index) => <div className="steam-pulse-cell" key={`${item.game?.appid || item.label}-${index}`} title={`${item.label}: ${item.value} hour signal`} style={{ "--pulse": item.value / pulseMax } as CSSProperties}>{item.game ? <SteamArtwork item={item.game} title={item.label} className="steam-pulse-art" /> : <span className="steam-pulse-art game-art-placeholder" role="img" aria-label="No recent game artwork">Steam</span>}<i aria-hidden="true" /></div>)}</div></div><div><div className="insight-subhead"><span>Genre mix</span><small>{insights.metadataSampleSize ? `${insights.metadataSampleSize} games sampled` : "saved metadata"}</small></div><InsightMeterList items={insights.genreMix || []} /></div></div></div>;
     if (active === "cabinet") return <div className="achievement-cabinet"><div className="insight-subhead"><span>Achievement cabinet</span><small>lowest global unlock rate first when Steam rarity is available</small></div><div className="achievement-cabinet-grid">{cabinet.slice(0, 6).map((item, index) => <article key={`${item.appid}-${item.title}-${index}`}><SteamArtwork item={item} title={item.title || "Achievement"} className="cabinet-art" /><span><strong>{item.title}</strong><small>{item.meta}</small><b>{item.achievementPercent !== undefined ? `${item.achievementPercent.toFixed(1)}% global unlock` : item.note}</b></span></article>)}</div></div>;
     if (active === "playstyle") return <PlaystyleView steam={steam} />;
     return <div className="game-picker"><div className="game-picker-stage">{pick ? <><SteamArtwork item={pick} title={pick.title || pick.name || "Steam game"} className="game-picker-art" /><span><small>THE SELECTOR CHOSE</small><strong>{pick.title || pick.name}</strong><b>{pick.genres?.slice(0, 2).join(" / ") || pick.meta || "From the owned library snapshot"}</b>{pick.note && <em>{pick.note}</em>}</span></> : <p className="insight-empty">Owned-game choices will appear after the next Steam refresh.</p>}</div><button className="button primary game-picker-button" type="button" onClick={() => setPickIndex((value) => pickerPool.length ? (value + 1 + Math.floor(Math.random() * Math.max(1, pickerPool.length - 1))) % pickerPool.length : 0)}><Dice5 aria-hidden="true" /> Roll another</button></div>;
@@ -290,8 +306,11 @@ function GameList({ items = [], label, pageSize = 6 }: GameListProps) {
   return <ul className={`game-list cycle-list react-cycle-list${pageSize === 3 && games.length >= 3 ? " is-triple" : ""}${games.length > pageSize ? " is-cycling" : " is-static-animated"}${swapping ? " is-swapping" : ""}`} aria-label={label}>{visible.map((item, index) => <GameItem key={`${start}-${item.appid || item.title || item.name}-${index}`} item={item} index={index} />)}</ul>;
 }
 
+// The "Steam Replay" section: a year-in-review snapshot. Shows headline metrics, an
+// input-split (controller vs keyboard/mouse), top games, and percentile bragging rights.
 function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]> }) {
   const topGames = replay.topGames || [];
+  // Clamp the controller percentage into 0–100 so the meter bars can't overflow.
   const controllerPercent = Math.min(100, Math.max(0, Number(replay.controllerPercent || 0)));
   const otherInputPercent = 100 - controllerPercent;
   const metrics = [
@@ -320,11 +339,18 @@ function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]>
   );
 }
 
+// Root dashboard component. Owns the merged `steam` state and orchestrates the layout:
+// profile/stat column, "Currently Playing" + store watch, the insights deck, the Replay
+// panel, and the scrolling store-radar marquee.
 function SteamActivityDashboard() {
   const [steam, setSteam] = useState<SteamData>(steamFallback);
   const [watchIndex, setWatchIndex] = useState(0);
   const watch = useMemo(() => steam.preorderWatch || [], [steam.preorderWatch]);
 
+  // On mount: (1) subscribe to a global "echoops:steam-data" event so other scripts/widgets
+  // can push a fresh snapshot in, and (2) fetch data/steam.json (with a local-vs-deployed
+  // fallback URL list) and merge it over the static fallback. A cache-busting query string
+  // and an AbortController ensure a clean teardown if the component unmounts.
   useEffect(() => {
     const receive = (event: Event) => setSteam((current) => mergeSteamData(current, (event as CustomEvent<SteamData>).detail));
     document.addEventListener("echoops:steam-data", receive);
@@ -351,6 +377,8 @@ function SteamActivityDashboard() {
     return () => { controller.abort(); document.removeEventListener("echoops:steam-data", receive); };
   }, []);
 
+  // Rotates the single "Pre-Order / Top 20 watch" slot through the watch list every 6.5s.
+  // Skips rotation when there's only one item or the user prefers reduced motion.
   useEffect(() => {
     setWatchIndex(0);
     if (watch.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -358,6 +386,8 @@ function SteamActivityDashboard() {
     return () => window.clearInterval(timer);
   }, [watch]);
 
+  // Build the stat tiles: start from the data file's stats, then append the computed
+  // SteamDB account value as an extra tile when present.
   const stats = [...(steam.stats || [])];
   if (steam.accountValue?.value) stats.push({ label: "SteamDB Value", value: steam.accountValue.value, note: steam.accountValue.note });
   const current = steam.currentlyPlaying || [];
@@ -384,11 +414,16 @@ function SteamActivityDashboard() {
       </div>
       <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
+      {/* Store-radar marquee: the ticker list is duplicated so the CSS can loop seamlessly.
+          The second copy is hidden from assistive tech and skipped via tabIndex. */}
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>
     </>
   );
 }
 
+// Entry point called by the loader once the dashboard island scrolls into view. Mounts the
+// React tree into the target DOM node, wrapped in StrictMode and the IslandBoundary so any
+// render error degrades to a standalone fallback message instead of crashing the page.
 export function mountSteamActivityDashboard(target: HTMLElement) {
   createRoot(target).render(<StrictMode><IslandBoundary label="Steam activity dashboard"><SteamActivityDashboard /></IslandBoundary></StrictMode>);
 }

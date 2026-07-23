@@ -53,7 +53,7 @@ jobs:
           MEDIASTACK_ACCESS_KEY: ${{ secrets.MEDIASTACK_ACCESS_KEY }}
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: .
 

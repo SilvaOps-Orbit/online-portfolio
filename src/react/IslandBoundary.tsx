@@ -1,3 +1,6 @@
+// React error boundary used to wrap each "island" (independent React widget) on the page.
+// If a child throws during render, it shows a self-contained fallback message instead of
+// taking down the whole document, so one broken widget never breaks the rest of the site.
 import { Component, type ErrorInfo, type PropsWithChildren } from "react";
 
 interface IslandBoundaryProps extends PropsWithChildren {

@@ -612,6 +612,7 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData, spe
     if (categories.some((category) => /controller/i.test(category))) controllerMinutes += minutes;
     availableDlcCount += dlcAvailable;
     metadata.set(String(game.appid), {
+      image: normalizeSteamImageUrl(app.header_image || app.capsule_image || headerImage(game.appid)),
       genres,
       categories,
       controllerSupport: app.controller_support || (categories.some((category) => /controller/i.test(category)) ? "supported" : ""),
@@ -641,7 +642,7 @@ async function loadLibraryInsights(ownedGames, recentGames, achievementData, spe
       appid: game.appid,
       title: game.name || configured?.title || "Steam game",
       url: gameUrl(game.appid),
-      image: headerImage(game.appid),
+      image: storeMeta.image || headerImage(game.appid),
       currency,
       baseAmount: basePriceMinor / 100,
       dlcAmount: dlcPriceMinor / 100,
