@@ -85,11 +85,20 @@ function Get-SpotifyRefreshToken {
 }
 
 if ([string]::IsNullOrWhiteSpace($ClientId)) {
-  throw "Set SPOTIFY_CLIENT_ID first."
+  $ClientId = Read-Host "Spotify Client ID"
+}
+
+if ([string]::IsNullOrWhiteSpace($ClientId)) {
+  throw "A Spotify Client ID is required. Find it in your Spotify developer app settings."
 }
 
 if ([string]::IsNullOrWhiteSpace($ClientSecret)) {
-  throw "Set SPOTIFY_CLIENT_SECRET first. Do not paste the secret into chat."
+  $secureClientSecret = Read-Host "Spotify Client Secret (input hidden)" -AsSecureString
+  $ClientSecret = [Net.NetworkCredential]::new("", $secureClientSecret).Password
+}
+
+if ([string]::IsNullOrWhiteSpace($ClientSecret)) {
+  throw "A Spotify Client Secret is required. Find it in your Spotify developer app settings."
 }
 
 $redirect = [Uri]$RedirectUri
