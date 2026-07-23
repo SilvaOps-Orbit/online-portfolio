@@ -70,9 +70,13 @@ async function preserve(file) {
     return;
   }
 
-  const response = await fetch(`${baseUrl}/data/${file}`, {
+  const deployedUrl = new URL(`${baseUrl}/data/${file}`);
+  deployedUrl.searchParams.set("preserve", Date.now().toString());
+  const response = await fetch(deployedUrl, {
+    cache: "no-store",
     headers: {
-      Accept: "application/json"
+      Accept: "application/json",
+      "Cache-Control": "no-cache"
     }
   });
 

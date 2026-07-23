@@ -46,6 +46,15 @@ jobs:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
           PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,github.json,api-status.json"
 
+      - name: Refresh Spotify snapshot
+        run: node scripts/update-spotify-data.mjs
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          GENIUS_ACCESS_TOKEN: ${{ secrets.GENIUS_ACCESS_TOKEN }}
+          AUDIODB_API_KEY: ${{ secrets.AUDIODB_API_KEY }}
+
       - name: Refresh GitHub snapshot
         run: node scripts/update-github-data.mjs
         env:
