@@ -1,0 +1,7 @@
+name: Portfolio CodeQL configuration
+
+# Scan authored source, scripts, workers, and workflows. Vite bundles are generated
+# from src/react and include vendored runtime code such as Three.js.
+paths-ignore:
+  - "assets/react/**"
+  - "_ssr-out/**"

@@ -291,22 +291,40 @@ function editionText(edition: NonNullable<SteamItem["editions"]>[number]): strin
   return edition.price ? `${label}: ${edition.price}` : label;
 }
 
+function swapSteamArtworkHost(value: string, expectedHost: string, replacementHost: string): string {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.hostname !== expectedHost) return value;
+    url.hostname = replacementHost;
+    return url.href;
+  } catch {
+    return value;
+  }
+}
+
 // Builds an ordered list of image URLs to try for a game's cover art. Steam serves header
 // images from two CDNs (akamai + fastly) plus a canonical Cloudflare URL keyed by appid.
-// `SteamArtwork` walks this list and falls through to the next on any load error.
+// Host failover is applied only after an exact HTTPS hostname match.
 function artworkCandidates(item: SteamItem): string[] {
   const candidates: string[] = [];
   const primary = String(item.image || "").trim().replace(/^http:\/\//i, "https://");
   if (primary) {
-    candidates.push(primary.replace("shared.akamai.steamstatic.com", "shared.fastly.steamstatic.com"));
-    if (primary.includes("shared.fastly.steamstatic.com")) {
-      candidates.push(primary.replace("shared.fastly.steamstatic.com", "shared.akamai.steamstatic.com"));
-    }
+    const fastlyPrimary = swapSteamArtworkHost(
+      primary,
+      "shared.akamai.steamstatic.com",
+      "shared.fastly.steamstatic.com"
+    );
+    candidates.push(fastlyPrimary);
+    const akamaiFallback = swapSteamArtworkHost(
+      primary,
+      "shared.fastly.steamstatic.com",
+      "shared.akamai.steamstatic.com"
+    );
+    if (akamaiFallback !== primary) candidates.push(akamaiFallback);
   }
   if (item.appid) candidates.push(`https://cdn.cloudflare.steamstatic.com/steam/apps/${item.appid}/header.jpg`);
   return [...new Set(candidates)];
 }
-
 // Resilient game cover image. Tries each candidate URL in turn; on a load error it advances
 // to the next candidate. If every candidate fails it shows a plain "Steam" placeholder so the
 // layout never collapses. The candidate list is memoised so it only recomputes when the

@@ -12,3 +12,15 @@ analytics-worker/.env*
 dist/
 build/
 .cache/
+# Local diagnostic and generated SSR artifacts
+/_ssr-out/
+/_build-ssr.mjs
+/_diag.mjs
+/_edge-test.mjs
+/_edge_err.txt
+/_island.mjs
+/_lucide.mjs
+/_ptypes.mjs
+/_rdomclient.mjs
+/_server.mjs
+/_ssr-entry.mjs
