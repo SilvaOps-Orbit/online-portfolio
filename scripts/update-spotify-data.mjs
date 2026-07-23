@@ -724,15 +724,10 @@ async function loadPlaylistAnalytics(token, playlists, taste) {
       ])
       .filter(([key]) => key)
   );
-  let artistProfiles = new Map();
-  if (recurringIds.length) {
-    try {
-      const response = await spotifyGet("artists", token, { ids: recurringIds.join(",") });
-      artistProfiles = new Map((response?.artists || []).filter(Boolean).map((artist) => [artist.id, artist]));
-    } catch (error) {
-      // Taste data below still provides artwork for artists present in both views.
-    }
-  }
+  const profileResults = await Promise.all(
+    recurringIds.map((id) => spotifyGet(`artists/${encodeURIComponent(id)}`, token).catch(() => null))
+  );
+  const artistProfiles = new Map(profileResults.filter(Boolean).map((artist) => [artist.id, artist]));
   return {
     playlistCount: playlists.length,
     trackCount: playlists.reduce((sum, playlist) => sum + Number(String(playlist.meta || "").match(/\d+/)?.[0] || 0), 0),
