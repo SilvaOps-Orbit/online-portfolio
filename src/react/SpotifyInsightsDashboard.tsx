@@ -2,6 +2,7 @@ import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Clock3, Compass, Disc3, ListMusic, Radar, Sparkles } from "lucide-react";
 import { IslandBoundary } from "./IslandBoundary";
+import { SpotifyWrappedScene } from "./SpotifyWrappedScene";
 import type { SpotifyData, SpotifyItem } from "./portfolio-types";
 import { getPortfolioConfig } from "./portfolio-types";
 
@@ -13,6 +14,12 @@ const views: Array<{ id: ViewId; label: string; icon: typeof Disc3 }> = [
   { id: "discovery", label: "Discover", icon: Radar }
 ];
 const fallback = getPortfolioConfig().spotify || {};
+const chapterCopy: Record<ViewId, { number: string; kicker: string; title: string; note: string }> = {
+  taste: { number: "01", kicker: "Sound DNA", title: "Your sound has a shape.", note: "Artists and tracks, ranked across the time ranges that matter." },
+  timeline: { number: "02", kicker: "Replay trail", title: "Every listen leaves a signal.", note: "A chronological pulse of the songs, artists, and contexts behind each play." },
+  analytics: { number: "03", kicker: "Library gravity", title: "Playlists build their own orbit.", note: "Scale, recurring artists, genres, and release eras from the public collection." },
+  discovery: { number: "04", kicker: "Next frequency", title: "The next sound is already moving.", note: "Fresh releases connected to the artists already inside the listening signal." }
+};
 
 function mergeData(base: SpotifyData, live?: SpotifyData | null): SpotifyData {
   if (!live) return base;
@@ -103,7 +110,8 @@ function SpotifyInsightsDashboard() {
   }, []);
   const panel = useMemo(() => active === "taste" ? <TasteView data={data} /> : active === "timeline" ? <TimelineView data={data} /> : active === "analytics" ? <AnalyticsView data={data} /> : <DiscoveryView data={data} />, [active, data]);
   const panelClass = `insight-panel${active === "timeline" ? " spotify-timeline-panel" : ""}${active === "taste" && !data.insights?.scopesReady ? " spotify-taste-panel is-empty" : ""}`;
-  return <section className="insight-deck spotify-insight-deck" aria-labelledby="spotify-insights-title"><div className="insight-deck-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><h3 id="spotify-insights-title">Inside the listening signal</h3><p>Four compact views, one stable panel. Live Spotify data when available, saved snapshot between refreshes.</p></div></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className={panelClass} role="tabpanel" key={active}>{panel}</div></section>;
+  const chapter = chapterCopy[active];
+  return <section className={`insight-deck spotify-insight-deck spotify-wrapped spotify-wrapped-${active}`} data-view={active} aria-labelledby="spotify-insights-title"><SpotifyWrappedScene view={active} /><div className="spotify-wrapped-grid" aria-hidden="true" /><div className="spotify-wrapped-content"><div className="insight-deck-heading spotify-wrapped-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><div className="spotify-chapter-mark"><b>{chapter.number}</b><span>{chapter.kicker}</span></div><h3 id="spotify-insights-title">{chapter.title}</h3><p>{chapter.note}</p></div><span className="spotify-signal-badge"><i /> Live + cached signal</span></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }, index) => <button id={`spotify-insight-tab-${id}`} key={id} type="button" role="tab" aria-controls="spotify-insight-panel" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><small>0{index + 1}</small><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div id="spotify-insight-panel" className={panelClass} role="tabpanel" aria-labelledby={`spotify-insight-tab-${active}`} key={active}>{panel}</div></div></section>;
 }
 
 export function mountSpotifyInsightsDashboard(target: HTMLElement) {
