@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T12:00:00+10:00",
+  "updatedAt": "2026-07-23T13:45:00+10:00",
   "privacy": "Curated public listening summaries only. Raw Spotify account exports and detailed play events are not stored here.",
   "snapshots": [
     {
@@ -51,6 +51,31 @@
         { "title": "HUSTLR", "meta": "Weekly track #3" },
         { "title": "Waiting For Love", "meta": "Weekly track #4" },
         { "title": "Feel the Bass III", "meta": "Weekly track #5" }
+      ]
+    },
+    {
+      "id": "spotify-weekly-2026-07-06-12",
+      "periodStart": "2026-07-06",
+      "periodEnd": "2026-07-12",
+      "periodLabel": "6-12 Jul 2026",
+      "minutes": 576,
+      "scope": "Full week",
+      "note": "Curated from an official Spotify Listening Stats share.",
+      "sourceUrl": "https://www.spotify.com/listeningstats/instanceshare/67hNVFWGONpS6B1f58DriD",
+      "sourceImage": "https://seadragon.spotifycdn.com/share-assets/en/67hNVFWGONpS6B1f58DriD_1260x1260.jpeg",
+      "topArtists": [
+        { "title": "Skrillex", "meta": "Weekly artist #1" },
+        { "title": "Twelve Foot Ninja", "meta": "Weekly artist #2" },
+        { "title": "Khantrast", "meta": "Weekly artist #3" },
+        { "title": "NF", "meta": "Weekly artist #4" },
+        { "title": "Connor Price", "meta": "Weekly artist #5" }
+      ],
+      "topTracks": [
+        { "title": "Shiko", "meta": "Weekly track #1" },
+        { "title": "BANG YOUR HEAD", "meta": "Weekly track #2" },
+        { "title": "cut my fingers off", "meta": "Weekly track #3" },
+        { "title": "Bad Habit", "meta": "Weekly track #4" },
+        { "title": "Money Trees", "meta": "Weekly track #5" }
       ]
     }
   ]
