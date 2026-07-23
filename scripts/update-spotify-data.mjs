@@ -584,11 +584,42 @@ function toInsightTrack(item, extra = {}) {
     artists: (item.artists || []).map((artist) => artist.name).filter(Boolean),
     image: imageFrom(item.album?.images || item.images),
     url: externalUrl(item),
+    albumTitle: item.album?.name || "",
     releaseDate: item.album?.release_date || item.release_date || "",
     durationMs: Number(item.duration_ms || 0),
     popularity: Number(item.popularity || 0),
     ...extra
   };
+}
+
+async function resolvePlaybackContext(entry, token, playlistCache) {
+  const context = entry?.context;
+  const track = entry?.track;
+  const fallback = {
+    contextType: "Album",
+    contextTitle: track?.album?.name || "",
+    contextUrl: externalUrl(track?.album)
+  };
+
+  if (context?.type !== "playlist") {
+    return fallback;
+  }
+
+  const playlistId = spotifyIdFromUri(context.uri || context.href, "playlist");
+  if (!playlistId) {
+    return { ...fallback, contextType: "Playlist" };
+  }
+
+  if (!playlistCache.has(playlistId)) {
+    playlistCache.set(playlistId, spotifyGet(`playlists/${encodeURIComponent(playlistId)}`, token, {
+      fields: "id,name,external_urls"
+    }).catch(() => null));
+  }
+
+  const playlist = await playlistCache.get(playlistId);
+  return playlist?.name
+    ? { contextType: "Playlist", contextTitle: playlist.name, contextUrl: externalUrl(playlist) }
+    : { ...fallback, contextType: "Playlist" };
 }
 
 function toInsightArtist(item) {
@@ -628,8 +659,17 @@ async function loadTaste(token) {
 async function loadRecentlyPlayed(token) {
   try {
     const page = await spotifyGet("me/player/recently-played", token, { limit: 20 });
-    return (page?.items || []).map((entry) => toInsightTrack(entry.track, { playedAt: entry.played_at || "" })).filter(Boolean);
+    const playlistCache = new Map();
+    const tracks = await Promise.all((page?.items || []).map(async (entry) => {
+      const context = await resolvePlaybackContext(entry, token, playlistCache);
+      return toInsightTrack(entry.track, {
+        playedAt: entry.played_at || "",
+        ...context
+      });
+    }));
+    return tracks.filter(Boolean);
   } catch (error) {
+    console.warn(`Spotify recently played history unavailable: ${error.message}`);
     return [];
   }
 }

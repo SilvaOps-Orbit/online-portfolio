@@ -210,6 +210,10 @@ export interface SpotifyItem {
   image?: string;
   url?: string;
   artists?: string[];
+  albumTitle?: string;
+  contextType?: string;
+  contextTitle?: string;
+  contextUrl?: string;
   genres?: string[];
   releaseDate?: string;
   durationMs?: number;

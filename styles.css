@@ -3684,6 +3684,44 @@ a.provider-pulse-item:focus-visible {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.timeline-view {
+  display: grid;
+  gap: 12px;
+}
+
+.spotify-insight-deck .spotify-timeline-panel {
+  min-height: 0;
+}
+
+.timeline-empty {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 15px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+}
+
+.timeline-empty svg {
+  width: 26px;
+  height: 26px;
+  color: var(--accent);
+}
+
+.timeline-empty strong,
+.timeline-empty small {
+  display: block;
+}
+
+.timeline-empty small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
 .listening-timeline a {
   grid-template-columns: 52px minmax(0, 1fr) auto;
 }
@@ -3747,6 +3785,10 @@ a.provider-pulse-item:focus-visible {
   margin-top: 2px;
   color: var(--muted);
   font-size: 0.7rem;
+}
+
+.listening-timeline .timeline-context {
+  color: var(--accent-3);
 }
 
 .insight-empty {

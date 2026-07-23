@@ -1682,6 +1682,15 @@
     }
   }
 
+  async function fetchSpotifyDataFile() {
+    const isLocal = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    if (isLocal) {
+      const deployed = await fetchDataFile("https://silvaops-orbit.github.io/online-portfolio/data/spotify.json");
+      if (deployed) return deployed;
+    }
+    return fetchDataFile("data/spotify.json");
+  }
+
   async function loadSteamData(options = {}) {
     const fallback = config.steam || {};
     if (options.renderFallback !== false) {
@@ -1756,7 +1765,7 @@
     const fallbackNews = config.news || {};
     const [liveSteam, liveSpotify, liveMarket, liveNews] = await Promise.all([
       fetchDataFile("data/steam.json"),
-      fetchDataFile("data/spotify.json"),
+      fetchSpotifyDataFile(),
       fetchDataFile("data/market.json"),
       fetchDataFile("data/news.json")
     ]);
@@ -2200,7 +2209,7 @@
       renderSpotify(fallback);
     }
 
-    const live = await fetchDataFile("data/spotify.json");
+    const live = await fetchSpotifyDataFile();
     if (!live) {
       return fallback;
     }

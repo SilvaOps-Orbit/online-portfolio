@@ -59,8 +59,10 @@ function TasteView({ data }: { data: SpotifyData }) {
 }
 
 function TimelineView({ data }: { data: SpotifyData }) {
-  const recent = data.insights?.recentlyPlayed || (data.lastTrack ? [data.lastTrack] : []);
-  return <div className="listening-timeline">{recent.slice(0, 8).map((item, index) => <a href={item.url || "#spotify"} target={item.url ? "_blank" : undefined} rel={item.url ? "noopener noreferrer" : undefined} key={`${item.id || item.title}-${index}`}><Art item={item} /><span><strong>{item.title || "Spotify track"}</strong><small>{item.meta || item.artists?.join(", ")}</small></span><time>{formatTime(item.playedAt)}</time></a>)}{!recent.length && <p className="insight-empty">Listening history is waiting for the next Spotify refresh.</p>}</div>;
+  const isUsefulTrack = (item?: SpotifyItem) => Boolean(item?.title && !/nothing playing|not connected yet/i.test(item.title));
+  const recent = (data.insights?.recentlyPlayed || []).filter(isUsefulTrack);
+
+  return <div className={`timeline-view${recent.length ? "" : " is-empty"}`}><div className="insight-subhead"><span>Recently played songs</span><small>Spotify playback history</small></div>{recent.length ? <div className="listening-timeline">{recent.slice(0, 10).map((item, index) => <a href={item.url || "#spotify"} target={item.url ? "_blank" : undefined} rel={item.url ? "noopener noreferrer" : undefined} key={`${item.id || item.title}-${item.playedAt || index}`}><Art item={item} /><span className="timeline-copy"><strong>{item.title || item.name || "Spotify track"}</strong><small className="timeline-artist">{item.artists?.join(", ") || item.meta || "Spotify artist"}</small><small className="timeline-context">{item.contextType || "Album"}: {item.contextTitle || item.albumTitle || "Context unavailable"}</small></span><time>{formatTime(item.playedAt)}</time></a>)}</div> : <div className="timeline-empty"><Clock3 aria-hidden="true" /><span><strong>Recent listening is waiting for Spotify history access.</strong><small>The connected account returned no recently played songs during the latest refresh.</small></span></div>}</div>;
 }
 
 function AnalyticsView({ data }: { data: SpotifyData }) {
@@ -80,14 +82,28 @@ function SpotifyInsightsDashboard() {
   const [active, setActive] = useState<ViewId>("taste");
   useEffect(() => {
     const controller = new AbortController();
-    fetch(`data/spotify.json?v=${Date.now()}`, { cache: "no-cache", credentials: "same-origin", referrerPolicy: "no-referrer", signal: controller.signal })
-      .then((response) => response.ok ? response.json() as Promise<SpotifyData> : null)
-      .then((live) => { if (live) setData(mergeData(fallback, live)); })
-      .catch((error: unknown) => { if (!controller.signal.aborted) console.warn("Spotify insights snapshot unavailable", error); });
+    const isLocal = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    const paths = isLocal
+      ? ["https://silvaops-orbit.github.io/online-portfolio/data/spotify.json", "data/spotify.json"]
+      : ["data/spotify.json"];
+    const loadSnapshot = async () => {
+      for (const path of paths) {
+        try {
+          const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-cache", credentials: path.startsWith("http") ? "omit" : "same-origin", referrerPolicy: "no-referrer", signal: controller.signal });
+          if (!response.ok) continue;
+          setData(mergeData(fallback, await response.json() as SpotifyData));
+          return;
+        } catch (error) {
+          if (controller.signal.aborted) return;
+        }
+      }
+      console.warn("Spotify insights snapshot unavailable");
+    };
+    void loadSnapshot();
     return () => controller.abort();
   }, []);
   const panel = useMemo(() => active === "taste" ? <TasteView data={data} /> : active === "timeline" ? <TimelineView data={data} /> : active === "analytics" ? <AnalyticsView data={data} /> : <DiscoveryView data={data} />, [active, data]);
-  return <section className="insight-deck spotify-insight-deck" aria-labelledby="spotify-insights-title"><div className="insight-deck-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><h3 id="spotify-insights-title">Inside the listening signal</h3><p>Four compact views, one stable panel. Live Spotify data when available, saved snapshot between refreshes.</p></div></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className="insight-panel" role="tabpanel" key={active}>{panel}</div></section>;
+  return <section className="insight-deck spotify-insight-deck" aria-labelledby="spotify-insights-title"><div className="insight-deck-heading"><div><span className="spotify-label"><Sparkles aria-hidden="true" /> Music intelligence</span><h3 id="spotify-insights-title">Inside the listening signal</h3><p>Four compact views, one stable panel. Live Spotify data when available, saved snapshot between refreshes.</p></div></div><div className="insight-tabs" role="tablist" aria-label="Spotify insight views">{views.map(({ id, label, icon: Icon }) => <button key={id} type="button" role="tab" aria-selected={active === id} className={active === id ? "is-active" : ""} onClick={() => setActive(id)}><Icon aria-hidden="true" /><span>{label}</span></button>)}</div><div className={`insight-panel${active === "timeline" ? " spotify-timeline-panel" : ""}`} role="tabpanel" key={active}>{panel}</div></section>;
 }
 
 export function mountSpotifyInsightsDashboard(target: HTMLElement) {
