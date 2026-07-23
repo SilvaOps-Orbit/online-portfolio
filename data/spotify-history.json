@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T12:19:39+10:00",
+  "updatedAt": "2026-07-23T12:22:22+10:00",
   "privacy": "Curated public listening summaries only. Raw Spotify account exports and detailed play events are not stored here.",
   "snapshots": [
     {
@@ -101,6 +101,31 @@
         { "title": "Wasting Time", "meta": "Weekly track #3" },
         { "title": "SAME OLD STORY", "meta": "Weekly track #4" },
         { "title": "abolish the IRS", "meta": "Weekly track #5" }
+      ]
+    },
+    {
+      "id": "spotify-weekly-2026-06-22-28",
+      "periodStart": "2026-06-22",
+      "periodEnd": "2026-06-28",
+      "periodLabel": "22-28 Jun 2026",
+      "minutes": 606,
+      "scope": "Full week",
+      "note": "Curated from an official Spotify Listening Stats share.",
+      "sourceUrl": "https://www.spotify.com/listeningstats/instanceshare/3FGfxb9S011XD4LJb0PSde",
+      "sourceImage": "https://seadragon.spotifycdn.com/share-assets/en/3FGfxb9S011XD4LJb0PSde_1260x1260.jpeg",
+      "topArtists": [
+        { "title": "Skrillex", "meta": "Weekly artist #1" },
+        { "title": "Twelve Foot Ninja", "meta": "Weekly artist #2" },
+        { "title": "Post Malone", "meta": "Weekly artist #3" },
+        { "title": "Khantrast", "meta": "Weekly artist #4" },
+        { "title": "INZO", "meta": "Weekly artist #5" }
+      ],
+      "topTracks": [
+        { "title": "Dynamite", "meta": "Weekly track #1" },
+        { "title": "I Know", "meta": "Weekly track #2" },
+        { "title": "LOOK AT YOU", "meta": "Weekly track #3" },
+        { "title": "Hi Ren", "meta": "Weekly track #4" },
+        { "title": "Angst", "meta": "Weekly track #5" }
       ]
     }
   ]
