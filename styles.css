@@ -3765,6 +3765,18 @@ a.provider-pulse-item:focus-visible {
   to { height: 38%; filter: hue-rotate(24deg); }
 }
 
+.spotify-weekly-source {
+  display: inline-flex;
+  margin-top: 14px;
+  color: var(--wrapped-a);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.spotify-weekly-source:hover,
+.spotify-weekly-source:focus-visible { color: #fff; }
+
 .spotify-wrapped .insight-stat-row {
   gap: 12px;
 }

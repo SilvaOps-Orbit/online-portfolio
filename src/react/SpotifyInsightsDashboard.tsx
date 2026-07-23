@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { AudioLines, Clock3, Compass, Disc3, ListMusic, Radar, Sparkles } from "lucide-react";
 import { IslandBoundary } from "./IslandBoundary";
 import { SpotifyWrappedScene } from "./SpotifyWrappedScene";
-import type { SpotifyData, SpotifyItem } from "./portfolio-types";
+import type { SpotifyArchiveData, SpotifyData, SpotifyItem, SpotifyWeeklySnapshot } from "./portfolio-types";
 import { getPortfolioConfig } from "./portfolio-types";
 
 type ViewId = "taste" | "timeline" | "analytics" | "discovery";
@@ -30,6 +30,42 @@ function mergeData(base: SpotifyData, live?: SpotifyData | null): SpotifyData {
     insights: { ...(base.insights || {}), ...(live.insights || {}) },
     playlists: live.playlists?.length ? live.playlists : base.playlists
   };
+}
+
+function mergeArchive(data: SpotifyData, archive?: SpotifyArchiveData | null): SpotifyData {
+  const latest = (archive?.snapshots || []).slice().sort((a, b) => String(b.periodEnd || "").localeCompare(String(a.periodEnd || "")))[0];
+  if (!latest) return data;
+  const insights = data.insights || {};
+  const taste = insights.taste || {};
+  const shortTerm = taste.shortTerm || {};
+  const useArchiveRankings = insights.scopesReady !== true;
+  return {
+    ...data,
+    insights: {
+      ...insights,
+      weeklySnapshot: useArchiveRankings ? latest : insights.weeklySnapshot,
+      taste: {
+        ...taste,
+        shortTerm: {
+          ...shortTerm,
+          artists: useArchiveRankings || !shortTerm.artists?.length ? latest.topArtists || [] : shortTerm.artists,
+          tracks: useArchiveRankings || !shortTerm.tracks?.length ? latest.topTracks || [] : shortTerm.tracks
+        }
+      }
+    }
+  };
+}
+
+async function fetchFirst<T>(paths: string[], signal: AbortSignal): Promise<T | null> {
+  for (const path of paths) {
+    try {
+      const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-cache", credentials: path.startsWith("http") ? "omit" : "same-origin", referrerPolicy: "no-referrer", signal });
+      if (response.ok) return await response.json() as T;
+    } catch {
+      if (signal.aborted) return null;
+    }
+  }
+  return null;
 }
 
 function formatTime(value?: string): string {
@@ -62,7 +98,9 @@ function TasteView({ data }: { data: SpotifyData }) {
   const artists = selected.artists || [];
   const tracks = selected.tracks || [];
   const listeningAge = data.listeningAge;
-  return <><div className="spotify-listening-age"><span className="spotify-age-icon"><AudioLines aria-hidden="true" /></span><span className="spotify-age-copy"><small>{listeningAge?.source || "Listening profile"}</small><strong>Listening age <b>{Number(listeningAge?.value || 22)}</b></strong><p>{listeningAge?.note || "A personal estimate that can be refined when Spotify archive history is available."}</p></span><span className="spotify-age-signal" aria-hidden="true"><i /><i /><i /><i /><i /></span></div><div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists need renewed Spotify listening-history access." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>Spotify listening data</small></div><MiniList items={tracks} empty="Top tracks need renewed Spotify listening-history access." /></div></div></>;
+  const weekly = data.insights?.weeklySnapshot as SpotifyWeeklySnapshot | undefined;
+  const weeklyNote = weekly && range === "shortTerm" ? `${weekly.periodLabel || "Latest weekly snapshot"} · ${Number(weekly.minutes || 0).toLocaleString("en-AU")} minutes` : "Spotify listening data";
+  return <><div className="spotify-listening-age"><span className="spotify-age-icon"><AudioLines aria-hidden="true" /></span><span className="spotify-age-copy"><small>{listeningAge?.source || "Listening profile"}</small><strong>Listening age <b>{Number(listeningAge?.value || 22)}</b></strong><p>{listeningAge?.note || "A personal estimate that can be refined when Spotify archive history is available."}</p></span><span className="spotify-age-signal" aria-hidden="true"><i /><i /><i /><i /><i /></span></div><div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists need renewed Spotify listening-history access." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>{weeklyNote}</small></div><MiniList items={tracks} empty="Top tracks need renewed Spotify listening-history access." />{weekly?.sourceUrl && range === "shortTerm" ? <a className="spotify-weekly-source" href={weekly.sourceUrl} target="_blank" rel="noopener noreferrer">Official weekly Spotify snapshot</a> : null}</div></div></>;
 }
 
 function TimelineView({ data }: { data: SpotifyData }) {
@@ -90,21 +128,20 @@ function SpotifyInsightsDashboard() {
   useEffect(() => {
     const controller = new AbortController();
     const isLocal = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
-    const paths = isLocal
+    const livePaths = isLocal
       ? ["https://silvaops-orbit.github.io/online-portfolio/data/spotify.json", "data/spotify.json"]
       : ["data/spotify.json"];
+    const archivePaths = isLocal
+      ? ["data/spotify-history.json", "https://silvaops-orbit.github.io/online-portfolio/data/spotify-history.json"]
+      : ["data/spotify-history.json"];
     const loadSnapshot = async () => {
-      for (const path of paths) {
-        try {
-          const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-cache", credentials: path.startsWith("http") ? "omit" : "same-origin", referrerPolicy: "no-referrer", signal: controller.signal });
-          if (!response.ok) continue;
-          setData(mergeData(fallback, await response.json() as SpotifyData));
-          return;
-        } catch (error) {
-          if (controller.signal.aborted) return;
-        }
-      }
-      console.warn("Spotify insights snapshot unavailable");
+      const [live, archive] = await Promise.all([
+        fetchFirst<SpotifyData>(livePaths, controller.signal),
+        fetchFirst<SpotifyArchiveData>(archivePaths, controller.signal)
+      ]);
+      if (controller.signal.aborted) return;
+      setData(mergeArchive(mergeData(fallback, live), archive));
+      if (!live && !archive) console.warn("Spotify live and archive snapshots unavailable");
     };
     void loadSnapshot();
     return () => controller.abort();

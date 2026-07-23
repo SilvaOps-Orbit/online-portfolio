@@ -227,8 +227,28 @@ export interface SpotifyRange {
   tracks?: SpotifyItem[];
 }
 
+export interface SpotifyWeeklySnapshot {
+  id?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  periodLabel?: string;
+  minutes?: number;
+  sourceUrl?: string;
+  sourceImage?: string;
+  note?: string;
+  topArtists?: SpotifyItem[];
+  topTracks?: SpotifyItem[];
+}
+
+export interface SpotifyArchiveData {
+  schemaVersion?: number;
+  updatedAt?: string;
+  snapshots?: SpotifyWeeklySnapshot[];
+}
+
 export interface SpotifyInsights {
   taste?: Record<string, SpotifyRange>;
+  weeklySnapshot?: SpotifyWeeklySnapshot;
   recentlyPlayed?: SpotifyItem[];
   playlistAnalytics?: {
     playlistCount?: number;

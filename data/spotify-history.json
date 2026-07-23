@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-23T00:00:00+10:00",
+  "privacy": "Curated public listening summaries only. Raw Spotify account exports and detailed play events are not stored here.",
+  "snapshots": [
+    {
+      "id": "spotify-weekly-2026-07-20-23",
+      "periodStart": "2026-07-20",
+      "periodEnd": "2026-07-23",
+      "periodLabel": "20-23 Jul 2026",
+      "minutes": 223,
+      "scope": "Partial week",
+      "note": "The first curated fallback record, sourced from an official Spotify Listening Stats share.",
+      "sourceUrl": "https://www.spotify.com/listeningstats/instanceshare/4E4reM7ImGqLm4NEbQip6Z",
+      "sourceImage": "https://seadragon.spotifycdn.com/share-assets/en/4E4reM7ImGqLm4NEbQip6Z_1260x1260.jpeg",
+      "topArtists": [
+        { "title": "NF", "meta": "Weekly artist #1" },
+        { "title": "C418", "meta": "Weekly artist #2" },
+        { "title": "Connor Price", "meta": "Weekly artist #3" },
+        { "title": "Skrillex", "meta": "Weekly artist #4" },
+        { "title": "Grover Washington, Jr.", "meta": "Weekly artist #5" }
+      ],
+      "topTracks": [
+        { "title": "Just the Two of Us", "meta": "Weekly track #1" },
+        { "title": "Waterfalls Coming Out Your Mouth", "meta": "Weekly track #2" },
+        { "title": "Rain (from The Suicide Squad)", "meta": "Weekly track #3" },
+        { "title": "ANTI", "meta": "Weekly track #4" },
+        { "title": "GRAVE$", "meta": "Weekly track #5" }
+      ]
+    }
+  ]
+}
