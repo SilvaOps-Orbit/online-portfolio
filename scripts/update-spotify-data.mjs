@@ -684,14 +684,20 @@ async function loadPlaylistAnalytics(token, playlists, taste) {
     try {
       const page = await spotifyGet(`playlists/${encodeURIComponent(playlist.id)}/items`, token, {
         limit: 100,
-        fields: "items(item(id,name,duration_ms,artists(name),album(release_date)))"
+        fields: "items(item(id,name,duration_ms,artists(id,name),album(release_date)))"
       });
       (page?.items || []).forEach((entry) => {
         const track = entry.item || entry.track;
         if (!track) return;
         sampledTracks += 1;
         durationMs += Number(track.duration_ms || 0);
-        (track.artists || []).forEach((artist) => artist.name && artistCounts.set(artist.name, (artistCounts.get(artist.name) || 0) + 1));
+        (track.artists || []).forEach((artist) => {
+          if (!artist.name) return;
+          const key = artist.id || artist.name.toLowerCase();
+          const existing = artistCounts.get(key) || { id: artist.id || "", title: artist.name, count: 0 };
+          existing.count += 1;
+          artistCounts.set(key, existing);
+        });
         const year = Number(String(track.album?.release_date || "").slice(0, 4));
         if (year) {
           const decade = `${Math.floor(year / 10) * 10}s`;
@@ -707,11 +713,43 @@ async function loadPlaylistAnalytics(token, playlists, taste) {
     (artist.genres || []).forEach((genre) => genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1));
   });
   const sorted = (map) => [...map.entries()].sort((a, b) => b[1] - a[1]);
+  const recurring = [...artistCounts.values()].sort((a, b) => b.count - a.count).slice(0, 8);
+  const recurringIds = recurring.map((artist) => artist.id).filter(Boolean);
+  const tasteArtists = new Map(
+    Object.values(taste || {})
+      .flatMap((range) => range.artists || [])
+      .flatMap((artist) => [
+        [artist.id || "", artist],
+        [String(artist.title || "").toLowerCase(), artist]
+      ])
+      .filter(([key]) => key)
+  );
+  let artistProfiles = new Map();
+  if (recurringIds.length) {
+    try {
+      const response = await spotifyGet("artists", token, { ids: recurringIds.join(",") });
+      artistProfiles = new Map((response?.artists || []).filter(Boolean).map((artist) => [artist.id, artist]));
+    } catch (error) {
+      // Taste data below still provides artwork for artists present in both views.
+    }
+  }
   return {
     playlistCount: playlists.length,
     trackCount: playlists.reduce((sum, playlist) => sum + Number(String(playlist.meta || "").match(/\d+/)?.[0] || 0), 0),
     estimatedHours: Number((durationMs / 3600000).toFixed(1)),
-    recurringArtists: sorted(artistCounts).slice(0, 8).map(([title, count]) => ({ title, meta: `${count} sampled appearances`, count })),
+    recurringArtists: recurring.map((artist) => {
+      const profile = artistProfiles.get(artist.id)
+        || tasteArtists.get(artist.id)
+        || tasteArtists.get(artist.title.toLowerCase());
+      return {
+        id: artist.id,
+        title: artist.title,
+        meta: `${artist.count} sampled appearances`,
+        count: artist.count,
+        image: imageFrom(profile?.images) || profile?.image || "",
+        url: externalUrl(profile) || profile?.url || ""
+      };
+    }),
     genres: sorted(genreCounts).slice(0, 8).map(([label, value]) => ({ label, value })),
     decades: sorted(decadeCounts).map(([label, value]) => ({ label, value })),
     sampledPlaylists: sample.length,
