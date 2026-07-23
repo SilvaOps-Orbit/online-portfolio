@@ -2834,11 +2834,17 @@
       { label: "GitHub", href: githubProfileUrl(profile.githubUsername || "") },
       { label: "Discord", href: profile.discordUrl },
       { label: "LinkedIn", href: profile.linkedinUrl },
-      { label: "Resume", href: profile.resumeUrl }
+      { label: "Resume", href: profile.resumeUrl },
+      { label: "Support me", href: profile.kofiUrl, className: "kofi-support-button" }
     ].filter((item) => item.href && item.href !== "mailto:" && item.href !== "#");
 
     links.forEach((item, index) => {
       const link = createElement("a", index === 0 ? "button primary" : "button", item.label);
+      if (item.className) {
+        link.classList.add(item.className);
+        link.setAttribute("aria-haspopup", "dialog");
+        link.setAttribute("aria-controls", "kofi-dialog");
+      }
       link.href = safeUrl(item.href);
       if (!String(item.href).startsWith("mailto:")) {
         link.target = "_blank";

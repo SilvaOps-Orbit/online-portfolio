@@ -23,6 +23,7 @@ window.PORTFOLIO_CONFIG = {
     availability: "Open to opportunities",
     email: "alvis.dev@proton.me",
     githubUsername: "SilvaOps-Orbit",
+    kofiUrl: "https://ko-fi.com/echoops",
     discordUrl: "",
     linkedinUrl: "",
     resumeUrl: "assets/alvis-leslie-gordon-resume.txt"
@@ -1025,7 +1026,7 @@ window.PORTFOLIO_CONFIG = {
     {
       title: "Content Security Policy",
       body:
-        "The page includes a restrictive Content Security Policy that limits scripts, styles, images, connections, forms, frames, and embedded objects.",
+        "The page includes a restrictive Content Security Policy that limits scripts, styles, images, connections, forms, frames, and embedded objects. The Ko-fi support popup is isolated in a sandboxed frame, while third-party and inline JavaScript remain blocked.",
       docs: [
         {
           label: "MDN CSP",

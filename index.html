@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https://silvaops-orbit.github.io https://api.github.com https://silvaops-api.alvis-dev.workers.dev https://echoops-game-suggestions.alvis-dev.workers.dev https://echoops-translation-gateway.alvis-dev.workers.dev https://echoops-counter-gateway.alvis-dev.workers.dev https://v2.jokeapi.dev https://uselessfacts.jsph.pl https://api.counterapi.dev https://abacus.jasoncameron.dev; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://*.steamstatic.com https://shared.fastly.steamstatic.com https://shared.akamai.steamstatic.com https://steamcdn-a.akamaihd.net https://media.steampowered.com https://i.scdn.co https://mosaic.scdn.co https://*.spotifycdn.com https://images.genius.com https://t2.genius.com https://www.theaudiodb.com https://theaudiodb.com https://ichef.bbci.co.uk https://assets-prd.ignimgs.com https://cdn.mos.cms.futurecdn.net https://cdn.arstechnica.net https://live-production.wcms.abc-cdn.net.au https://media.zenfs.com https://s.yimg.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-elem 'self' https://fonts.googleapis.com; style-src-attr 'unsafe-inline'; connect-src 'self' https://silvaops-orbit.github.io https://api.github.com https://silvaops-api.alvis-dev.workers.dev https://echoops-game-suggestions.alvis-dev.workers.dev https://echoops-translation-gateway.alvis-dev.workers.dev https://echoops-counter-gateway.alvis-dev.workers.dev https://v2.jokeapi.dev https://uselessfacts.jsph.pl https://api.counterapi.dev https://abacus.jasoncameron.dev; img-src 'self' data: https://avatars.githubusercontent.com https://avatars.steamstatic.com https://*.steamstatic.com https://shared.fastly.steamstatic.com https://shared.akamai.steamstatic.com https://steamcdn-a.akamaihd.net https://media.steampowered.com https://i.scdn.co https://mosaic.scdn.co https://*.spotifycdn.com https://images.genius.com https://t2.genius.com https://www.theaudiodb.com https://theaudiodb.com https://ichef.bbci.co.uk https://assets-prd.ignimgs.com https://cdn.mos.cms.futurecdn.net https://cdn.arstechnica.net https://live-production.wcms.abc-cdn.net.au https://media.zenfs.com https://s.yimg.com; font-src 'self' https://fonts.gstatic.com; frame-src https://ko-fi.com; object-src 'none'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests"
     >
     <meta name="referrer" content="no-referrer">
     <meta name="description" content="Portfolio of Alvis Leslie Gordon (EchoOps), a Melbourne creative developer building secure websites, Discord bots, automation, and interactive data experiences.">
@@ -35,7 +35,7 @@
     <link rel="icon" type="image/png" href="assets/echoops-app-icon.png">
     <link rel="apple-touch-icon" href="assets/echoops-app-icon.png">
     <link rel="manifest" href="site.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260723-weekly-history-v1">
+  <link rel="stylesheet" href="styles.css?v=20260723-kofi-modal-v2">
   </head>
   <body class="is-booting">
     <a class="skip-link" href="#main">Skip to content</a>
@@ -113,6 +113,28 @@
         <a class="daily-fact-source" id="daily-fact-source" href="https://uselessfacts.jsph.pl/" target="_blank" rel="noopener noreferrer">Useless Facts API</a>
       </div>
     </dialog>
+    <dialog class="kofi-dialog" id="kofi-dialog" aria-labelledby="kofi-dialog-title">
+      <div class="kofi-dialog-frame">
+        <header class="kofi-dialog-heading">
+          <div>
+            <p class="kicker">Support EchoOps</p>
+            <h2 id="kofi-dialog-title">Help fund the next build.</h2>
+          </div>
+          <button class="kofi-dialog-close" id="kofi-dialog-close" type="button" aria-label="Close Ko-fi support window" title="Close">&times;</button>
+        </header>
+        <p class="kofi-dialog-note">Ko-fi handles the payment securely inside its own isolated frame. This portfolio never receives your payment details.</p>
+        <iframe
+          id="kofiframe"
+          class="kofi-dialog-embed"
+          src="https://ko-fi.com/echoops/?hidefeed=true&amp;widget=true&amp;embed=true&amp;preview=true"
+          height="712"
+          title="Support EchoOps on Ko-fi"
+          loading="lazy"
+          referrerpolicy="no-referrer"
+          sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        ></iframe>
+      </div>
+    </dialog>
     <main id="main">
       <section class="hero section" id="top">
         <div class="hero-copy reveal">
@@ -132,6 +154,7 @@
             <a class="button primary" href="#projects">View Projects</a>
             <a class="button" id="github-profile-link" href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
             <a class="button ghost" id="email-link" href="mailto:you@example.com">Contact</a>
+            <a class="button kofi-support-button" href="https://ko-fi.com/echoops" target="_blank" rel="noopener noreferrer" aria-haspopup="dialog" aria-controls="kofi-dialog">Support me</a>
             <button class="button fact-button" id="daily-fact-button" type="button" aria-haspopup="dialog" aria-controls="daily-fact-dialog" aria-expanded="false" title="Open today's useless fact">
               <span aria-hidden="true">?</span>
               <span>Fact</span>
@@ -361,6 +384,7 @@
       </div>
     </footer>
 
+    <script src="kofi-widget.js?v=20260723-kofi-modal-v2"></script>
     <script src="seo-structured-data.js?v=20260711-polish-seo-v2"></script>
     <script src="portfolio.config.js?v=20260723-weekly-history-v1"></script>
     <script src="app.js?v=20260723-spotify-wrapped-v1"></script>
