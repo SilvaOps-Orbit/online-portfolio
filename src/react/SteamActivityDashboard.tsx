@@ -1,9 +1,9 @@
 // React + DOM rendering primitives.
-import { StrictMode, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { StrictMode, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 // `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
 // Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
-import { CalendarClock, Clock3, Coins, Dice5, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, Mouse, Sparkles, TrendingUp, Trophy, WalletCards } from "lucide-react";
+import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Send, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X } from "lucide-react";
 // Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
@@ -39,6 +39,59 @@ function mergeSteamData(fallback: SteamData, live?: SteamData | null): SteamData
 
 // The four selectable insight panels inside the "Library intelligence" deck.
 type SteamInsightView = "pulse" | "cabinet" | "playstyle" | "picker";
+
+type SuggestionSort = "recommended" | "match" | "reviews" | "price-low" | "price-high" | "dlc" | "genre";
+
+interface GameSuggestion {
+  key: string;
+  appid?: number | null;
+  title: string;
+  priceCents?: number | null;
+  priceLabel?: string | null;
+  currency?: string;
+  genres?: string[];
+  dlcCount?: number | null;
+  reviewPercent?: number | null;
+  reviewCount?: number | null;
+  reviewSummary?: string | null;
+  imageUrl?: string | null;
+  storeUrl?: string | null;
+  recommenders: string[];
+  recommendationCount: number;
+  recommendedAt?: string;
+}
+
+const SUGGESTION_CLIENT_KEY = "echoops-game-suggestion-client-v1";
+
+function suggestionClientId(): string {
+  try {
+    const saved = localStorage.getItem(SUGGESTION_CLIENT_KEY);
+    if (saved && /^[a-f0-9-]{32,64}$/i.test(saved)) return saved;
+    const value = crypto.randomUUID();
+    localStorage.setItem(SUGGESTION_CLIENT_KEY, value);
+    return value;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+function suggestionMatch(suggestion: GameSuggestion, steam: SteamData): number {
+  const footprint = steam.insights?.genreMix || [];
+  const total = Math.max(1, footprint.reduce((sum, genre) => sum + Number(genre.value || 0), 0));
+  const suggestionGenres = new Set((suggestion.genres || []).map((genre) => genre.toLowerCase()));
+  const genreScore = footprint.reduce((score, genre) => {
+    const label = String(genre.label || "").toLowerCase();
+    const matched = [...suggestionGenres].some((candidate) => candidate.includes(label) || label.includes(candidate));
+    return score + (matched ? Number(genre.value || 0) / total * 62 : 0);
+  }, 0);
+  const reviewScore = suggestion.reviewPercent ? Math.max(0, (suggestion.reviewPercent - 50) / 50 * 18) : 5;
+  const communityScore = Math.min(15, Math.max(0, suggestion.recommendationCount - 1) * 3);
+  return Math.min(99, Math.max(8, Math.round(15 + genreScore + reviewScore + communityScore)));
+}
+
+function suggestionPrice(suggestion: GameSuggestion): number {
+  return suggestion.priceCents === null || suggestion.priceCents === undefined ? Number.POSITIVE_INFINITY : Number(suggestion.priceCents);
+}
 
 // Renders a horizontal bar list of labelled values (e.g. genre mix / playstyle split).
 // Each bar is scaled relative to the largest value so the longest bar fills 100% width.
@@ -339,6 +392,160 @@ function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]>
   );
 }
 
+function SteamShowcaseStage({ steam }: { steam: SteamData }) {
+  const [view, setView] = useState<"library" | "replay">("library");
+  const [libraryIndex, setLibraryIndex] = useState(0);
+  const [memoryIndex, setMemoryIndex] = useState(0);
+  const library = useMemo(() => {
+    const source = steam.insights?.ownedGames?.length ? steam.insights.ownedGames : steam.mostPlayed || [];
+    return source.filter((game) => game.appid || game.image).slice().sort((a, b) => Number(b.playtimeMinutes || 0) - Number(a.playtimeMinutes || 0));
+  }, [steam.insights?.ownedGames, steam.mostPlayed]);
+  const memories = useMemo(() => {
+    const replay = steam.replay || {};
+    return [
+      { value: `${Number(replay.totalHours || 0).toLocaleString("en-AU")} hrs`, title: "A year in play", note: `${Number(replay.totalSessions || 0).toLocaleString("en-AU")} sessions across ${Number(replay.gamesPlayed || 0)} games.` },
+      { value: `${Number(replay.longestStreak || 0)} days`, title: "Longest streak", note: "The longest unbroken run of play days in the latest Steam Replay." },
+      { value: Number(replay.achievements || 0).toLocaleString("en-AU"), title: "Achievements unlocked", note: `${Number(replay.rareAchievements || 0)} of them were classified as rare by Steam.` },
+      { value: `${Number(replay.controllerPercent || 0)}%`, title: "Controller time", note: "The rest of the recorded input time used keyboard, mouse, or other controls." }
+    ].filter((memory) => memory.value !== "0" && memory.value !== "0 hrs" && memory.value !== "0 days" && memory.value !== "0%");
+  }, [steam.replay]);
+
+  const advance = () => {
+    if (view === "library") setLibraryIndex((index) => library.length ? (index + 1) % library.length : 0);
+    else setMemoryIndex((index) => memories.length ? (index + 1) % memories.length : 0);
+    setView((current) => current === "library" ? "replay" : "library");
+  };
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(advance, 7600);
+    return () => window.clearInterval(timer);
+  }, [view, library.length, memories.length]);
+
+  const game = library[libraryIndex % Math.max(1, library.length)];
+  const memory = memories[memoryIndex % Math.max(1, memories.length)];
+  const gameTitle = game?.title || game?.name || "Steam library";
+  const hours = game ? Math.round(parseHoursFromMeta(game)) : 0;
+
+  return (
+    <section className="steam-showcase" aria-labelledby="steam-showcase-title">
+      <div className="steam-showcase-heading">
+        <div><span className="steam-label">Rotating signal</span><h3 id="steam-showcase-title">Library Spotlight + Replay Memory</h3></div>
+        <div className="steam-showcase-controls" aria-label="Choose Steam showcase view">
+          <button type="button" className={view === "library" ? "is-active" : ""} aria-pressed={view === "library"} onClick={() => setView("library")}><LibraryBig aria-hidden="true" /><span>Library</span></button>
+          <button type="button" className={view === "replay" ? "is-active" : ""} aria-pressed={view === "replay"} onClick={() => setView("replay")}><RotateCw aria-hidden="true" /><span>Replay</span></button>
+          <button type="button" className="steam-showcase-next" aria-label="Show next spotlight" title="Show next spotlight" onClick={advance}><ChevronRight aria-hidden="true" /></button>
+        </div>
+      </div>
+      <div className={`steam-showcase-stage is-${view}`} key={`${view}-${view === "library" ? libraryIndex : memoryIndex}`}>
+        {view === "library" ? game ? <>
+          <SteamArtwork item={game} title={gameTitle} className="steam-showcase-art" />
+          <div className="steam-showcase-copy"><small>FROM THE OWNED LIBRARY</small><h4>{gameTitle}</h4><div className="steam-showcase-facts"><span><Clock3 aria-hidden="true" />{hours.toLocaleString("en-AU")} hrs recorded</span>{game.recentMinutes ? <span><Flame aria-hidden="true" />{Math.round(game.recentMinutes / 60)} hrs recently</span> : null}</div>{game.genres?.length ? <div className="steam-showcase-genres">{game.genres.slice(0, 4).map((genre) => <span key={genre}>{genre}</span>)}</div> : null}{game.url && <a href={game.url} target="_blank" rel="noopener noreferrer">Open Store page <ExternalLink aria-hidden="true" /></a>}</div>
+        </> : <p className="insight-empty">The next Steam library refresh will populate this spotlight.</p> : memory ? <div className="steam-memory"><span>REPLAY {steam.replay?.year || 2025}</span><strong>{memory.value}</strong><h4>{memory.title}</h4><p>{memory.note}</p>{steam.replay?.sourceUrl && <a href={steam.replay.sourceUrl} target="_blank" rel="noopener noreferrer">Open full Replay <ExternalLink aria-hidden="true" /></a>}</div> : <p className="insight-empty">Replay memories will appear with the next saved snapshot.</p>}
+      </div>
+      <div className="steam-showcase-progress" aria-hidden="true"><i key={`${view}-${libraryIndex}-${memoryIndex}`} /></div>
+    </section>
+  );
+}
+
+function SteamCommunityQueue({ steam }: { steam: SteamData }) {
+  const endpoint = String(getPortfolioConfig().gameSuggestions?.endpoint || "").replace(/\/+$/, "");
+  const [game, setGame] = useState("");
+  const [anonymous, setAnonymous] = useState(true);
+  const [username, setUsername] = useState("");
+  const [suggestions, setSuggestions] = useState<GameSuggestion[]>([]);
+  const [sort, setSort] = useState<SuggestionSort>("recommended");
+  const [browserOpen, setBrowserOpen] = useState(false);
+  const [selectedKey, setSelectedKey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState("Loading the community queue...");
+
+  const loadSuggestions = async () => {
+    if (!endpoint) { setStatus("The community queue is waiting for its Worker endpoint."); return; }
+    try {
+      const response = await fetch(`${endpoint}/api/game-suggestions`, { cache: "no-store", credentials: "omit", referrerPolicy: "no-referrer" });
+      if (!response.ok) throw new Error(`Suggestion service returned ${response.status}`);
+      const payload = await response.json() as { suggestions?: GameSuggestion[] };
+      setSuggestions(Array.isArray(payload.suggestions) ? payload.suggestions : []);
+      setStatus(payload.suggestions?.length ? `${payload.suggestions.length} game${payload.suggestions.length === 1 ? "" : "s"} in the community queue.` : "No suggestions yet. The first pick is wide open.");
+    } catch {
+      setStatus("The community queue is temporarily offline. Existing Steam data still works normally.");
+    }
+  };
+
+  useEffect(() => { void loadSuggestions(); }, [endpoint]);
+  useEffect(() => {
+    if (!browserOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const close = (event: KeyboardEvent) => { if (event.key === "Escape") setBrowserOpen(false); };
+    document.addEventListener("keydown", close);
+    return () => { document.body.style.overflow = previous; document.removeEventListener("keydown", close); };
+  }, [browserOpen]);
+
+  const sorted = useMemo(() => [...suggestions].sort((a, b) => {
+    if (sort === "match") return suggestionMatch(b, steam) - suggestionMatch(a, steam);
+    if (sort === "reviews") return Number(b.reviewPercent || -1) - Number(a.reviewPercent || -1) || Number(b.reviewCount || 0) - Number(a.reviewCount || 0);
+    if (sort === "price-low" || sort === "price-high") {
+      const aMissing = a.priceCents === null || a.priceCents === undefined;
+      const bMissing = b.priceCents === null || b.priceCents === undefined;
+      if (aMissing !== bMissing) return aMissing ? 1 : -1;
+      return sort === "price-low" ? suggestionPrice(a) - suggestionPrice(b) : suggestionPrice(b) - suggestionPrice(a);
+    }
+    if (sort === "dlc") return Number(b.dlcCount ?? -1) - Number(a.dlcCount ?? -1);
+    if (sort === "genre") return String(a.genres?.[0] || "ZZZ").localeCompare(String(b.genres?.[0] || "ZZZ"));
+    return Number(b.recommendationCount || 0) - Number(a.recommendationCount || 0) || String(b.recommendedAt || "").localeCompare(String(a.recommendedAt || ""));
+  }), [suggestions, sort, steam]);
+  const selected = suggestions.find((item) => item.key === selectedKey) || null;
+
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!endpoint || loading) return;
+    setLoading(true);
+    setStatus("Checking Steam and adding the recommendation...");
+    try {
+      const response = await fetch(`${endpoint}/api/game-suggestions`, {
+        method: "POST",
+        cache: "no-store",
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ game, anonymous, username: anonymous ? "" : username, clientId: suggestionClientId() })
+      });
+      const payload = await response.json() as { suggestions?: GameSuggestion[]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Suggestion could not be added.");
+      setSuggestions(Array.isArray(payload.suggestions) ? payload.suggestions : []);
+      setGame("");
+      setStatus("Recommendation added. Steam details were matched where available.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Suggestion could not be added.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="steam-community" aria-labelledby="steam-community-title">
+      <div className="steam-community-copy"><span className="steam-label"><Users aria-hidden="true" /> Community queue</span><h3 id="steam-community-title">What should Alvis play next?</h3><p>Recommend a Steam game by name or paste its Store link. Matching Store details are added automatically, while your browser identity stays private.</p><div className="steam-community-status" role="status"><LockKeyhole aria-hidden="true" /><span>{status}</span></div></div>
+      <form className="steam-suggestion-form" onSubmit={submit}>
+        <label htmlFor="steam-suggestion-game">Game name or Steam Store link</label>
+        <div className="steam-suggestion-entry"><input id="steam-suggestion-game" value={game} onChange={(event) => setGame(event.target.value)} minLength={2} maxLength={180} required placeholder="e.g. Helldivers 2" autoComplete="off" /><button type="submit" disabled={loading}><Send aria-hidden="true" /><span>{loading ? "Adding..." : "Suggest"}</span></button></div>
+        <div className="steam-suggestion-identity"><label><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} /><span>Suggest anonymously</span></label>{!anonymous && <label className="steam-username"><UserRound aria-hidden="true" /><input value={username} onChange={(event) => setUsername(event.target.value)} minLength={1} maxLength={18} required placeholder="Username" autoComplete="nickname" /></label>}</div>
+        <button className="button ghost steam-view-suggestions" type="button" onClick={() => { setBrowserOpen(true); void loadSuggestions(); }}><Eye aria-hidden="true" /> View suggestions {suggestions.length ? `(${suggestions.length})` : ""}</button>
+      </form>
+
+      {browserOpen && <div className="suggestion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setBrowserOpen(false); }}><section className="suggestion-modal" role="dialog" aria-modal="true" aria-labelledby="suggestion-modal-title">
+        <header><div><span className="steam-label">Community picks</span><h3 id="suggestion-modal-title">Steam suggestion board</h3><p>Duplicate recommendations are grouped, with every named or numbered anonymous recommender preserved.</p></div><button type="button" aria-label="Close suggestions" title="Close suggestions" onClick={() => setBrowserOpen(false)}><X aria-hidden="true" /></button></header>
+        <div className="suggestion-toolbar"><label htmlFor="suggestion-sort">Sort suggestions</label><select id="suggestion-sort" value={sort} onChange={(event) => setSort(event.target.value as SuggestionSort)}><option value="recommended">Most recommended</option><option value="match">Most likely match</option><option value="reviews">Most positive reviews</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="dlc">Most DLC</option><option value="genre">Genre</option></select><button type="button" aria-label="Refresh suggestions" title="Refresh suggestions" onClick={() => void loadSuggestions()}><RotateCw aria-hidden="true" /></button></div>
+        <div className={`suggestion-browser${selected ? " has-selection" : ""}`}>
+          <div className="suggestion-list" role="list">{sorted.length ? sorted.map((suggestion) => { const match = suggestionMatch(suggestion, steam); return <button type="button" role="listitem" className={selectedKey === suggestion.key ? "is-selected" : ""} key={suggestion.key} onClick={() => setSelectedKey(suggestion.key)}><SteamArtwork item={{ appid: suggestion.appid || undefined, image: suggestion.imageUrl || undefined }} title={suggestion.title} className="suggestion-art" /><span><strong>{suggestion.title}</strong><small>{suggestion.genres?.slice(0, 2).join(" / ") || "Genre awaiting Steam"}</small><span><b>{suggestion.priceLabel || "Price unavailable"}</b><em>{match}% genre fit</em></span></span><i>{suggestion.recommendationCount}<Users aria-hidden="true" /></i></button>; }) : <p className="suggestion-empty">No games have been suggested yet. Close this view and add the first one.</p>}</div>
+          {selected && <aside className="suggestion-details"><button type="button" className="suggestion-details-close" aria-label="Close game details" title="Close game details" onClick={() => setSelectedKey("")}><X aria-hidden="true" /></button><SteamArtwork item={{ appid: selected.appid || undefined, image: selected.imageUrl || undefined }} title={selected.title} className="suggestion-detail-art" /><div><span className="steam-label">Game details</span><h4>{selected.title}</h4><div className="suggestion-detail-stats"><span><b>{selected.priceLabel || "Unknown"}</b><small>Current AU price</small></span><span><b>{selected.reviewPercent !== null && selected.reviewPercent !== undefined ? `${selected.reviewPercent}%` : "Unknown"}</b><small>{selected.reviewSummary || "Review score"}</small></span><span><b>{selected.dlcCount ?? "Unknown"}</b><small>DLC on Store page</small></span><span><b>{suggestionMatch(selected, steam)}%</b><small>Genre-footprint fit</small></span></div>{selected.genres?.length ? <div className="suggestion-genres">{selected.genres.map((genre) => <span key={genre}>{genre}</span>)}</div> : null}<div className="suggestion-recommenders"><strong>Recommended by</strong><p>{selected.recommenders.join(", ")}</p></div>{selected.storeUrl && <a className="button primary" href={selected.storeUrl} target="_blank" rel="noopener noreferrer">Open Steam Store <ExternalLink aria-hidden="true" /></a>}</div></aside>}
+        </div>
+      </section></div>}
+    </section>
+  );
+}
+
 // Root dashboard component. Owns the merged `steam` state and orchestrates the layout:
 // profile/stat column, "Currently Playing" + store watch, the insights deck, the Replay
 // panel, and the scrolling store-radar marquee.
@@ -410,8 +617,10 @@ function SteamActivityDashboard() {
           <article className="steam-card steam-card-large"><h3>Achievements ({steam.achievements?.length || 0})</h3><GameList items={steam.achievements} label="Achievements" pageSize={3} /></article>
           <article className="steam-card"><h3>Most Played</h3><GameList items={steam.mostPlayed} label="Most played games" pageSize={3} /></article>
           <article className="steam-card"><h3>100% Games ({steam.completedGames?.length || 0})</h3><GameList items={steam.completedGames} label="Completed games" pageSize={3} /></article>
+          <SteamShowcaseStage steam={steam} />
         </div>
       </div>
+      <SteamCommunityQueue steam={steam} />
       <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
       {/* Store-radar marquee: the ticker list is duplicated so the CSS can loop seamlessly.

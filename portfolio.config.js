@@ -611,6 +611,10 @@ window.PORTFOLIO_CONFIG = {
     refreshMs: 120000,
     provider: "Cloudflare Worker + D1"
   },
+  gameSuggestions: {
+    // Public, origin-restricted Worker. Steam lookup and D1 persistence stay server-side.
+    endpoint: "https://echoops-game-suggestions.alvis-dev.workers.dev"
+  },
   services: {
     translation: {
       // The RapidAPI key stays in Cloudflare; this is only the public translation gateway URL.
@@ -1123,6 +1127,22 @@ window.PORTFOLIO_CONFIG = {
       ]
     },
     {
+      title: "Rate-Limited Community Suggestions",
+      body:
+        "Game suggestions are validated again inside an origin-restricted Cloudflare Worker before D1 stores them. The Worker limits payload size and submissions per network, hashes requester and browser identifiers, never stores raw IP addresses, and returns only grouped public recommendation data.",
+      why: "It lets visitors contribute without giving the public page direct database access or trusting browser-side validation.",
+      docs: [
+        {
+          label: "Cloudflare D1 Worker API",
+          url: "https://developers.cloudflare.com/d1/worker-api/"
+        },
+        {
+          label: "OWASP Input Validation",
+          url: "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html"
+        }
+      ]
+    },
+    {
       title: "Public Counter Trust Boundary",
       body:
         "CounterAPI V2 is called through a dedicated Cloudflare gateway whose token is deployed from the CounterAPI GitHub secret; the browser never receives it. CounterAPI and Abacus remain raw page-load references that can be inflated, so Cloudflare D1 stays the authoritative aggregate source and V1 is retained only as an automatic outage fallback.",
@@ -1296,6 +1316,22 @@ window.PORTFOLIO_CONFIG = {
         {
           label: "Steam Web API",
           url: "https://steamcommunity.com/dev"
+        }
+      ]
+    },
+    {
+      title: "Community Game Suggestion Queue",
+      body:
+        "A React and TypeScript queue lets visitors recommend a Steam game with a short username or anonymously. A dedicated Worker enriches it with public Steam price, genre, DLC, review, and artwork data, while D1 groups repeated recommendations and the dashboard calculates a transparent genre-footprint match score.",
+      why: "It turns the Steam section into a real community feature while demonstrating typed state, dialogs, sorting, server-side validation, external API enrichment, aggregation, and persistent storage.",
+      docs: [
+        {
+          label: "Cloudflare D1",
+          url: "https://developers.cloudflare.com/d1/"
+        },
+        {
+          label: "Steam Store Search",
+          url: "https://store.steampowered.com/search/"
         }
       ]
     },

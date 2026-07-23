@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "echoops-game-suggestions",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-15",
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGIN": "https://silvaops-orbit.github.io"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "echoops-game-suggestions",
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}

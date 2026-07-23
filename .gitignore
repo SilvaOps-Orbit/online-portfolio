@@ -5,6 +5,7 @@ Thumbs.db
 .env.*
 node_modules/
 analytics-worker/.wrangler/
+**/.wrangler/
 analytics-worker/.wrangler-dist/
 analytics-worker/.dev.vars*
 analytics-worker/.env*

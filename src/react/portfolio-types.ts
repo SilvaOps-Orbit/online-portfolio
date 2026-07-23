@@ -300,6 +300,9 @@ export interface PortfolioConfig {
     refreshMs?: number;
     provider?: string;
   };
+  gameSuggestions?: {
+    endpoint?: string;
+  };
 }
 
 declare global {
