@@ -246,6 +246,11 @@ export interface SpotifyInsights {
 
 export interface SpotifyData {
   summary?: string;
+  listeningAge?: {
+    value?: number;
+    note?: string;
+    source?: string;
+  };
   status?: string;
   generatedAt?: string;
   lastGoodAt?: string;

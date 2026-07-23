@@ -1,6 +1,6 @@
 import { StrictMode, useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Clock3, Compass, Disc3, ListMusic, Radar, Sparkles } from "lucide-react";
+import { AudioLines, Clock3, Compass, Disc3, ListMusic, Radar, Sparkles } from "lucide-react";
 import { IslandBoundary } from "./IslandBoundary";
 import { SpotifyWrappedScene } from "./SpotifyWrappedScene";
 import type { SpotifyData, SpotifyItem } from "./portfolio-types";
@@ -61,7 +61,8 @@ function TasteView({ data }: { data: SpotifyData }) {
   const selected = taste[range] || taste.mediumTerm || taste.longTerm || {};
   const artists = selected.artists || [];
   const tracks = selected.tracks || [];
-  return <div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists need renewed Spotify listening-history access." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>Spotify listening data</small></div><MiniList items={tracks} empty="Top tracks need renewed Spotify listening-history access." /></div></div>;
+  const listeningAge = data.listeningAge;
+  return <><div className="spotify-listening-age"><span className="spotify-age-icon"><AudioLines aria-hidden="true" /></span><span className="spotify-age-copy"><small>{listeningAge?.source || "Listening profile"}</small><strong>Listening age <b>{Number(listeningAge?.value || 22)}</b></strong><p>{listeningAge?.note || "A personal estimate that can be refined when Spotify archive history is available."}</p></span><span className="spotify-age-signal" aria-hidden="true"><i /><i /><i /><i /><i /></span></div><div className="insight-view-grid"><div><div className="insight-subhead"><span>Top artists</span><div className="insight-segments" aria-label="Taste time range">{[["shortTerm", "4W"], ["mediumTerm", "6M"], ["longTerm", "All"]].map(([id, label]) => <button key={id} type="button" className={range === id ? "is-active" : ""} onClick={() => setRange(id)}>{label}</button>)}</div></div><MiniList items={artists} empty="Top artists need renewed Spotify listening-history access." /></div><div><div className="insight-subhead"><span>Top tracks</span><small>Spotify listening data</small></div><MiniList items={tracks} empty="Top tracks need renewed Spotify listening-history access." /></div></div></>;
 }
 
 function TimelineView({ data }: { data: SpotifyData }) {

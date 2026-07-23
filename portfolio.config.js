@@ -737,6 +737,11 @@ window.PORTFOLIO_CONFIG = {
   spotify: {
     summary:
       "Music gives the build energy. This section can publish public playlists and the latest listening state from Spotify without exposing API secrets in the browser.",
+    listeningAge: {
+      value: 22,
+      source: "Personal estimate",
+      note: "Estimated from my current music taste. Spotify streaming history and Wrapped data can refine this later."
+    },
     profileUrl: "",
     current: {
       title: "Spotify not connected yet",
