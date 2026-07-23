@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-07-23T00:00:00+10:00",
+  "updatedAt": "2026-07-23T12:00:00+10:00",
   "privacy": "Curated public listening summaries only. Raw Spotify account exports and detailed play events are not stored here.",
   "snapshots": [
     {
@@ -26,6 +26,31 @@
         { "title": "Rain (from The Suicide Squad)", "meta": "Weekly track #3" },
         { "title": "ANTI", "meta": "Weekly track #4" },
         { "title": "GRAVE$", "meta": "Weekly track #5" }
+      ]
+    },
+    {
+      "id": "spotify-weekly-2026-07-13-19",
+      "periodStart": "2026-07-13",
+      "periodEnd": "2026-07-19",
+      "periodLabel": "13-19 Jul 2026",
+      "minutes": 509,
+      "scope": "Full week",
+      "note": "Curated from an official Spotify Listening Stats share.",
+      "sourceUrl": "https://www.spotify.com/listeningstats/instanceshare/7fh8kPHXoCWw9w1oYcLDqE",
+      "sourceImage": "https://seadragon.spotifycdn.com/share-assets/en/7fh8kPHXoCWw9w1oYcLDqE_1260x1260.jpeg",
+      "topArtists": [
+        { "title": "Skrillex", "meta": "Weekly artist #1" },
+        { "title": "Twelve Foot Ninja", "meta": "Weekly artist #2" },
+        { "title": "Will Sparks", "meta": "Weekly artist #3" },
+        { "title": "Khantrast", "meta": "Weekly artist #4" },
+        { "title": "Odd Mob", "meta": "Weekly artist #5" }
+      ],
+      "topTracks": [
+        { "title": "Bombalaya - Blooom Remix", "meta": "Weekly track #1" },
+        { "title": "Seven Nation Army", "meta": "Weekly track #2" },
+        { "title": "HUSTLR", "meta": "Weekly track #3" },
+        { "title": "Waiting For Love", "meta": "Weekly track #4" },
+        { "title": "Feel the Bass III", "meta": "Weekly track #5" }
       ]
     }
   ]
