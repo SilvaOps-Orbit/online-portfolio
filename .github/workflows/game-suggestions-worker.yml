@@ -56,11 +56,11 @@ jobs:
         run: |
           set -euo pipefail
           list_json=$(npx --yes wrangler@4 d1 list --json)
-          database_id=$(printf '%s' "$list_json" | jq -r '(.result // .)[] | select(.name == "echoops-game-suggestions") | .uuid' | head -n 1)
+          database_id=$(printf '%s' "$list_json" | jq -r '(if type == "array" then . else (.result // []) end)[] | select(.name == "echoops-game-suggestions") | .uuid' | head -n 1)
           if test -z "$database_id"; then
             npx --yes wrangler@4 d1 create echoops-game-suggestions --location oc
             list_json=$(npx --yes wrangler@4 d1 list --json)
-            database_id=$(printf '%s' "$list_json" | jq -r '(.result // .)[] | select(.name == "echoops-game-suggestions") | .uuid' | head -n 1)
+            database_id=$(printf '%s' "$list_json" | jq -r '(if type == "array" then . else (.result // []) end)[] | select(.name == "echoops-game-suggestions") | .uuid' | head -n 1)
           fi
           test -n "$database_id" && test "$database_id" != "null"
           sed "s/00000000-0000-0000-0000-000000000000/$database_id/" wrangler.jsonc > wrangler.deploy.jsonc
