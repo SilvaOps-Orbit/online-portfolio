@@ -172,13 +172,14 @@ async function syncSuggestions(games) {
     console.warn("Wishlist suggestion sync skipped because its endpoint or private token is unavailable.");
     return false;
   }
+  const syncGames = games.map(({ appid, title, image }) => ({ appid, title, image }));
   const response = await fetch(`${syncEndpoint}/api/internal/wishlist-sync`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${syncToken}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ games })
+    body: JSON.stringify({ games: syncGames })
   });
   if (!response.ok) {
     const detail = await response.text();
@@ -207,7 +208,7 @@ async function main() {
       source: "Steam IWishlistService + IStoreService catalog + IStoreBrowseService pricing",
       status: synced
         ? `${games.length} wishlist games refreshed and synced to the suggestion board.`
-        : `${games.length} wishlist games refreshed; suggestion sync is waiting for its private token.`,
+        : `${games.length} wishlist games refreshed; suggestion sync is queued for retry.`,
       stale: false,
       profileUrl: wishlistUrl,
       recommenderLabel: "Steam Wishlist",

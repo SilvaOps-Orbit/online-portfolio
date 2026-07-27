@@ -77,6 +77,25 @@ function normalizeKey(value) {
   return value.toLocaleLowerCase("en-AU").normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90);
 }
 
+function cleanSteamImageUrl(value, appid) {
+  if (typeof value !== "string" || value.length > 500) return "";
+  try {
+    const url = new URL(value);
+    const allowedHosts = new Set([
+      "shared.fastly.steamstatic.com",
+      "shared.akamai.steamstatic.com",
+      "cdn.cloudflare.steamstatic.com"
+    ]);
+    const appPath = `/steam/apps/${appid}/`;
+    const storeAssetPath = `/store_item_assets/steam/apps/${appid}/`;
+    if (url.protocol !== "https:" || !allowedHosts.has(url.hostname)) return "";
+    if (!url.pathname.includes(appPath) && !url.pathname.includes(storeAssetPath)) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
 async function ensureSchema(env) {
   await env.DB.batch([
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS game_suggestions (
@@ -283,10 +302,12 @@ async function parseWishlistSync(request) {
       const appid = Number(item.appid || 0);
       const title = typeof item.title === "string" ? item.title.trim().replace(/\s+/g, " ").slice(0, 100) : "";
       if (!Number.isInteger(appid) || appid <= 0 || !title) return [];
+      const imageUrl = cleanSteamImageUrl(item.image, appid)
+        || `https://shared.fastly.steamstatic.com/steam/apps/${appid}/header.jpg`;
       return [{
         appid,
         title,
-        imageUrl: `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+        imageUrl,
         storeUrl: `https://store.steampowered.com/app/${appid}/`
       }];
     });
