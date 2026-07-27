@@ -9,6 +9,38 @@ const syncToken = process.env.WISHLIST_SYNC_TOKEN || "";
 const outputPath = new URL("../data/steam-wishlist.json", import.meta.url);
 const storeBatchSize = 100;
 
+const GENRE_RULES = [
+  ["Action", /^action$/i],
+  ["Adventure", /^adventure$/i],
+  ["Arcade", /^arcade$/i],
+  ["Battle Royale", /^battle royale$/i],
+  ["Card & Board", /^(card game|board game|deckbuilding)$/i],
+  ["Casual", /^casual$/i],
+  ["Fighting", /^(fighting|martial arts)$/i],
+  ["Free to Play", /^free to play$/i],
+  ["Horror", /horror/i],
+  ["Indie", /^indie$/i],
+  ["Massively Multiplayer", /^(massively multiplayer|mmo|mmorpg)$/i],
+  ["Metroidvania", /^metroidvania$/i],
+  ["Music & Rhythm", /^(music|rhythm)$/i],
+  ["Party", /^party game$/i],
+  ["Platformer", /platformer/i],
+  ["Puzzle", /puzzle/i],
+  ["Racing", /racing/i],
+  ["Roguelike", /rogue-?li/i],
+  ["RPG", /(^rpg$|role-?playing|action rpg|jrpg|crpg)/i],
+  ["Sandbox", /^sandbox$/i],
+  ["Shooter", /(shooter|^fps$)/i],
+  ["Simulation", /(simulation|simulator)/i],
+  ["Sports", /^sports$/i],
+  ["Stealth", /^stealth$/i],
+  ["Strategy", /(strategy|^rts$|^4x$|tower defense|^moba$)/i],
+  ["Survival", /^survival$/i],
+  ["Tactical", /^tactical$/i],
+  ["Turn-Based", /^turn-based/i],
+  ["Visual Novel", /^visual novel$/i]
+];
+
 async function readExisting() {
   try {
     return JSON.parse(await readFile(outputPath, "utf8"));
@@ -18,14 +50,35 @@ async function readExisting() {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "EchoOps portfolio Steam wishlist refresh"
-    }
-  });
-  if (!response.ok) throw new Error(`Steam returned ${response.status} for ${new URL(url).pathname}`);
-  return response.json();
+  let lastStatus = 0;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const response = await fetch(url, {
+      headers: {
+        Accept: "application/json",
+        "User-Agent": "EchoOps portfolio Steam wishlist refresh"
+      }
+    });
+    if (response.ok) return response.json();
+    lastStatus = response.status;
+    if (response.status !== 429 && response.status < 500) break;
+    await new Promise((resolve) => setTimeout(resolve, attempt * 1_500));
+  }
+  throw new Error(`Steam returned ${lastStatus || "an error"} for ${new URL(url).pathname}`);
+}
+
+async function loadTagNames() {
+  const tags = await fetchJson("https://store.steampowered.com/tagdata/populartags/english");
+  return new Map((Array.isArray(tags) ? tags : [])
+    .map((tag) => [Number(tag?.tagid || 0), String(tag?.name || "").trim()])
+    .filter(([tagid, name]) => tagid && name));
+}
+
+function broadGenres(tags) {
+  const genres = [];
+  for (const [genre, pattern] of GENRE_RULES) {
+    if (tags.some((tag) => pattern.test(tag))) genres.push(genre);
+  }
+  return genres.slice(0, 8);
 }
 
 function chunks(items, size) {
@@ -43,7 +96,7 @@ function storeArtwork(item, appid) {
   return `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
 }
 
-async function loadStoreDetails(appids) {
+async function loadStoreDetails(appids, tagNames) {
   const details = new Map();
   for (const batch of chunks(appids, storeBatchSize)) {
     try {
@@ -53,7 +106,9 @@ async function loadStoreDetails(appids) {
         data_request: {
           include_basic_info: true,
           include_assets: true,
-          include_all_purchase_options: true
+          include_all_purchase_options: true,
+          include_tag_count: 20,
+          include_reviews: true
         }
       };
       const payload = await fetchJson(
@@ -71,6 +126,10 @@ async function loadStoreDetails(appids) {
               .filter((entry) => Number.isFinite(Number(entry?.final_price_in_cents)))
               .sort((a, b) => Number(a.final_price_in_cents) - Number(b.final_price_in_cents))[0]
             : null);
+        const review = item.reviews?.summary_filtered || item.reviews?.summary_language_specific || null;
+        const tags = (Array.isArray(item.tags) ? item.tags : [])
+          .map((tag) => tagNames.get(Number(tag?.tagid || 0)))
+          .filter(Boolean);
         details.set(appid, {
           title: String(item.name || "").trim(),
           image: storeArtwork(item, appid),
@@ -80,7 +139,15 @@ async function loadStoreDetails(appids) {
             ? Number(option.original_price_in_cents)
             : null,
           originalPriceLabel: option?.formatted_original_price || null,
-          discountPercent: Number(option?.discount_pct || 0)
+          discountPercent: Number(option?.discount_pct || 0),
+          genres: broadGenres(tags),
+          reviewPercent: Number.isFinite(Number(review?.percent_positive))
+            ? Number(review.percent_positive)
+            : null,
+          reviewCount: Number.isFinite(Number(review?.review_count))
+            ? Number(review.review_count)
+            : null,
+          reviewSummary: String(review?.review_score_label || "").trim() || null
         });
       });
     } catch (error) {
@@ -130,8 +197,15 @@ async function loadWishlist(existing) {
     } while (lastAppid < highestWishlistAppid);
   }
 
+  let tagNames = new Map();
+  try {
+    tagNames = await loadTagNames();
+  } catch (error) {
+    console.warn("Steam tag dictionary unavailable; prices will still refresh.", error);
+  }
   const storeDetails = await loadStoreDetails(
-    wishlistItems.map((item) => Number(item.appid || 0)).filter(Boolean)
+    wishlistItems.map((item) => Number(item.appid || 0)).filter(Boolean),
+    tagNames
   );
 
   return wishlistItems
@@ -152,6 +226,10 @@ async function loadWishlist(existing) {
         originalPriceCents: store.originalPriceCents ?? null,
         originalPriceLabel: store.originalPriceLabel || null,
         discountPercent: Number(store.discountPercent || 0),
+        genres: Array.isArray(store.genres) ? store.genres : [],
+        reviewPercent: store.reviewPercent ?? null,
+        reviewCount: store.reviewCount ?? null,
+        reviewSummary: store.reviewSummary || null,
         url: `https://store.steampowered.com/app/${appid}/`
       };
     })
@@ -172,7 +250,30 @@ async function syncSuggestions(games) {
     console.warn("Wishlist suggestion sync skipped because its endpoint or private token is unavailable.");
     return false;
   }
-  const syncGames = games.map(({ appid, title, image }) => ({ appid, title, image }));
+  const syncGames = games.map(({
+    appid,
+    title,
+    image,
+    priceCents,
+    priceLabel,
+    genres,
+    reviewPercent,
+    reviewCount,
+    reviewSummary,
+    url
+  }) => ({
+    appid,
+    title,
+    image,
+    priceCents,
+    priceLabel,
+    currency: "AUD",
+    genres,
+    reviewPercent,
+    reviewCount,
+    reviewSummary,
+    storeUrl: url
+  }));
   const response = await fetch(`${syncEndpoint}/api/internal/wishlist-sync`, {
     method: "POST",
     headers: {

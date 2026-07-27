@@ -96,6 +96,19 @@ function cleanSteamImageUrl(value, appid) {
   }
 }
 
+function cleanMetadataText(value, maxLength) {
+  return typeof value === "string"
+    ? value.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength)
+    : "";
+}
+
+function boundedNumber(value, minimum, maximum, integer = false) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number < minimum || number > maximum) return null;
+  return integer ? Math.round(number) : number;
+}
+
 async function ensureSchema(env) {
   await env.DB.batch([
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS game_suggestions (
@@ -291,10 +304,10 @@ async function addSuggestion(request, env, origin) {
 async function parseWishlistSync(request) {
   if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) return null;
   const length = Number(request.headers.get("Content-Length") || 0);
-  if (length > 262_144) return null;
+  if (length > 1_048_576) return null;
   try {
     const text = await request.text();
-    if (!text || text.length > 262_144) return null;
+    if (!text || text.length > 1_048_576) return null;
     const payload = JSON.parse(text);
     if (!payload || !Array.isArray(payload.games) || payload.games.length > MAX_WISHLIST_GAMES) return null;
     const games = payload.games.flatMap((item) => {
@@ -304,9 +317,23 @@ async function parseWishlistSync(request) {
       if (!Number.isInteger(appid) || appid <= 0 || !title) return [];
       const imageUrl = cleanSteamImageUrl(item.image, appid)
         || `https://shared.fastly.steamstatic.com/steam/apps/${appid}/header.jpg`;
+      const genres = Array.isArray(item.genres)
+        ? [...new Set(item.genres.map((genre) => cleanMetadataText(genre, 40)).filter(Boolean))].slice(0, 8)
+        : [];
+      const currency = typeof item.currency === "string" && /^[A-Z]{3}$/.test(item.currency)
+        ? item.currency
+        : "AUD";
       return [{
         appid,
         title,
+        priceCents: boundedNumber(item.priceCents, 0, 10_000_000, true),
+        priceLabel: cleanMetadataText(item.priceLabel, 40) || null,
+        currency,
+        genres,
+        dlcCount: boundedNumber(item.dlcCount, 0, 100_000, true),
+        reviewPercent: boundedNumber(item.reviewPercent, 0, 100),
+        reviewCount: boundedNumber(item.reviewCount, 0, 1_000_000_000, true),
+        reviewSummary: cleanMetadataText(item.reviewSummary, 60) || null,
         imageUrl,
         storeUrl: `https://store.steampowered.com/app/${appid}/`
       }];
@@ -344,9 +371,11 @@ async function syncWishlist(request, env) {
         game_key, steam_app_id, title, username, is_anonymous, recommender_hash,
         price_cents, price_label, currency, genres_json, dlc_count, review_percent,
         review_count, review_summary, image_url, store_url, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, 0, ?, NULL, NULL, 'AUD', '[]', NULL, NULL, NULL, NULL, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       `steam-${game.appid}`, game.appid, game.title, RESERVED_RECOMMENDER, recommenderHash,
+      game.priceCents, game.priceLabel, game.currency, JSON.stringify(game.genres),
+      game.dlcCount, game.reviewPercent, game.reviewCount, game.reviewSummary,
       game.imageUrl, game.storeUrl, now, now
     ));
   for (let index = 0; index < statements.length; index += 75) {

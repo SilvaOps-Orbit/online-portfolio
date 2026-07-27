@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "game-suggestions-worker/**"
+      - "scripts/update-steam-wishlist.mjs"
       - ".github/workflows/game-suggestions-worker.yml"
   workflow_dispatch:
 
@@ -74,3 +75,18 @@ jobs:
             echo "::warning::Add WISHLIST_SYNC_TOKEN to repository secrets to enable trusted wishlist imports."
           fi
         working-directory: game-suggestions-worker
+
+      - name: Resync wishlist prices and genres
+        if: steps.readiness.outputs.ready == 'true'
+        shell: bash
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
+          STEAM_WISHLIST_URL: "https://store.steampowered.com/wishlist/profiles/76561199192411740/?st=9730497737884137652"
+          GAME_SUGGESTION_ENDPOINT: "https://echoops-game-suggestions.alvis-dev.workers.dev"
+          WISHLIST_SYNC_TOKEN: ${{ secrets.WISHLIST_SYNC_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$STEAM_API_KEY" || { echo "::error::Add STEAM_API_KEY to repository secrets."; exit 1; }
+          test -n "$WISHLIST_SYNC_TOKEN" || { echo "::error::Add WISHLIST_SYNC_TOKEN to repository secrets."; exit 1; }
+          node scripts/update-steam-wishlist.mjs
