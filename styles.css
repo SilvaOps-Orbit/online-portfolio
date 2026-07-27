@@ -7319,7 +7319,7 @@ a.provider-pulse-item:focus-visible {
   line-height: 1;
 }
 .suggestion-owner-badges svg { width: 13px; height: 13px; }
-.suggestion-owner-badges b:last-child svg { color: #ff4f59; fill: currentColor; }
+.suggestion-owner-badges b:last-child svg { color: #ff4f59; }
 .suggestion-list > button > i { display: inline-flex; gap: 4px; align-items: center; color: var(--accent-3); font-size: 0.74rem; font-style: normal; font-weight: 950; }
 .suggestion-list > button > i svg { width: 15px; height: 15px; }
 .suggestion-empty { align-self: center; justify-self: center; max-width: 45ch; margin: 50px 20px; color: var(--muted); text-align: center; }
@@ -7340,7 +7340,7 @@ a.provider-pulse-item:focus-visible {
 .suggestion-owner-status > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .suggestion-owner-status span { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 1px 7px; align-items: center; min-width: 0; }
 .suggestion-owner-status svg { grid-row: 1 / span 2; width: 19px; height: 19px; color: #39dd8f; }
-.suggestion-owner-status span + span svg { color: #ff4f59; fill: currentColor; }
+.suggestion-owner-status span + span svg { color: #ff4f59; }
 .suggestion-owner-status b { color: var(--text); font-size: 0.78rem; }
 .suggestion-owner-status small { color: var(--muted); font-size: 0.64rem; line-height: 1.35; }
 .suggestion-detail-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
@@ -7369,7 +7369,7 @@ a.provider-pulse-item:focus-visible {
 .suggestion-video-list > a:hover { border-color: #ff4f59; background: color-mix(in srgb, #ff4f59 7%, var(--bg)); }
 .suggestion-video-list > a > span:first-child { display: grid; place-items: center; width: 92px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: color-mix(in srgb, #ff4f59 12%, var(--panel)); }
 .suggestion-video-list img { width: 100%; height: 100%; object-fit: cover; }
-.suggestion-video-list > a > span:first-child svg { width: 26px; height: 26px; color: #ff4f59; fill: currentColor; }
+.suggestion-video-list > a > span:first-child svg { width: 26px; height: 26px; color: #ff4f59; }
 .suggestion-video-list > a > span:nth-child(2) { min-width: 0; }
 .suggestion-video-list b,
 .suggestion-video-list small { display: block; overflow-wrap: anywhere; }
