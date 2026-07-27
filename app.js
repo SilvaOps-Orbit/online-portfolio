@@ -8,6 +8,7 @@
   const cycleSwapTimers = new Map();
   const dataRefreshMs = 60000;
   const spotifyDataRefreshMs = 5000;
+  const youtubeDataRefreshMs = 5 * 60 * 1000;
   const githubHourlyRefreshMs = 60 * 60 * 1000;
   const githubHourlyCacheKey = "echoops-github-hourly-cache-v1";
   let bootQuoteTimer = 0;
@@ -1709,6 +1710,17 @@
     return merged;
   }
 
+  async function loadYouTubeData() {
+    const live = await fetchDataFile("data/youtube.json");
+    if (!live) {
+      return latestDynamicData.youtube || {};
+    }
+
+    latestDynamicData.youtube = live;
+    renderConnections();
+    return live;
+  }
+
   function mergeSpotifyData(fallback, live) {
     const result = { ...(fallback || {}), ...(live || {}) };
     result.profile = { ...((fallback || {}).profile || {}), ...((live || {}).profile || {}) };
@@ -1878,6 +1890,7 @@
         loadSteamData({ renderFallback: false });
         loadSpotifyData({ renderFallback: false });
         loadMarketData({ renderFallback: false });
+        loadYouTubeData();
 
         if (delayMs >= 8000) {
           loadNewsData({ renderFallback: false });
@@ -2906,6 +2919,17 @@
       "M8.5 13.5a1 1 0 0 1 0-2h7a1 1 0 0 1 0 2h-7Zm-2.1 4.1-1.1 1.1a4 4 0 0 1-5.7-5.7l3.5-3.5a4 4 0 0 1 5.7 0 1 1 0 0 1-1.4 1.4 2 2 0 0 0-2.9 0L1 14.4a2 2 0 0 0 2.9 2.9L5 16.2a1 1 0 0 1 1.4 1.4Zm11.2-11.2 1.1-1.1a4 4 0 1 1 5.7 5.7l-3.5 3.5a4 4 0 0 1-5.7 0 1 1 0 0 1 1.4-1.4 2 2 0 0 0 2.9 0l3.5-3.5a2 2 0 0 0-2.9-2.9L19 7.8a1 1 0 0 1-1.4-1.4Z"
   };
 
+  const connectionMetricIconPaths = {
+    subscribers:
+      "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+    videos: "M3 5h18v14H3zM10 9l5 3-5 3z",
+    views: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zm10-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+    dollar: "M12 2v20M17 6.5C16.1 5.6 14.5 5 12.5 5 9.5 5 8 6.4 8 8.5s1.5 3.2 4.5 3.5 4.5 1.4 4.5 3.5S15.5 19 12.5 19c-2 0-3.8-.7-4.8-1.8",
+    "dollar-off":
+      "M12 2v3M12 19v3M17 6.5C16.1 5.6 14.5 5 12.5 5 9.5 5 8 6.4 8 8.5c0 1.1.4 1.9 1.3 2.5M14.7 13c1.5.5 2.3 1.3 2.3 2.5 0 2.1-1.5 3.5-4.5 3.5-2 0-3.8-.7-4.8-1.8M4 4l16 16",
+    clock: "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 5v5l3.5 2"
+  };
+
   function createBrandSvg(icon, className = "connection-brand") {
     const pathData = connectionIconPaths[icon];
     if (!pathData) return null;
@@ -2919,6 +2943,27 @@
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", pathData);
     path.setAttribute("fill", "currentColor");
+    svg.append(path);
+    return svg;
+  }
+
+  function createMetricSvg(icon) {
+    const pathData = connectionMetricIconPaths[icon];
+    if (!pathData) return null;
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "connection-stat-icon");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathData);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "2");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
     svg.append(path);
     return svg;
   }
@@ -2944,7 +2989,7 @@
 
     const chip = createElement("span", stat.className || "");
     if (stat.icon) {
-      const svg = createBrandSvg(stat.icon, "connection-stat-icon");
+      const svg = createMetricSvg(stat.icon) || createBrandSvg(stat.icon, "connection-stat-icon");
       if (svg) chip.append(svg);
     }
     chip.append(document.createTextNode(String(stat.text || "")));
@@ -2977,13 +3022,27 @@
       const count = Number(value || 0);
       return Number.isFinite(count) && count >= 0 ? new Intl.NumberFormat().format(count) : "";
     };
-    const subscriberCount = youtubeStats.hiddenSubscriberCount ? "Hidden" : formatYouTubeCount(youtubeStats.subscribers);
+    const subscriberValue = Number(youtubeStats.subscribers || 0);
+    const videoValue = Number(youtubeStats.videos || 0);
+    const subscriberCount = youtubeStats.hiddenSubscriberCount ? "Hidden" : formatYouTubeCount(subscriberValue);
     const viewCount = formatYouTubeCount(youtubeStats.views);
-    const videoCount = formatYouTubeCount(youtubeStats.videos);
+    const videoCount = formatYouTubeCount(videoValue);
     const monetizationStatus = String(youtubeMonetization.status || "Unmonetised").trim();
-    const monetizationClass = /^(moneti[sz]ed|active|youtube partner)/i.test(monetizationStatus)
-      ? "is-youtube-monetized"
-      : "is-youtube-status";
+    const subscriberClass = youtubeStats.hiddenSubscriberCount
+      ? "is-youtube-subs-tier-0"
+      : subscriberValue >= 1000
+        ? "is-youtube-gold"
+        : `is-youtube-subs-tier-${Math.min(9, Math.floor(Math.max(0, subscriberValue) / 100))}`;
+    const videoClass = videoValue >= 1000 ? "is-youtube-gold" : "is-youtube-video";
+    const monetizationPending = /(waiting|pending|review|approval)/i.test(monetizationStatus);
+    const monetizationApproved = /(moneti[sz]ed|approved|active|youtube partner)/i.test(monetizationStatus)
+      && !/unmoneti[sz]ed/i.test(monetizationStatus);
+    const monetizationClass = monetizationPending
+      ? "is-youtube-status-pending"
+      : monetizationApproved
+        ? "is-youtube-monetized"
+        : "is-youtube-status";
+    const monetizationIcon = monetizationPending ? "clock" : monetizationApproved ? "dollar" : "dollar-off";
 
     const links = [
       {
@@ -3029,10 +3088,12 @@
         href: youtubeProfile.url || profile.youtubeUrl || "#contact",
         meta: youtubeProfile.handle || (profile.youtubeUrl ? "Videos and channel" : "Channel link coming soon"),
         stats: [
-          subscriberCount ? { text: `${subscriberCount} Subs`, className: "is-youtube-stat" } : "",
-          videoCount ? { text: `${videoCount} Videos`, className: "is-youtube-stat" } : "",
-          viewCount ? { text: `${viewCount} Views`, className: "is-youtube-stat" } : "",
-          monetizationStatus ? { text: `Monetisation: ${monetizationStatus}`, className: monetizationClass } : ""
+          subscriberCount ? { text: `${subscriberCount} Subs`, icon: "subscribers", className: subscriberClass } : "",
+          videoCount ? { text: `${videoCount} Videos`, icon: "videos", className: videoClass } : "",
+          viewCount ? { text: `${viewCount} Views`, icon: "views", className: "is-youtube-views" } : "",
+          monetizationStatus
+            ? { text: `Monetisation: ${monetizationStatus}`, icon: monetizationIcon, className: monetizationClass }
+            : ""
         ].filter(Boolean)
       },
       {
@@ -4082,6 +4143,7 @@
     scheduleDynamicDataWarmups();
     window.setInterval(() => loadSteamData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadSpotifyData({ renderFallback: false }), spotifyDataRefreshMs);
+    window.setInterval(loadYouTubeData, youtubeDataRefreshMs);
     window.setInterval(() => loadMarketData({ renderFallback: false }), dataRefreshMs);
     window.setInterval(() => loadNewsData({ renderFallback: false }), dataRefreshMs * 5);
   }

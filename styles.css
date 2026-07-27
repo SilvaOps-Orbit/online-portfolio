@@ -1359,20 +1359,92 @@ h3 {
   color: #66c0f4;
 }
 
-.connection-stats .is-youtube-stat {
-  border-color: color-mix(in srgb, #ff0033 54%, var(--line));
-  color: color-mix(in srgb, #ff5a72 82%, var(--text));
-}
-
 .connection-stats .is-youtube-status {
   border-color: color-mix(in srgb, var(--muted) 56%, var(--line));
   color: var(--muted);
+}
+
+.connection-stats .is-youtube-status-pending {
+  border-color: color-mix(in srgb, #ff9f43 68%, var(--line));
+  color: #ffb366;
+  box-shadow: 0 0 12px color-mix(in srgb, #ff9f43 16%, transparent);
 }
 
 .connection-stats .is-youtube-monetized {
   border-color: color-mix(in srgb, #3ef28f 62%, var(--line));
   color: #3ef28f;
   box-shadow: 0 0 12px color-mix(in srgb, #3ef28f 18%, transparent);
+}
+
+.connection-stats .is-youtube-video,
+.connection-stats .is-youtube-views,
+.connection-stats [class*="is-youtube-subs-tier-"] {
+  border-color: color-mix(in srgb, var(--youtube-metric, #ff5a72) 62%, var(--line));
+  color: var(--youtube-metric, #ff5a72);
+}
+
+.connection-stats .is-youtube-video,
+.connection-stats .is-youtube-subs-tier-0 {
+  --youtube-metric: #ff5a72;
+}
+
+.connection-stats .is-youtube-subs-tier-1 { --youtube-metric: #ff7eb6; }
+.connection-stats .is-youtube-subs-tier-2 { --youtube-metric: #e56bff; }
+.connection-stats .is-youtube-subs-tier-3 { --youtube-metric: #a98bff; }
+.connection-stats .is-youtube-subs-tier-4 { --youtube-metric: #6fa8ff; }
+.connection-stats .is-youtube-subs-tier-5 { --youtube-metric: #56d7ff; }
+.connection-stats .is-youtube-subs-tier-6 { --youtube-metric: #4de2c1; }
+.connection-stats .is-youtube-subs-tier-7 { --youtube-metric: #62df80; }
+.connection-stats .is-youtube-subs-tier-8 { --youtube-metric: #b5e85a; }
+.connection-stats .is-youtube-subs-tier-9 { --youtube-metric: #ffb84d; }
+
+.connection-stats .is-youtube-views {
+  --youtube-metric: #ff6b79;
+  animation: youtube-view-breathe 3.8s ease-in-out infinite;
+}
+
+.connection-stats .is-youtube-gold {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-color: #d8a928;
+  background: linear-gradient(110deg, rgba(255, 196, 56, 0.08), rgba(255, 231, 154, 0.18), rgba(255, 196, 56, 0.08));
+  color: #ffd65a;
+  box-shadow: 0 0 14px color-mix(in srgb, #ffd65a 22%, transparent);
+}
+
+.connection-stats .is-youtube-gold::after {
+  position: absolute;
+  z-index: -1;
+  inset: -2px auto -2px -46%;
+  width: 34%;
+  content: "";
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.66), transparent);
+  transform: skewX(-18deg);
+  animation: youtube-gold-shine 4.6s ease-in-out infinite;
+}
+
+@keyframes youtube-view-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 color-mix(in srgb, #ff6b79 0%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 10px color-mix(in srgb, #ff6b79 24%, transparent);
+  }
+}
+
+@keyframes youtube-gold-shine {
+  0%,
+  62% {
+    left: -46%;
+  }
+
+  82%,
+  100% {
+    left: 120%;
+  }
 }
 
 .status-line {
