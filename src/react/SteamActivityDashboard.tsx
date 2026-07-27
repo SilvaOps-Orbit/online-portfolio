@@ -46,6 +46,38 @@ type SuggestionPriceFilter = "all" | "free" | "under-15" | "under-30" | "under-6
 type SuggestionVideoFilter = "all" | "with-videos" | "without-videos";
 type SuggestionSourceFilter = "wishlist" | "community";
 
+const STANDARD_GAME_GENRES = [
+  "Action",
+  "Adventure",
+  "Arcade",
+  "Battle Royale",
+  "Card & Board",
+  "Casual",
+  "Fighting",
+  "Free to Play",
+  "Horror",
+  "Indie",
+  "Massively Multiplayer",
+  "Metroidvania",
+  "Music & Rhythm",
+  "Party",
+  "Platformer",
+  "Puzzle",
+  "Racing",
+  "Roguelike",
+  "RPG",
+  "Sandbox",
+  "Shooter",
+  "Simulation",
+  "Sports",
+  "Stealth",
+  "Strategy",
+  "Survival",
+  "Tactical",
+  "Turn-Based",
+  "Visual Novel"
+] as const;
+
 interface GameSuggestion {
   key: string;
   appid?: number | null;
@@ -142,6 +174,26 @@ function suggestionMatch(suggestion: GameSuggestion, steam: SteamData): number {
 
 function suggestionPrice(suggestion: GameSuggestion): number {
   return suggestion.priceCents === null || suggestion.priceCents === undefined ? Number.POSITIVE_INFINITY : Number(suggestion.priceCents);
+}
+
+function normalizedGenre(value: string): string {
+  return value.toLocaleLowerCase("en-AU").replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function suggestionHasGenre(suggestion: GameSuggestion, genre: string): boolean {
+  const target = normalizedGenre(genre);
+  const aliases: Record<string, string[]> = {
+    "card and board": ["card game", "board game"],
+    "massively multiplayer": ["mmo", "mmorpg"],
+    "music and rhythm": ["music", "rhythm"],
+    "rpg": ["role playing", "roleplaying"],
+    "shooter": ["fps", "third person shooter"]
+  };
+  const accepted = new Set([target, ...(aliases[target] || [])]);
+  return (suggestion.genres || []).some((candidate) => {
+    const normalized = normalizedGenre(candidate);
+    return accepted.has(normalized) || [...accepted].some((alias) => normalized.includes(alias) || alias.includes(normalized));
+  });
 }
 
 function suggestionStatusFor(suggestion: GameSuggestion, statuses: SuggestionOwnerStatus[]): SuggestionOwnerStatus | null {
@@ -620,8 +672,28 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
     return () => { document.body.style.overflow = previous; document.removeEventListener("keydown", close); };
   }, [browserOpen]);
 
-  const genreOptions = useMemo(() => [...new Set(suggestions.flatMap((suggestion) => suggestion.genres || []))]
-    .sort((a, b) => a.localeCompare(b)), [suggestions]);
+  const genreOptions = useMemo(() => {
+    const names = [
+      ...STANDARD_GAME_GENRES,
+      ...suggestions.flatMap((suggestion) => suggestion.genres || []),
+      ...(steam.insights?.genreMix || []).map((genre) => String(genre.label || "")).filter(Boolean)
+    ];
+    const unique = new Map<string, string>();
+    names.forEach((genre) => {
+      const key = normalizedGenre(genre);
+      if (key && !unique.has(key)) unique.set(key, genre);
+    });
+    return [...unique.values()].sort((a, b) => a.localeCompare(b));
+  }, [suggestions, steam.insights?.genreMix]);
+  const sourceSuggestions = useMemo(() => suggestions.filter((suggestion) =>
+    sourceFilter === "wishlist"
+      ? suggestion.recommenders.includes("Steam Wishlist")
+      : suggestion.recommenders.some((name) => name !== "Steam Wishlist")
+  ), [suggestions, sourceFilter]);
+  const genreCounts = useMemo(() => new Map(genreOptions.map((genre) => [
+    genre,
+    sourceSuggestions.filter((suggestion) => suggestionHasGenre(suggestion, genre)).length
+  ])), [genreOptions, sourceSuggestions]);
 
   const sorted = useMemo(() => suggestions.filter((suggestion) => {
     const ownerStatus = suggestionStatusFor(suggestion, ownerSnapshot.games || []);
@@ -630,7 +702,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
     if (query.trim() && !searchTarget.includes(query.trim().toLocaleLowerCase("en-AU"))) return false;
     if (ownershipFilter === "bought" && !ownerStatus?.bought) return false;
     if (ownershipFilter === "not-bought" && ownerStatus?.bought) return false;
-    if (genreFilter !== "all" && !(suggestion.genres || []).includes(genreFilter)) return false;
+    if (genreFilter !== "all" && !suggestionHasGenre(suggestion, genreFilter)) return false;
     if (videoFilter === "with-videos" && videoCount === 0) return false;
     if (videoFilter === "without-videos" && videoCount > 0) return false;
     if (sourceFilter === "wishlist" && !suggestion.recommenders.includes("Steam Wishlist")) return false;
@@ -680,6 +752,19 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   };
   const selected = suggestions.find((item) => item.key === selectedKey) || null;
   const selectedOwnerStatus = selected ? suggestionStatusFor(selected, ownerSnapshot.games || []) : null;
+  const selectedGenreIsEmpty = genreFilter !== "all" && Number(genreCounts.get(genreFilter) || 0) === 0;
+
+  const inviteGenreSuggestion = () => {
+    const genre = genreFilter;
+    setBrowserOpen(false);
+    setSourceFilter("community");
+    setStatus(`No ${genre} games have been suggested yet. Add the first one.`);
+    window.setTimeout(() => {
+      const input = document.getElementById("steam-suggestion-game") as HTMLInputElement | null;
+      input?.scrollIntoView({ behavior: "smooth", block: "center" });
+      input?.focus({ preventScroll: true });
+    }, 120);
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -734,7 +819,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
           </div>
           <div className="suggestion-filter-grid">
             <label><span>Sort</span><select value={sort} onChange={(event) => { setSort(event.target.value as SuggestionSort); setVisibleCount(80); }}><option value="recommended">Most recommended</option><option value="match">Best match</option><option value="reviews">Best reviewed</option><option value="price-low">Lowest price</option><option value="price-high">Highest price</option><option value="newest">Newest suggestion</option><option value="name">Name A-Z</option><option value="bought">Bought first</option><option value="videos">Most videos</option><option value="dlc">Most DLC</option><option value="genre">Genre A-Z</option></select></label>
-            <label><span>Genre</span><select value={genreFilter} onChange={(event) => { setGenreFilter(event.target.value); setVisibleCount(80); }}><option value="all">All genres</option>{genreOptions.map((genre) => <option key={genre} value={genre}>{genre}</option>)}</select></label>
+            <label><span>Genre</span><select value={genreFilter} onChange={(event) => { setGenreFilter(event.target.value); setVisibleCount(80); }}><option value="all">All genres</option>{genreOptions.map((genre) => <option key={genre} value={genre}>{genre} ({genreCounts.get(genre) || 0})</option>)}</select></label>
             <label><span>Price</span><select value={priceFilter} onChange={(event) => { setPriceFilter(event.target.value as SuggestionPriceFilter); setVisibleCount(80); }}><option value="all">Any price</option><option value="free">Free</option><option value="under-15">Under A$15</option><option value="under-30">Under A$30</option><option value="under-60">Under A$60</option></select></label>
             <label><span>Reviews</span><select value={reviewFilter} onChange={(event) => { setReviewFilter(event.target.value); setVisibleCount(80); }}><option value="all">Any score</option><option value="70">70%+</option><option value="80">80%+</option><option value="90">90%+</option></select></label>
             <label><span>Videos</span><select value={videoFilter} onChange={(event) => { setVideoFilter(event.target.value as SuggestionVideoFilter); setVisibleCount(80); }}><option value="all">With or without</option><option value="with-videos">Has videos</option><option value="without-videos">No videos</option></select></label>
@@ -748,7 +833,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
             const ownerStatus = suggestionStatusFor(suggestion, ownerSnapshot.games || []);
             const videoCount = ownerStatus?.videos?.length || 0;
             return <button type="button" role="listitem" className={`${selectedKey === suggestion.key ? "is-selected " : ""}${ownerStatus?.bought ? "is-bought" : ""}`.trim()} key={suggestion.key} onClick={() => setSelectedKey(suggestion.key)}><SteamArtwork item={{ appid: suggestion.appid || undefined, image: suggestion.imageUrl || undefined }} title={suggestion.title} className="suggestion-art" /><span><strong>{suggestion.title}</strong><small>{suggestion.genres?.slice(0, 2).join(" / ") || "Genre awaiting Steam"}</small><span><b>{suggestion.priceLabel || "Price unavailable"}</b><em>{match}% genre fit</em></span>{ownerStatus?.bought || videoCount ? <span className="suggestion-owner-badges">{ownerStatus?.bought && <b><Check aria-hidden="true" /> Bought</b>}{videoCount > 0 && <b><Youtube aria-hidden="true" /> {videoCount} video{videoCount === 1 ? "" : "s"}</b>}</span> : null}</span><i>{suggestion.recommendationCount}<Users aria-hidden="true" /></i></button>;
-          }) : <div className="suggestion-empty"><strong>{suggestions.length ? "No games match those filters." : "No games have been suggested yet."}</strong>{activeFilterCount > 0 && <button type="button" onClick={clearFilters}>Clear filters</button>}</div>}{sorted.length > visibleCount && <button className="suggestion-load-more" type="button" onClick={() => setVisibleCount((count) => count + 80)}><span><strong>Load more games</strong><small>{Math.min(80, sorted.length - visibleCount)} more of {sorted.length}</small></span><ChevronRight aria-hidden="true" /></button>}</div>
+          }) : <div className="suggestion-empty">{selectedGenreIsEmpty ? <><strong>No {genreFilter} games have been suggested yet.</strong><span>Be the first to add a {genreFilter} game to the community board.</span><button type="button" onClick={inviteGenreSuggestion}><Send aria-hidden="true" /> Suggest a {genreFilter} game</button></> : <><strong>{suggestions.length ? "No games match those filters." : "No games have been suggested yet."}</strong>{activeFilterCount > 0 && <button type="button" onClick={clearFilters}>Clear filters</button>}</>}</div>}{sorted.length > visibleCount && <button className="suggestion-load-more" type="button" onClick={() => setVisibleCount((count) => count + 80)}><span><strong>Load more games</strong><small>{Math.min(80, sorted.length - visibleCount)} more of {sorted.length}</small></span><ChevronRight aria-hidden="true" /></button>}</div>
           {selected && <aside className={`suggestion-details${selectedOwnerStatus?.bought ? " is-bought" : ""}`}><button type="button" className="suggestion-details-close" aria-label="Close game details" title="Close game details" onClick={() => setSelectedKey("")}><X aria-hidden="true" /></button><SteamArtwork item={{ appid: selected.appid || undefined, image: selected.imageUrl || undefined }} title={selected.title} className="suggestion-detail-art" /><div><span className="steam-label">Game details</span><h4>{selected.title}</h4>{selectedOwnerStatus?.bought || selectedOwnerStatus?.videos?.length ? <section className="suggestion-owner-status" aria-label="EchoOps ownership and video status"><div>{selectedOwnerStatus?.bought && <span><Check aria-hidden="true" /><b>Bought</b><small>{selectedOwnerStatus.boughtDetectedAt ? `Detected in the Steam library ${formatDate(selectedOwnerStatus.boughtDetectedAt)}` : "Detected in the Steam library"}</small></span>}{selectedOwnerStatus?.videos?.length ? <span><Youtube aria-hidden="true" /><b>{selectedOwnerStatus.videos.length} YouTube video{selectedOwnerStatus.videos.length === 1 ? "" : "s"}</b><small>Automatically matched from the SilvaDevelops upload feed</small></span> : null}</div></section> : null}<div className="suggestion-detail-stats"><span><b>{selected.priceLabel || "Unknown"}</b><small>Current AU price</small></span><span><b>{selected.reviewPercent !== null && selected.reviewPercent !== undefined ? `${selected.reviewPercent}%` : "Unknown"}</b><small>{selected.reviewSummary || "Review score"}</small></span><span><b>{selected.dlcCount ?? "Unknown"}</b><small>DLC on Store page</small></span><span><b>{suggestionMatch(selected, steam)}%</b><small>Genre-footprint fit</small></span></div>{selected.genres?.length ? <div className="suggestion-genres">{selected.genres.map((genre) => <span key={genre}>{genre}</span>)}</div> : null}<div className="suggestion-recommenders"><strong>Recommended by</strong><p>{selected.recommenders.join(", ")}</p></div>{selectedOwnerStatus?.videos?.length ? <div className="suggestion-video-list"><strong>Videos made on this game</strong>{selectedOwnerStatus.videos.map((video, index) => <a key={video.id || video.url || `${video.title}-${index}`} href={video.url} target="_blank" rel="noopener noreferrer"><span>{video.image ? <img src={video.image} alt="" loading="lazy" /> : <Youtube aria-hidden="true" />}</span><span><b>{video.title || "YouTube video"}</b><small>{video.publishedAt ? `Published ${formatDate(video.publishedAt)}` : "Watch on YouTube"}</small></span><ExternalLink aria-hidden="true" /></a>)}</div> : null}{selected.storeUrl && <a className="button primary" href={selected.storeUrl} target="_blank" rel="noopener noreferrer">Open Steam Store <ExternalLink aria-hidden="true" /></a>}</div></aside>}
         </div>
       </section></div>}
