@@ -186,7 +186,7 @@ function PlaystyleView({ steam }: { steam: SteamData }) {
         <div className="insight-subhead"><span>Retail value estimate</span><small>{retail?.sampledGames || 0} owned-game Store pages sampled</small></div>
         <div className="spending-summary">
           <article><WalletCards aria-hidden="true" /><span><small>Library value</small><strong>{steam.accountValue?.value || "Not logged"}</strong></span></article>
-          <article><Coins aria-hidden="true" /><span><small>Total personally logged</small><strong>{money(spending.totalSpent, currency)}</strong></span></article>
+          <article><Coins aria-hidden="true" /><span><small>Manually logged spending</small><strong>{loggedGames.length ? money(spending.totalSpent, currency) : "Not configured"}</strong><b>Only amounts entered in steam-spending.config.json</b></span></article>
           <article><TrendingUp aria-hidden="true" /><span><small>Highest sampled retail estimate</small><strong>{highestRetail?.title || "Awaiting Store prices"}</strong><b>{money(highestRetail?.amount, retailCurrency)}</b></span></article>
         </div>
         {retail?.topGames?.length

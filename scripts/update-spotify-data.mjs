@@ -114,8 +114,9 @@ function isUsefulTrack(track) {
     return false;
   }
 
-  return Boolean(track.title)
-    && track.title !== "Spotify not connected yet"
+  const title = String(track.title || "").trim();
+  return Boolean(title)
+    && !["Spotify not connected yet", "Nothing playing right now", "No live data yet"].includes(title)
     && track.meta !== "Live listening needs Spotify API secrets";
 }
 
@@ -143,6 +144,43 @@ function idleTrack(previous) {
     image: lastTrack?.image || "",
     url: lastTrack?.url || "",
     isPlaying: false
+  };
+}
+
+function mostRecentTrack(recentlyPlayed, previous, generatedAt) {
+  const recentTrack = Array.isArray(recentlyPlayed)
+    ? recentlyPlayed.find((track) => isUsefulTrack(track))
+    : null;
+  const track = recentTrack || lastUsefulTrack(previous);
+
+  if (!track) {
+    return idleTrack(previous);
+  }
+
+  const album = track.album || (track.albumTitle
+    ? {
+        name: track.albumTitle,
+        url: ""
+      }
+    : null);
+  const context = track.context || (track.contextTitle
+    ? {
+        type: String(track.contextType || "album").toLowerCase(),
+        title: track.contextTitle,
+        url: track.contextUrl || "",
+        image: ""
+      }
+    : null);
+
+  return {
+    ...track,
+    note: "Last played on Spotify",
+    isPlaying: false,
+    source: "recently-played",
+    observedAt: track.playedAt || generatedAt,
+    progressMs: 0,
+    ...(album ? { album } : {}),
+    ...(context ? { context } : {})
   };
 }
 
@@ -489,7 +527,7 @@ async function toCurrentTrack(playback, token, generatedAt) {
   const baseTrack = {
     title: item.name || "Spotify track",
     meta: artists || (isEpisode ? "Episode" : "Track"),
-    note: playback.is_playing ? "Listening now" : "Paused or recently active",
+    note: playback.is_playing ? "Now Playing" : "Last Played",
     image: imageFrom(images),
     url: externalUrl(item),
     isPlaying: Boolean(playback.is_playing),
@@ -795,10 +833,14 @@ async function main() {
   const generatedAt = new Date().toISOString();
   const selectedPlayback = selectActivePlayback(currentlyPlaying, playbackState);
   const current = await toCurrentTrack(selectedPlayback, token, generatedAt);
-  const lastTrack = current || lastUsefulTrack(previous);
-  const status = current?.isPlaying
+  const activeTrack = current?.isPlaying ? current : null;
+  const displayTrack = activeTrack || mostRecentTrack(recentlyPlayed, previous, generatedAt);
+  const lastTrack = activeTrack || (isUsefulTrack(displayTrack) ? displayTrack : lastUsefulTrack(previous));
+  const status = activeTrack
     ? "Spotify is live from the Web API."
-    : "Spotify refreshed. No active playback was reported; private sessions, ads, local files, or paused devices may not expose a current track.";
+    : isUsefulTrack(displayTrack)
+      ? "Spotify refreshed. No active playback was reported, so the most recently played track is shown."
+      : "Spotify refreshed. No active playback was reported; private sessions, ads, local files, or paused devices may not expose a current track.";
 
   const output = withLastValues(
     {
@@ -812,7 +854,7 @@ async function main() {
         url: externalUrl(profile),
         image: imageFrom(profile?.images)
       },
-      current: current || idleTrack(previous),
+      current: displayTrack,
       lastTrack,
       playlists,
       insights: {

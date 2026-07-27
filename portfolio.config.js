@@ -25,6 +25,8 @@ window.PORTFOLIO_CONFIG = {
     githubUsername: "SilvaOps-Orbit",
     kofiUrl: "https://ko-fi.com/echoops",
     discordUrl: "",
+    youtubeUrl: "",
+    contentHubUrl: "",
     linkedinUrl: "",
     resumeUrl: "assets/alvis-leslie-gordon-resume.txt"
   },
@@ -147,7 +149,7 @@ window.PORTFOLIO_CONFIG = {
     targetDate: "",
     lastUpdated: "2026-07-11",
     editNote:
-      "Use status: \"incomplete\", \"applied\", \"in-progress\", or \"complete\". Applied adds 1% to that qualification's progress. Set fullPrice to the advertised full fee. Leave amountPaid as null to count fullPrice, or replace it with the amount you actually paid. Add course startDate as YYYY-MM-DD and the site will estimate finish dates around school breaks/public holidays. Add courseUrl on each course for the View course details button. Add certificateImageUrl when a view-only certificate image is ready. Add endDate only when you want to override the estimate.",
+      "Use status: \"incomplete\", \"pre-approved\", \"in-progress\", or \"complete\". Pre-approved adds 3% to that qualification's progress. Set fullPrice to the advertised full fee. Leave amountPaid as null to count fullPrice, or replace it with the amount you actually paid. Add course startDate as YYYY-MM-DD and the site will estimate finish dates around school breaks/public holidays. Add courseUrl on each course for the View course details button. Add certificateImageUrl when a view-only certificate image is ready. Add endDate only when you want to override the estimate.",
     studyCalendar: {
       region: "Victoria, Australia",
       sourceNote:
@@ -226,7 +228,7 @@ window.PORTFOLIO_CONFIG = {
         amountPaid: null,
         currency: "AUD",
         priceNote: "2026 advertised full fee. Change amountPaid to your actual subsidised, loan-covered, or out-of-pocket amount.",
-        status: "applied",
+        status: "pre-approved",
         startDate: "2027-03-01",
         endDate: "",
         courseUrl: "https://www.swinburne.edu.au/course/tafe/diploma-of-information-technology-advanced-networking-cyber-security/",

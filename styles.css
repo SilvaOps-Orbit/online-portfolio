@@ -1271,6 +1271,19 @@ h3 {
   color: #06130a;
 }
 
+.connection-card.is-youtube .connection-icon {
+  border-color: color-mix(in srgb, #ff0033 72%, var(--line));
+  background: #ff0033;
+  color: #ffffff;
+}
+
+.connection-card.is-hub .connection-icon {
+  border-color: color-mix(in srgb, var(--accent) 72%, var(--line));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 34%, #11181d), #11181d);
+  color: var(--accent);
+}
+
 .connection-copy,
 .connection-title,
 .connection-meta,
@@ -2223,7 +2236,7 @@ h3 {
   background: color-mix(in srgb, var(--accent-2) 8%, transparent);
 }
 
-.roadmap-chip.is-applied {
+.roadmap-chip.is-pre-approved {
   border-color: color-mix(in srgb, #6ea8fe 62%, var(--line));
   background: color-mix(in srgb, #6ea8fe 8%, transparent);
 }
@@ -2411,7 +2424,7 @@ h3 {
   color: var(--accent-2);
 }
 
-.roadmap-status.is-applied {
+.roadmap-status.is-pre-approved {
   border-color: color-mix(in srgb, #6ea8fe 62%, var(--line));
   color: #8cbbff;
   box-shadow: 0 0 16px color-mix(in srgb, #6ea8fe 16%, transparent);
@@ -5018,6 +5031,13 @@ a.provider-pulse-item:focus-visible {
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.spotify-label.is-live {
+  border-color: color-mix(in srgb, #1ed760 78%, var(--line));
+  background: color-mix(in srgb, #1ed760 12%, transparent);
+  color: #45e67e;
+  box-shadow: 0 0 18px color-mix(in srgb, #1ed760 26%, transparent);
 }
 
 .spotify-actions {

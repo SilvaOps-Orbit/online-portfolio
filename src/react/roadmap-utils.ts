@@ -82,7 +82,7 @@ export function statusProgress(value?: string): number {
   if (["complete", "completed", "certified", "uploaded"].includes(status)) return 100;
   if (["in-progress", "current", "active"].includes(status)) return 45;
   if (["ready", "booked", "scheduled"].includes(status)) return 20;
-  if (["applied", "application-submitted"].includes(status)) return 1;
+  if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(status)) return 3;
   return 0;
 }
 
@@ -118,13 +118,13 @@ export function statusLabel(item: RoadmapItem): string {
   if (["complete", "completed", "certified", "uploaded"].includes(status)) return item.evidenceLabel?.toLowerCase() || "complete";
   if (["in-progress", "current", "active"].includes(status)) return "in progress";
   if (["ready", "booked", "scheduled"].includes(status)) return status.replace(/-/g, " ");
-  if (["applied", "application-submitted"].includes(status)) return "applied";
+  if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(status)) return "pre-approved";
   return "incomplete";
 }
 
 export function statusClass(item: RoadmapItem): string {
   const status = normalizeStatus(item.status);
-  if (["applied", "application-submitted"].includes(status)) return "is-applied";
+  if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(status)) return "is-pre-approved";
   const progress = itemProgress(item);
   if (progress >= 100) return "is-complete";
   if (progress > 0) return "is-active";

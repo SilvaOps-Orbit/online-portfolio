@@ -377,7 +377,7 @@
     if (["complete", "completed", "certified", "uploaded"].includes(normalized)) return 100;
     if (["in-progress", "current", "active"].includes(normalized)) return 45;
     if (["ready", "booked", "scheduled"].includes(normalized)) return 20;
-    if (["applied", "application-submitted"].includes(normalized)) return 1;
+    if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(normalized)) return 3;
     if (["incomplete", "not-started", "planned", "future", "locked"].includes(normalized)) return 0;
     return 0;
   }
@@ -395,13 +395,13 @@
     }
     if (["in-progress", "current", "active"].includes(normalized)) return "in progress";
     if (["ready", "booked", "scheduled"].includes(normalized)) return normalized.replace(/-/g, " ");
-    if (["applied", "application-submitted"].includes(normalized)) return "applied";
+    if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(normalized)) return "pre-approved";
     return "incomplete";
   }
 
   function roadmapStatusClass(item) {
     const normalized = normalizeRoadmapStatus(item?.status);
-    if (["applied", "application-submitted"].includes(normalized)) return "roadmap-status is-applied";
+    if (["pre-approved", "preapproved", "applied", "application-submitted"].includes(normalized)) return "roadmap-status is-pre-approved";
     const progress = roadmapItemProgress(item);
     if (progress >= 100) return "roadmap-status is-complete";
     if (progress > 0) return "roadmap-status is-active";
@@ -2077,6 +2077,11 @@
     clearSpotifyFactTimers();
 
     const track = item || { title: "No live data yet", note: "Connect Spotify to fill this section." };
+    const playbackLabel = document.getElementById("spotify-playback-label");
+    if (playbackLabel) {
+      playbackLabel.textContent = track.isPlaying ? "Now Playing" : "Last Played";
+      playbackLabel.classList.toggle("is-live", Boolean(track.isPlaying));
+    }
     const card = createElement("article", track.image ? "spotify-now-card has-art" : "spotify-now-card");
 
     const player = createElement("div", "spotify-player");
@@ -2192,7 +2197,18 @@
       profileLink.hidden = false;
     }
 
-    const current = spotify.current || spotify.lastTrack;
+    const snapshotCurrent = spotify.current;
+    const recentTrack = (spotify.insights?.recentlyPlayed || []).find((track) => (
+      track?.title && !/nothing playing|not connected yet|no live data/i.test(String(track.title))
+    ));
+    const savedTrack = [recentTrack, spotify.lastTrack, snapshotCurrent].find((track) => (
+      track?.title && !/nothing playing|not connected yet|no live data/i.test(String(track.title))
+    ));
+    const current = snapshotCurrent?.isPlaying
+      ? { ...snapshotCurrent, note: "Now Playing" }
+      : savedTrack
+        ? { ...savedTrack, note: "Last Played", isPlaying: false, progressMs: 0 }
+        : snapshotCurrent;
     renderSpotifyNow("spotify-now", current);
     const playlistTarget = document.getElementById("spotify-playlists");
     const playlistSignature = JSON.stringify((spotify.playlists || []).map((item) => [item?.title, item?.url, item?.image]));
@@ -2880,7 +2896,11 @@
     spotify:
       "M12 1.8A10.2 10.2 0 1 0 12 22.2 10.2 10.2 0 0 0 12 1.8Zm4.68 14.72a.78.78 0 0 1-1.08.25c-2.95-1.8-6.66-2.2-11.03-1.2a.78.78 0 1 1-.35-1.52c4.79-1.09 8.9-.62 12.21 1.4.37.23.49.7.25 1.07Zm1.25-2.78a.98.98 0 0 1-1.35.32c-3.38-2.08-8.53-2.68-12.52-1.46a.98.98 0 1 1-.57-1.87c4.56-1.38 10.24-.71 14.12 1.68.46.28.6.88.32 1.33Zm.11-2.9C14 8.43 7.36 8.2 3.5 9.38a1.17 1.17 0 1 1-.68-2.24c4.43-1.35 11.77-1.08 16.42 1.68a1.17 1.17 0 0 1-1.2 2.02Z",
     steam:
-      "M12 2a10 10 0 0 0-9.72 7.7l5.37 2.2a2.84 2.84 0 0 1 1.58-.48l2.34-3.39v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.33 2.38a2.84 2.84 0 1 1-5.58.74l-3.83-1.58A10 10 0 1 0 12 2Zm-2.72 13.82-1.24-.52a1.67 1.67 0 1 0 1.24-1.18l.95.4a1.05 1.05 0 1 1-.95 1.3Zm6.05-5.17a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Zm0-.56a1.64 1.64 0 1 1 0-3.28 1.64 1.64 0 0 1 0 3.28Z"
+      "M12 2a10 10 0 0 0-9.72 7.7l5.37 2.2a2.84 2.84 0 0 1 1.58-.48l2.34-3.39v-.05a3.78 3.78 0 1 1 3.78 3.78h-.08l-3.33 2.38a2.84 2.84 0 1 1-5.58.74l-3.83-1.58A10 10 0 1 0 12 2Zm-2.72 13.82-1.24-.52a1.67 1.67 0 1 0 1.24-1.18l.95.4a1.05 1.05 0 1 1-.95 1.3Zm6.05-5.17a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4Zm0-.56a1.64 1.64 0 1 1 0-3.28 1.64 1.64 0 0 1 0 3.28Z",
+    youtube:
+      "M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z",
+    hub:
+      "M8.5 13.5a1 1 0 0 1 0-2h7a1 1 0 0 1 0 2h-7Zm-2.1 4.1-1.1 1.1a4 4 0 0 1-5.7-5.7l3.5-3.5a4 4 0 0 1 5.7 0 1 1 0 0 1-1.4 1.4 2 2 0 0 0-2.9 0L1 14.4a2 2 0 0 0 2.9 2.9L5 16.2a1 1 0 0 1 1.4 1.4Zm11.2-11.2 1.1-1.1a4 4 0 1 1 5.7 5.7l-3.5 3.5a4 4 0 0 1-5.7 0 1 1 0 0 1 1.4-1.4 2 2 0 0 0 2.9 0l3.5-3.5a2 2 0 0 0-2.9-2.9L19 7.8a1 1 0 0 1-1.4-1.4Z"
   };
 
   function createBrandSvg(icon, className = "connection-brand") {
@@ -2982,6 +3002,22 @@
         short: "SP",
         href: spotifyUrl,
         meta: "Spotify",
+        stats: []
+      },
+      {
+        label: "YouTube",
+        icon: "youtube",
+        short: "YT",
+        href: profile.youtubeUrl || "#contact",
+        meta: profile.youtubeUrl ? "Videos and channel" : "Channel link coming soon",
+        stats: []
+      },
+      {
+        label: "Content Hub",
+        icon: "hub",
+        short: "HUB",
+        href: profile.contentHubUrl || "#contact",
+        meta: profile.contentHubUrl ? "Members and community content" : "Dedicated members hub planned",
         stats: []
       }
     ].filter((item) => item.href && item.href !== "https://github.com/");
