@@ -544,7 +544,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
 
   return (
     <section className="steam-community" aria-labelledby="steam-community-title">
-      <div className="steam-community-copy"><span className="steam-label"><Users aria-hidden="true" /> Community queue</span><h3 id="steam-community-title">What should Alvis play next?</h3><p>Recommend a Steam game by name or paste its Store link. Matching Store details are added automatically, while your browser identity stays private.</p><div className="steam-community-status" role="status"><LockKeyhole aria-hidden="true" /><span>{status}</span></div></div>
+      <div className="steam-community-copy"><span className="steam-label"><Users aria-hidden="true" /> Community queue</span><h3 id="steam-community-title">What should EchoOps play next?</h3><p>Recommend a Steam game by name or paste its Store link. Matching Store details are added automatically, while your browser identity stays private.</p><div className="steam-community-status" role="status"><LockKeyhole aria-hidden="true" /><span>{status}</span></div></div>
       <form className="steam-suggestion-form" onSubmit={submit}>
         <label htmlFor="steam-suggestion-game">Game name or Steam Store link</label>
         <div className="steam-suggestion-entry"><input id="steam-suggestion-game" value={game} onChange={(event) => setGame(event.target.value)} minLength={2} maxLength={180} required placeholder="e.g. Helldivers 2" autoComplete="off" /><button type="submit" disabled={loading}><Send aria-hidden="true" /><span>{loading ? "Adding..." : "Suggest"}</span></button></div>
