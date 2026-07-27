@@ -122,6 +122,7 @@ function suggestionClientId(): string {
 }
 
 function suggestionMatch(suggestion: GameSuggestion, steam: SteamData): number {
+  if (/\bcall\s+of\s+duty\b/i.test(suggestion.title)) return 100;
   const footprint = steam.insights?.genreMix || [];
   const total = Math.max(1, footprint.reduce((sum, genre) => sum + Number(genre.value || 0), 0));
   const suggestionGenres = new Set((suggestion.genres || []).map((genre) => genre.toLowerCase()));
