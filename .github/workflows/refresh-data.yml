@@ -48,7 +48,7 @@ jobs:
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,spotify.json,market.json,news.json,github.json,api-status.json,youtube.json,game-suggestion-status.json"
+          PRESERVE_DATA_FILES: "steam.json,steam-wishlist.json,spotify.json,market.json,news.json,github.json,api-status.json,youtube.json,game-suggestion-status.json"
 
       - name: Generate Steam data
         run: node scripts/update-steam-data.mjs
@@ -68,6 +68,15 @@ jobs:
           SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
           GENIUS_ACCESS_TOKEN: ${{ secrets.GENIUS_ACCESS_TOKEN }}
           AUDIODB_API_KEY: ${{ secrets.AUDIODB_API_KEY }}
+
+      - name: Refresh Steam wishlist and suggestion source
+        run: node scripts/update-steam-wishlist.mjs
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: "76561199192411740"
+          STEAM_WISHLIST_URL: "https://store.steampowered.com/wishlist/profiles/76561199192411740/?st=9730497737884137652"
+          GAME_SUGGESTION_ENDPOINT: "https://echoops-game-suggestions.alvis-dev.workers.dev"
+          WISHLIST_SYNC_TOKEN: ${{ secrets.WISHLIST_SYNC_TOKEN }}
 
       - name: Generate market and news data
         run: node scripts/update-market-news-data.mjs

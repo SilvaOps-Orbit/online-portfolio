@@ -7172,6 +7172,112 @@ a.provider-pulse-item:focus-visible {
 .steam-showcase-progress i { display: block; width: 100%; height: 100%; transform-origin: left; background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3)); animation: steam-showcase-progress 7.6s linear both; }
 @keyframes steam-showcase-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
+.steam-wishlist-spotlight {
+  display: grid;
+  grid-template-columns: minmax(240px, auto) minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  margin-top: clamp(22px, 4vw, 38px);
+}
+
+.steam-wishlist-tab,
+.steam-wishlist-game,
+.steam-wishlist-waiting {
+  min-width: 0;
+  min-height: 118px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--panel) 80%, transparent);
+}
+
+.steam-wishlist-tab {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  border-color: color-mix(in srgb, var(--accent-3) 65%, var(--line));
+  color: var(--text);
+  font-weight: 950;
+  text-align: center;
+}
+
+.steam-wishlist-tab:hover {
+  border-color: var(--accent-3);
+  background: color-mix(in srgb, var(--accent-3) 11%, var(--panel));
+  color: var(--accent-2);
+}
+
+.steam-wishlist-tab svg:first-child { width: 24px; height: 24px; color: var(--accent-3); }
+.steam-wishlist-tab svg:last-child { width: 15px; height: 15px; color: var(--accent); }
+
+.steam-wishlist-game {
+  position: relative;
+  display: grid;
+  grid-template-columns: 184px minmax(0, 1fr) auto 22px;
+  gap: 16px;
+  align-items: center;
+  overflow: hidden;
+  padding: 12px 18px 16px 12px;
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  color: var(--text);
+  animation: wishlist-pick-enter 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.steam-wishlist-game:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+}
+
+.steam-wishlist-art {
+  width: 184px;
+  aspect-ratio: 460 / 215;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.steam-wishlist-copy { min-width: 0; }
+.steam-wishlist-copy small,
+.steam-wishlist-copy strong,
+.steam-wishlist-copy > span { display: block; overflow-wrap: anywhere; }
+.steam-wishlist-copy small { color: var(--accent); font-size: 0.65rem; font-weight: 950; text-transform: uppercase; }
+.steam-wishlist-copy strong { margin-top: 5px; font-size: clamp(1rem, 2vw, 1.35rem); }
+.steam-wishlist-copy > span { margin-top: 5px; color: var(--muted); font-size: 0.7rem; }
+.steam-wishlist-count { display: grid; justify-items: end; min-width: 70px; }
+.steam-wishlist-count b { color: var(--accent-2); font-size: 1.45rem; line-height: 1; }
+.steam-wishlist-count small { margin-top: 4px; color: var(--muted); font-size: 0.62rem; }
+.steam-wishlist-game > svg { width: 20px; height: 20px; color: var(--accent); }
+.steam-wishlist-game > i {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3));
+  animation: wishlist-pick-progress 6.2s linear both;
+}
+
+.steam-wishlist-waiting {
+  display: grid;
+  align-content: center;
+  padding: 18px 22px;
+  border-style: dashed;
+}
+.steam-wishlist-waiting span { color: var(--text); font-weight: 950; }
+.steam-wishlist-waiting small { margin-top: 6px; color: var(--muted); }
+
+@keyframes wishlist-pick-enter {
+  from { opacity: 0; transform: translateY(14px) rotateX(-5deg); }
+  to { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+
+@keyframes wishlist-pick-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 .steam-community {
   display: grid;
   grid-template-columns: minmax(0, 0.88fr) minmax(340px, 1.12fr);
@@ -7322,6 +7428,18 @@ a.provider-pulse-item:focus-visible {
 .suggestion-owner-badges b:last-child svg { color: #ff4f59; }
 .suggestion-list > button > i { display: inline-flex; gap: 4px; align-items: center; color: var(--accent-3); font-size: 0.74rem; font-style: normal; font-weight: 950; }
 .suggestion-list > button > i svg { width: 15px; height: 15px; }
+.suggestion-list > .suggestion-load-more {
+  grid-template-columns: minmax(0, 1fr) 20px;
+  justify-content: center;
+  min-height: 64px;
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  color: var(--accent);
+  text-align: center;
+}
+.suggestion-list > .suggestion-load-more > span { text-align: center; }
+.suggestion-list > .suggestion-load-more strong { color: var(--accent); }
+.suggestion-list > .suggestion-load-more > svg { width: 19px; height: 19px; }
 .suggestion-empty { align-self: center; justify-self: center; max-width: 45ch; margin: 50px 20px; color: var(--muted); text-align: center; }
 
 .suggestion-details { position: relative; min-width: 0; padding: 18px 20px 24px; overflow: auto; border-left: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 64%, transparent); }
@@ -7386,6 +7504,11 @@ a.provider-pulse-item:focus-visible {
 }
 
 @media (max-width: 760px) {
+  .steam-wishlist-spotlight { grid-template-columns: 1fr; }
+  .steam-wishlist-tab { min-height: 64px; }
+  .steam-wishlist-game { grid-template-columns: 126px minmax(0, 1fr) auto; }
+  .steam-wishlist-art { width: 126px; }
+  .steam-wishlist-game > svg { display: none; }
   .steam-showcase-heading { align-items: stretch; flex-direction: column; }
   .steam-showcase-controls { align-self: stretch; }
   .steam-showcase-controls button { flex: 1 1 0; }
@@ -7411,6 +7534,11 @@ a.provider-pulse-item:focus-visible {
 }
 
 @media (max-width: 440px) {
+  .steam-wishlist-game { grid-template-columns: 94px minmax(0, 1fr); gap: 10px; padding-right: 12px; }
+  .steam-wishlist-art { width: 94px; }
+  .steam-wishlist-count { grid-column: 2; grid-row: 2; justify-items: start; grid-auto-flow: column; justify-content: start; gap: 5px; min-width: 0; }
+  .steam-wishlist-count b { font-size: 0.78rem; }
+  .steam-wishlist-count small { margin: 0; }
   .steam-showcase-controls button span { display: none; }
   .steam-suggestion-identity { align-items: stretch; flex-direction: column; }
   .suggestion-modal > header p { display: none; }
@@ -7422,6 +7550,8 @@ a.provider-pulse-item:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .steam-showcase-stage,
   .steam-showcase-progress i,
+  .steam-wishlist-game,
+  .steam-wishlist-game > i,
   .suggestion-modal { animation: none !important; }
 }
 

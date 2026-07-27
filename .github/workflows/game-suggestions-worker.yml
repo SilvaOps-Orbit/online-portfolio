@@ -65,4 +65,13 @@ jobs:
           sed "s/00000000-0000-0000-0000-000000000000/$database_id/" wrangler.jsonc > wrangler.deploy.jsonc
           npx --yes wrangler@4 d1 execute echoops-game-suggestions --remote --file schema.sql --config wrangler.deploy.jsonc
           npx --yes wrangler@4 deploy --config wrangler.deploy.jsonc
+          if test -n "$WISHLIST_SYNC_TOKEN"; then
+            printf '%s' "$WISHLIST_SYNC_TOKEN" | npx --yes wrangler@4 secret put WISHLIST_SYNC_TOKEN --config wrangler.deploy.jsonc
+          else
+            echo "::warning::Add WISHLIST_SYNC_TOKEN to repository secrets to enable trusted wishlist imports."
+          fi
         working-directory: game-suggestions-worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WISHLIST_SYNC_TOKEN: ${{ secrets.WISHLIST_SYNC_TOKEN }}

@@ -2,6 +2,8 @@ const GAME_PATTERN = /^[\p{L}\p{N}\s:'!&+.,()\-\u2122\u00ae]{2,100}$/u;
 const USERNAME_PATTERN = /^[\p{L}\p{N} _.-]{1,18}$/u;
 const CLIENT_PATTERN = /^[a-f0-9-]{32,64}$/i;
 const MAX_REQUESTS_PER_HOUR = 6;
+const RESERVED_RECOMMENDER = "Steam Wishlist";
+const MAX_WISHLIST_GAMES = 1000;
 
 function permittedOrigin(request, env) {
   const origin = request.headers.get("Origin") || "";
@@ -67,6 +69,7 @@ function cleanGameInput(value) {
 function cleanUsername(value, anonymous) {
   if (anonymous) return null;
   const text = typeof value === "string" ? value.trim().replace(/\s+/g, " ") : "";
+  if (text.toLocaleLowerCase("en-AU") === RESERVED_RECOMMENDER.toLocaleLowerCase("en-AU")) return null;
   return USERNAME_PATTERN.test(text) ? text : null;
 }
 
@@ -209,7 +212,7 @@ async function listSuggestions(env, origin) {
       image_url, store_url, updated_at
     FROM game_suggestions
     ORDER BY updated_at DESC
-    LIMIT 300
+    LIMIT 1000
   `).all();
   return json({ suggestions: publicGroups(result.results || []), updatedAt: new Date().toISOString() }, 200, origin, "public, max-age=30");
 }
@@ -266,12 +269,80 @@ async function addSuggestion(request, env, origin) {
   return listSuggestions(env, origin);
 }
 
+async function parseWishlistSync(request) {
+  if (!request.headers.get("Content-Type")?.toLowerCase().startsWith("application/json")) return null;
+  const length = Number(request.headers.get("Content-Length") || 0);
+  if (length > 262_144) return null;
+  try {
+    const text = await request.text();
+    if (!text || text.length > 262_144) return null;
+    const payload = JSON.parse(text);
+    if (!payload || !Array.isArray(payload.games) || payload.games.length > MAX_WISHLIST_GAMES) return null;
+    const games = payload.games.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const appid = Number(item.appid || 0);
+      const title = typeof item.title === "string" ? item.title.trim().replace(/\s+/g, " ").slice(0, 100) : "";
+      if (!Number.isInteger(appid) || appid <= 0 || !title) return [];
+      return [{
+        appid,
+        title,
+        imageUrl: `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+        storeUrl: `https://store.steampowered.com/app/${appid}/`
+      }];
+    });
+    return games.length === payload.games.length ? games : null;
+  } catch {
+    return null;
+  }
+}
+
+function constantTimeEqual(left, right) {
+  const leftBytes = new TextEncoder().encode(left);
+  const rightBytes = new TextEncoder().encode(right);
+  if (leftBytes.length !== rightBytes.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < leftBytes.length; index += 1) mismatch |= leftBytes[index] ^ rightBytes[index];
+  return mismatch === 0;
+}
+
+async function syncWishlist(request, env) {
+  const expected = String(env.WISHLIST_SYNC_TOKEN || "");
+  const supplied = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!expected || !supplied || !constantTimeEqual(expected, supplied)) {
+    return json({ error: "Not authorized" }, 401, "");
+  }
+  const games = await parseWishlistSync(request);
+  if (!games) return json({ error: "Invalid wishlist payload" }, 400, "");
+
+  await ensureSchema(env);
+  const now = new Date().toISOString();
+  const recommenderHash = await digest("echoops-trusted-source:steam-wishlist");
+  await env.DB.prepare("DELETE FROM game_suggestions WHERE recommender_hash = ?").bind(recommenderHash).run();
+  const statements = games.map((game) => env.DB.prepare(`
+      INSERT INTO game_suggestions (
+        game_key, steam_app_id, title, username, is_anonymous, recommender_hash,
+        price_cents, price_label, currency, genres_json, dlc_count, review_percent,
+        review_count, review_summary, image_url, store_url, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, 0, ?, NULL, NULL, 'AUD', '[]', NULL, NULL, NULL, NULL, ?, ?, ?, ?)
+    `).bind(
+      `steam-${game.appid}`, game.appid, game.title, RESERVED_RECOMMENDER, recommenderHash,
+      game.imageUrl, game.storeUrl, now, now
+    ));
+  for (let index = 0; index < statements.length; index += 75) {
+    await env.DB.batch(statements.slice(index, index + 75));
+  }
+  return json({ synced: games.length, updatedAt: now }, 200, "", "no-store");
+}
+
 export default {
   async fetch(request, env) {
+    const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
+    if (request.method === "POST" && path === "/api/internal/wishlist-sync") {
+      return syncWishlist(request, env);
+    }
     const origin = permittedOrigin(request, env);
     if (!origin) return json({ error: "Origin not allowed" }, 403, "");
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: responseHeaders(origin) });
-    const path = new URL(request.url).pathname.replace(/\/+$/, "") || "/";
     if (request.method === "GET" && path === "/api/game-suggestions") return listSuggestions(env, origin);
     if (request.method === "POST" && path === "/api/game-suggestions") return addSuggestion(request, env, origin);
     return json({ error: "Not found" }, 404, origin);

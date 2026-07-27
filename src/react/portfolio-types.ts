@@ -327,6 +327,7 @@ export interface PortfolioConfig {
   };
   gameSuggestions?: {
     endpoint?: string;
+    wishlistUrl?: string;
   };
 }
 

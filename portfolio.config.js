@@ -616,7 +616,8 @@ window.PORTFOLIO_CONFIG = {
   },
   gameSuggestions: {
     // Public, origin-restricted Worker. Steam lookup and D1 persistence stay server-side.
-    endpoint: "https://echoops-game-suggestions.alvis-dev.workers.dev"
+    endpoint: "https://echoops-game-suggestions.alvis-dev.workers.dev",
+    wishlistUrl: "https://store.steampowered.com/wishlist/profiles/76561199192411740/?st=9730497737884137652"
   },
   services: {
     translation: {

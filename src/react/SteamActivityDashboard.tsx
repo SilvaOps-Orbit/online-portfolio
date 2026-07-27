@@ -3,7 +3,7 @@ import { StrictMode, useEffect, useMemo, useState, type CSSProperties, type Form
 // `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
 // Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
-import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Send, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X, Youtube } from "lucide-react";
+import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Gift, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Send, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X, Youtube } from "lucide-react";
 // Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
@@ -82,6 +82,24 @@ interface SuggestionOwnerStatus {
 interface SuggestionStatusSnapshot {
   generatedAt?: string | null;
   games?: SuggestionOwnerStatus[];
+}
+
+interface WishlistGame {
+  appid: number;
+  title: string;
+  priority?: number;
+  addedAt?: string | null;
+  image?: string;
+  url?: string;
+}
+
+interface WishlistSnapshot {
+  generatedAt?: string;
+  stale?: boolean;
+  status?: string;
+  profileUrl?: string;
+  recommenderLabel?: string;
+  games?: WishlistGame[];
 }
 
 const SUGGESTION_CLIENT_KEY = "echoops-game-suggestion-client-v1";
@@ -508,6 +526,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("Loading the community queue...");
   const [ownerSnapshot, setOwnerSnapshot] = useState<SuggestionStatusSnapshot>({ games: [] });
+  const [visibleCount, setVisibleCount] = useState(80);
 
   const loadSuggestions = async () => {
     if (!endpoint) { setStatus("The community queue is waiting for its Worker endpoint."); return; }
@@ -598,17 +617,76 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
 
       {browserOpen && <div className="suggestion-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setBrowserOpen(false); }}><section className="suggestion-modal" role="dialog" aria-modal="true" aria-labelledby="suggestion-modal-title">
         <header><div><span className="steam-label">Community picks</span><h3 id="suggestion-modal-title">Steam suggestion board</h3><p>Duplicate recommendations are grouped, with every named or numbered anonymous recommender preserved.</p></div><button type="button" aria-label="Close suggestions" title="Close suggestions" onClick={() => setBrowserOpen(false)}><X aria-hidden="true" /></button></header>
-        <div className="suggestion-toolbar"><label htmlFor="suggestion-sort">Sort suggestions</label><select id="suggestion-sort" value={sort} onChange={(event) => setSort(event.target.value as SuggestionSort)}><option value="recommended">Most recommended</option><option value="match">Most likely match</option><option value="reviews">Most positive reviews</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="dlc">Most DLC</option><option value="genre">Genre</option></select><button type="button" aria-label="Refresh suggestions" title="Refresh suggestions" onClick={() => void loadSuggestions()}><RotateCw aria-hidden="true" /></button></div>
+        <div className="suggestion-toolbar"><label htmlFor="suggestion-sort">Sort suggestions</label><select id="suggestion-sort" value={sort} onChange={(event) => { setSort(event.target.value as SuggestionSort); setVisibleCount(80); }}><option value="recommended">Most recommended</option><option value="match">Most likely match</option><option value="reviews">Most positive reviews</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="dlc">Most DLC</option><option value="genre">Genre</option></select><button type="button" aria-label="Refresh suggestions" title="Refresh suggestions" onClick={() => void loadSuggestions()}><RotateCw aria-hidden="true" /></button></div>
         <div className={`suggestion-browser${selected ? " has-selection" : ""}`}>
-          <div className="suggestion-list" role="list">{sorted.length ? sorted.map((suggestion) => {
+          <div className="suggestion-list" role="list">{sorted.length ? sorted.slice(0, visibleCount).map((suggestion) => {
             const match = suggestionMatch(suggestion, steam);
             const ownerStatus = suggestionStatusFor(suggestion, ownerSnapshot.games || []);
             const videoCount = ownerStatus?.videos?.length || 0;
             return <button type="button" role="listitem" className={`${selectedKey === suggestion.key ? "is-selected " : ""}${ownerStatus?.bought ? "is-bought" : ""}`.trim()} key={suggestion.key} onClick={() => setSelectedKey(suggestion.key)}><SteamArtwork item={{ appid: suggestion.appid || undefined, image: suggestion.imageUrl || undefined }} title={suggestion.title} className="suggestion-art" /><span><strong>{suggestion.title}</strong><small>{suggestion.genres?.slice(0, 2).join(" / ") || "Genre awaiting Steam"}</small><span><b>{suggestion.priceLabel || "Price unavailable"}</b><em>{match}% genre fit</em></span>{ownerStatus?.bought || videoCount ? <span className="suggestion-owner-badges">{ownerStatus?.bought && <b><Check aria-hidden="true" /> Bought</b>}{videoCount > 0 && <b><Youtube aria-hidden="true" /> {videoCount} video{videoCount === 1 ? "" : "s"}</b>}</span> : null}</span><i>{suggestion.recommendationCount}<Users aria-hidden="true" /></i></button>;
-          }) : <p className="suggestion-empty">No games have been suggested yet. Close this view and add the first one.</p>}</div>
+          }) : <p className="suggestion-empty">No games have been suggested yet. Close this view and add the first one.</p>}{sorted.length > visibleCount && <button className="suggestion-load-more" type="button" onClick={() => setVisibleCount((count) => count + 80)}><span><strong>Load more games</strong><small>{Math.min(80, sorted.length - visibleCount)} more of {sorted.length}</small></span><ChevronRight aria-hidden="true" /></button>}</div>
           {selected && <aside className={`suggestion-details${selectedOwnerStatus?.bought ? " is-bought" : ""}`}><button type="button" className="suggestion-details-close" aria-label="Close game details" title="Close game details" onClick={() => setSelectedKey("")}><X aria-hidden="true" /></button><SteamArtwork item={{ appid: selected.appid || undefined, image: selected.imageUrl || undefined }} title={selected.title} className="suggestion-detail-art" /><div><span className="steam-label">Game details</span><h4>{selected.title}</h4>{selectedOwnerStatus?.bought || selectedOwnerStatus?.videos?.length ? <section className="suggestion-owner-status" aria-label="EchoOps ownership and video status"><div>{selectedOwnerStatus?.bought && <span><Check aria-hidden="true" /><b>Bought</b><small>{selectedOwnerStatus.boughtDetectedAt ? `Detected in the Steam library ${formatDate(selectedOwnerStatus.boughtDetectedAt)}` : "Detected in the Steam library"}</small></span>}{selectedOwnerStatus?.videos?.length ? <span><Youtube aria-hidden="true" /><b>{selectedOwnerStatus.videos.length} YouTube video{selectedOwnerStatus.videos.length === 1 ? "" : "s"}</b><small>Automatically matched from the SilvaDevelops upload feed</small></span> : null}</div></section> : null}<div className="suggestion-detail-stats"><span><b>{selected.priceLabel || "Unknown"}</b><small>Current AU price</small></span><span><b>{selected.reviewPercent !== null && selected.reviewPercent !== undefined ? `${selected.reviewPercent}%` : "Unknown"}</b><small>{selected.reviewSummary || "Review score"}</small></span><span><b>{selected.dlcCount ?? "Unknown"}</b><small>DLC on Store page</small></span><span><b>{suggestionMatch(selected, steam)}%</b><small>Genre-footprint fit</small></span></div>{selected.genres?.length ? <div className="suggestion-genres">{selected.genres.map((genre) => <span key={genre}>{genre}</span>)}</div> : null}<div className="suggestion-recommenders"><strong>Recommended by</strong><p>{selected.recommenders.join(", ")}</p></div>{selectedOwnerStatus?.videos?.length ? <div className="suggestion-video-list"><strong>Videos made on this game</strong>{selectedOwnerStatus.videos.map((video, index) => <a key={video.id || video.url || `${video.title}-${index}`} href={video.url} target="_blank" rel="noopener noreferrer"><span>{video.image ? <img src={video.image} alt="" loading="lazy" /> : <Youtube aria-hidden="true" />}</span><span><b>{video.title || "YouTube video"}</b><small>{video.publishedAt ? `Published ${formatDate(video.publishedAt)}` : "Watch on YouTube"}</small></span><ExternalLink aria-hidden="true" /></a>)}</div> : null}{selected.storeUrl && <a className="button primary" href={selected.storeUrl} target="_blank" rel="noopener noreferrer">Open Steam Store <ExternalLink aria-hidden="true" /></a>}</div></aside>}
         </div>
       </section></div>}
+    </section>
+  );
+}
+
+function SteamWishlistSpotlight() {
+  const configuredUrl = getPortfolioConfig().gameSuggestions?.wishlistUrl || "https://store.steampowered.com/wishlist/profiles/76561199192411740/";
+  const [snapshot, setSnapshot] = useState<WishlistSnapshot>({ games: [] });
+  const [index, setIndex] = useState(0);
+  const games = snapshot.games || [];
+  const game = games[index % Math.max(1, games.length)];
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const local = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    const paths = local
+      ? ["https://silvaops-orbit.github.io/online-portfolio/data/steam-wishlist.json", "data/steam-wishlist.json"]
+      : ["data/steam-wishlist.json"];
+    const load = async () => {
+      for (const path of paths) {
+        try {
+          const response = await fetch(`${path}?v=${Date.now()}`, {
+            cache: "no-store",
+            credentials: path.startsWith("http") ? "omit" : "same-origin",
+            referrerPolicy: "no-referrer",
+            signal: controller.signal
+          });
+          if (!response.ok) continue;
+          const payload = await response.json() as WishlistSnapshot;
+          if (Array.isArray(payload.games) && payload.games.length) {
+            setSnapshot(payload);
+            return;
+          }
+        } catch (error) {
+          if (controller.signal.aborted) return;
+        }
+      }
+    };
+    void load();
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    setIndex(0);
+    if (games.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => setIndex((value) => (value + 1) % games.length), 6200);
+    return () => window.clearInterval(timer);
+  }, [games.length]);
+
+  const wishlistUrl = snapshot.profileUrl || configuredUrl;
+  return (
+    <section className="steam-wishlist-spotlight" aria-labelledby="steam-wishlist-title">
+      <a className="steam-wishlist-tab" href={wishlistUrl} target="_blank" rel="noopener noreferrer"><Gift aria-hidden="true" /><span>Buy me a game off my wishlist</span><ExternalLink aria-hidden="true" /></a>
+      {game ? <a className="steam-wishlist-game" key={game.appid} href={wishlistUrl} target="_blank" rel="noopener noreferrer" title={`Find ${game.title} on the EchoOps wishlist and buy it as a gift`}>
+        <SteamArtwork item={{ appid: game.appid, image: game.image }} title={game.title} className="steam-wishlist-art" />
+        <span className="steam-wishlist-copy"><small>Rotating wishlist pick</small><strong id="steam-wishlist-title">{game.title}</strong><span>{game.addedAt ? `Wishlisted ${formatDate(game.addedAt)} · Find and gift through Steam` : "Find this game on the EchoOps wishlist and buy it as a gift"}</span></span>
+        <span className="steam-wishlist-count"><b>{String(index + 1).padStart(2, "0")}</b><small>of {games.length}</small></span>
+        <ChevronRight aria-hidden="true" />
+        <i aria-hidden="true" />
+      </a> : <div className="steam-wishlist-waiting"><span id="steam-wishlist-title">Steam wishlist spotlight</span><small>The next automated Steam refresh will load a rotating wishlist pick.</small></div>}
     </section>
   );
 }
@@ -687,6 +765,7 @@ function SteamActivityDashboard() {
           <SteamShowcaseStage steam={steam} />
         </div>
       </div>
+      <SteamWishlistSpotlight />
       <SteamCommunityQueue steam={steam} />
       <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
