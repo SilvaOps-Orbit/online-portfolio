@@ -25,7 +25,7 @@ window.PORTFOLIO_CONFIG = {
     githubUsername: "SilvaOps-Orbit",
     kofiUrl: "https://ko-fi.com/echoops",
     discordUrl: "",
-    youtubeUrl: "",
+    youtubeUrl: "https://www.youtube.com/@SilvaDevelops",
     contentHubUrl: "",
     linkedinUrl: "",
     resumeUrl: "assets/alvis-leslie-gordon-resume.txt"
