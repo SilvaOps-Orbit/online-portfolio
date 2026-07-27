@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-27T03:53:03.645Z",
+  "source": "Steam owned library + YouTube uploads + community suggestion queue",
+  "games": [
+    {
+      "key": "steam-213670",
+      "appid": 213670,
+      "title": "South Park™: The Stick of Truth™",
+      "bought": false,
+      "boughtDetectedAt": null,
+      "videos": [],
+      "checkedAt": "2026-07-27T03:53:03.645Z"
+    },
+    {
+      "key": "steam-400",
+      "appid": 400,
+      "title": "Portal",
+      "bought": false,
+      "boughtDetectedAt": null,
+      "videos": [],
+      "checkedAt": "2026-07-27T03:53:03.645Z"
+    },
+    {
+      "key": "steam-4435490",
+      "appid": 4435490,
+      "title": "Call of Duty®: Modern Warfare® 4",
+      "bought": false,
+      "boughtDetectedAt": null,
+      "videos": [],
+      "checkedAt": "2026-07-27T03:53:03.645Z"
+    }
+  ]
+}

@@ -7283,6 +7283,15 @@ a.provider-pulse-item:focus-visible {
 }
 .suggestion-list > button:hover,
 .suggestion-list > button.is-selected { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--panel)); }
+.suggestion-list > button.is-bought {
+  border-color: color-mix(in srgb, #39dd8f 72%, var(--line));
+  background:
+    linear-gradient(100deg, color-mix(in srgb, #39dd8f 13%, transparent), transparent 62%),
+    color-mix(in srgb, var(--panel) 76%, transparent);
+  box-shadow: inset 3px 0 #39dd8f;
+}
+.suggestion-list > button.is-bought:hover,
+.suggestion-list > button.is-bought.is-selected { border-color: #39dd8f; background-color: color-mix(in srgb, #39dd8f 10%, var(--panel)); }
 .suggestion-art { width: 116px; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 5px; object-fit: cover; }
 .suggestion-list > button > span { min-width: 0; }
 .suggestion-list strong,
@@ -7292,15 +7301,48 @@ a.provider-pulse-item:focus-visible {
 .suggestion-list > button > span > span { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 7px; }
 .suggestion-list b { color: var(--accent-2); font-size: 0.69rem; }
 .suggestion-list em { color: var(--accent); font-size: 0.69rem; font-style: normal; font-weight: 850; }
+.suggestion-list > button > span > .suggestion-owner-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.suggestion-owner-badges b {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, #39dd8f 72%, var(--line));
+  border-radius: 4px;
+  background: color-mix(in srgb, #39dd8f 12%, transparent);
+  color: #59e9a3;
+  line-height: 1;
+}
+.suggestion-owner-badges svg { width: 13px; height: 13px; }
+.suggestion-owner-badges b:last-child svg { color: #ff4f59; fill: currentColor; }
 .suggestion-list > button > i { display: inline-flex; gap: 4px; align-items: center; color: var(--accent-3); font-size: 0.74rem; font-style: normal; font-weight: 950; }
 .suggestion-list > button > i svg { width: 15px; height: 15px; }
 .suggestion-empty { align-self: center; justify-self: center; max-width: 45ch; margin: 50px 20px; color: var(--muted); text-align: center; }
 
 .suggestion-details { position: relative; min-width: 0; padding: 18px 20px 24px; overflow: auto; border-left: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 64%, transparent); }
+.suggestion-details.is-bought { box-shadow: inset 3px 0 #39dd8f; }
 .suggestion-details-close { position: absolute; z-index: 2; top: 28px; right: 30px; background: color-mix(in srgb, var(--bg) 84%, transparent); }
 .suggestion-detail-art { width: 100%; max-height: 330px; aspect-ratio: 16 / 9; border: 1px solid var(--line); border-radius: 7px; object-fit: cover; }
 .suggestion-details .steam-label { margin: 16px 0 7px; }
 .suggestion-details h4 { margin: 0; font-size: clamp(1.35rem, 3vw, 2.1rem); overflow-wrap: anywhere; }
+.suggestion-owner-status {
+  margin-top: 15px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, #39dd8f 58%, var(--line));
+  border-radius: 6px;
+  background: linear-gradient(105deg, color-mix(in srgb, #39dd8f 12%, transparent), color-mix(in srgb, #ff4f59 5%, transparent));
+}
+.suggestion-owner-status > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.suggestion-owner-status span { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 1px 7px; align-items: center; min-width: 0; }
+.suggestion-owner-status svg { grid-row: 1 / span 2; width: 19px; height: 19px; color: #39dd8f; }
+.suggestion-owner-status span + span svg { color: #ff4f59; fill: currentColor; }
+.suggestion-owner-status b { color: var(--text); font-size: 0.78rem; }
+.suggestion-owner-status small { color: var(--muted); font-size: 0.64rem; line-height: 1.35; }
 .suggestion-detail-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
 .suggestion-detail-stats > span { min-width: 0; padding: 10px; border-top: 2px solid var(--accent-3); background: color-mix(in srgb, var(--bg) 54%, transparent); }
 .suggestion-detail-stats b,
@@ -7310,6 +7352,30 @@ a.provider-pulse-item:focus-visible {
 .suggestion-recommenders { margin: 17px 0; padding: 13px 0; border-block: 1px solid var(--line); }
 .suggestion-recommenders strong { color: var(--text); font-size: 0.76rem; }
 .suggestion-recommenders p { margin: 5px 0 0; color: var(--muted); font-size: 0.74rem; line-height: 1.5; }
+.suggestion-video-list { display: grid; gap: 8px; margin: 0 0 18px; }
+.suggestion-video-list > strong { color: var(--text); font-size: 0.78rem; }
+.suggestion-video-list > a {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr) 18px;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  color: var(--text);
+}
+.suggestion-video-list > a:hover { border-color: #ff4f59; background: color-mix(in srgb, #ff4f59 7%, var(--bg)); }
+.suggestion-video-list > a > span:first-child { display: grid; place-items: center; width: 92px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 4px; background: color-mix(in srgb, #ff4f59 12%, var(--panel)); }
+.suggestion-video-list img { width: 100%; height: 100%; object-fit: cover; }
+.suggestion-video-list > a > span:first-child svg { width: 26px; height: 26px; color: #ff4f59; fill: currentColor; }
+.suggestion-video-list > a > span:nth-child(2) { min-width: 0; }
+.suggestion-video-list b,
+.suggestion-video-list small { display: block; overflow-wrap: anywhere; }
+.suggestion-video-list b { font-size: 0.72rem; }
+.suggestion-video-list small { margin-top: 4px; color: var(--muted); font-size: 0.62rem; }
+.suggestion-video-list > a > svg { width: 16px; height: 16px; color: var(--accent); }
 .suggestion-details .button { display: inline-flex; gap: 7px; align-items: center; }
 .suggestion-details .button svg { width: 16px; height: 16px; }
 
@@ -7341,6 +7407,7 @@ a.provider-pulse-item:focus-visible {
   .suggestion-art { width: 86px; }
   .suggestion-list > button > i { grid-column: 2; }
   .suggestion-details { border-left: 0; }
+  .suggestion-owner-status > div { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 440px) {
@@ -7348,6 +7415,8 @@ a.provider-pulse-item:focus-visible {
   .steam-suggestion-identity { align-items: stretch; flex-direction: column; }
   .suggestion-modal > header p { display: none; }
   .suggestion-detail-stats { grid-template-columns: 1fr 1fr; }
+  .suggestion-video-list > a { grid-template-columns: 72px minmax(0, 1fr) 16px; }
+  .suggestion-video-list > a > span:first-child { width: 72px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -72,6 +72,7 @@ function sanitizeVideo(item) {
   return {
     id,
     title: cleanText(snippet.title, 180),
+    description: cleanText(snippet.description, 500),
     publishedAt: cleanText(snippet.publishedAt, 40),
     image: cleanUrl(snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url),
     url: id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : ""
@@ -95,7 +96,7 @@ async function buildSnapshot() {
   let videos = [];
   if (uploadsPlaylist) {
     const playlistItems = await youtubeApi(
-      `playlistItems?part=snippet&playlistId=${encodeURIComponent(uploadsPlaylist)}&maxResults=6`,
+      `playlistItems?part=snippet&playlistId=${encodeURIComponent(uploadsPlaylist)}&maxResults=50`,
       accessToken
     );
     videos = (playlistItems?.items || []).map((item) => sanitizeVideo({

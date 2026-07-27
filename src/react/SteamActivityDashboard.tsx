@@ -3,7 +3,7 @@ import { StrictMode, useEffect, useMemo, useState, type CSSProperties, type Form
 // `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
 // Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
-import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Send, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X } from "lucide-react";
+import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Send, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X, Youtube } from "lucide-react";
 // Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
 import type { SteamData, SteamItem } from "./portfolio-types";
@@ -61,6 +61,29 @@ interface GameSuggestion {
   recommendedAt?: string;
 }
 
+interface SuggestionVideo {
+  id?: string;
+  title?: string;
+  publishedAt?: string;
+  image?: string;
+  url?: string;
+}
+
+interface SuggestionOwnerStatus {
+  key?: string;
+  appid?: number | null;
+  title?: string;
+  bought?: boolean;
+  boughtDetectedAt?: string | null;
+  videos?: SuggestionVideo[];
+  checkedAt?: string;
+}
+
+interface SuggestionStatusSnapshot {
+  generatedAt?: string | null;
+  games?: SuggestionOwnerStatus[];
+}
+
 const SUGGESTION_CLIENT_KEY = "echoops-game-suggestion-client-v1";
 
 function suggestionClientId(): string {
@@ -91,6 +114,13 @@ function suggestionMatch(suggestion: GameSuggestion, steam: SteamData): number {
 
 function suggestionPrice(suggestion: GameSuggestion): number {
   return suggestion.priceCents === null || suggestion.priceCents === undefined ? Number.POSITIVE_INFINITY : Number(suggestion.priceCents);
+}
+
+function suggestionStatusFor(suggestion: GameSuggestion, statuses: SuggestionOwnerStatus[]): SuggestionOwnerStatus | null {
+  return statuses.find((status) =>
+    (status.key && status.key === suggestion.key)
+    || (status.appid && suggestion.appid && Number(status.appid) === Number(suggestion.appid))
+  ) || null;
 }
 
 // Renders a horizontal bar list of labelled values (e.g. genre mix / playstyle split).
@@ -477,6 +507,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   const [selectedKey, setSelectedKey] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("Loading the community queue...");
+  const [ownerSnapshot, setOwnerSnapshot] = useState<SuggestionStatusSnapshot>({ games: [] });
 
   const loadSuggestions = async () => {
     if (!endpoint) { setStatus("The community queue is waiting for its Worker endpoint."); return; }
@@ -492,6 +523,18 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   };
 
   useEffect(() => { void loadSuggestions(); }, [endpoint]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`data/game-suggestion-status.json?v=${Date.now()}`, {
+      cache: "no-store",
+      credentials: "omit",
+      signal: controller.signal
+    })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Status snapshot unavailable")))
+      .then((payload: SuggestionStatusSnapshot) => setOwnerSnapshot({ ...payload, games: Array.isArray(payload.games) ? payload.games : [] }))
+      .catch((error) => { if (error?.name !== "AbortError") setOwnerSnapshot({ games: [] }); });
+    return () => controller.abort();
+  }, []);
   useEffect(() => {
     if (!browserOpen) return;
     const previous = document.body.style.overflow;
@@ -515,6 +558,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
     return Number(b.recommendationCount || 0) - Number(a.recommendationCount || 0) || String(b.recommendedAt || "").localeCompare(String(a.recommendedAt || ""));
   }), [suggestions, sort, steam]);
   const selected = suggestions.find((item) => item.key === selectedKey) || null;
+  const selectedOwnerStatus = selected ? suggestionStatusFor(selected, ownerSnapshot.games || []) : null;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -556,8 +600,13 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
         <header><div><span className="steam-label">Community picks</span><h3 id="suggestion-modal-title">Steam suggestion board</h3><p>Duplicate recommendations are grouped, with every named or numbered anonymous recommender preserved.</p></div><button type="button" aria-label="Close suggestions" title="Close suggestions" onClick={() => setBrowserOpen(false)}><X aria-hidden="true" /></button></header>
         <div className="suggestion-toolbar"><label htmlFor="suggestion-sort">Sort suggestions</label><select id="suggestion-sort" value={sort} onChange={(event) => setSort(event.target.value as SuggestionSort)}><option value="recommended">Most recommended</option><option value="match">Most likely match</option><option value="reviews">Most positive reviews</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="dlc">Most DLC</option><option value="genre">Genre</option></select><button type="button" aria-label="Refresh suggestions" title="Refresh suggestions" onClick={() => void loadSuggestions()}><RotateCw aria-hidden="true" /></button></div>
         <div className={`suggestion-browser${selected ? " has-selection" : ""}`}>
-          <div className="suggestion-list" role="list">{sorted.length ? sorted.map((suggestion) => { const match = suggestionMatch(suggestion, steam); return <button type="button" role="listitem" className={selectedKey === suggestion.key ? "is-selected" : ""} key={suggestion.key} onClick={() => setSelectedKey(suggestion.key)}><SteamArtwork item={{ appid: suggestion.appid || undefined, image: suggestion.imageUrl || undefined }} title={suggestion.title} className="suggestion-art" /><span><strong>{suggestion.title}</strong><small>{suggestion.genres?.slice(0, 2).join(" / ") || "Genre awaiting Steam"}</small><span><b>{suggestion.priceLabel || "Price unavailable"}</b><em>{match}% genre fit</em></span></span><i>{suggestion.recommendationCount}<Users aria-hidden="true" /></i></button>; }) : <p className="suggestion-empty">No games have been suggested yet. Close this view and add the first one.</p>}</div>
-          {selected && <aside className="suggestion-details"><button type="button" className="suggestion-details-close" aria-label="Close game details" title="Close game details" onClick={() => setSelectedKey("")}><X aria-hidden="true" /></button><SteamArtwork item={{ appid: selected.appid || undefined, image: selected.imageUrl || undefined }} title={selected.title} className="suggestion-detail-art" /><div><span className="steam-label">Game details</span><h4>{selected.title}</h4><div className="suggestion-detail-stats"><span><b>{selected.priceLabel || "Unknown"}</b><small>Current AU price</small></span><span><b>{selected.reviewPercent !== null && selected.reviewPercent !== undefined ? `${selected.reviewPercent}%` : "Unknown"}</b><small>{selected.reviewSummary || "Review score"}</small></span><span><b>{selected.dlcCount ?? "Unknown"}</b><small>DLC on Store page</small></span><span><b>{suggestionMatch(selected, steam)}%</b><small>Genre-footprint fit</small></span></div>{selected.genres?.length ? <div className="suggestion-genres">{selected.genres.map((genre) => <span key={genre}>{genre}</span>)}</div> : null}<div className="suggestion-recommenders"><strong>Recommended by</strong><p>{selected.recommenders.join(", ")}</p></div>{selected.storeUrl && <a className="button primary" href={selected.storeUrl} target="_blank" rel="noopener noreferrer">Open Steam Store <ExternalLink aria-hidden="true" /></a>}</div></aside>}
+          <div className="suggestion-list" role="list">{sorted.length ? sorted.map((suggestion) => {
+            const match = suggestionMatch(suggestion, steam);
+            const ownerStatus = suggestionStatusFor(suggestion, ownerSnapshot.games || []);
+            const videoCount = ownerStatus?.videos?.length || 0;
+            return <button type="button" role="listitem" className={`${selectedKey === suggestion.key ? "is-selected " : ""}${ownerStatus?.bought ? "is-bought" : ""}`.trim()} key={suggestion.key} onClick={() => setSelectedKey(suggestion.key)}><SteamArtwork item={{ appid: suggestion.appid || undefined, image: suggestion.imageUrl || undefined }} title={suggestion.title} className="suggestion-art" /><span><strong>{suggestion.title}</strong><small>{suggestion.genres?.slice(0, 2).join(" / ") || "Genre awaiting Steam"}</small><span><b>{suggestion.priceLabel || "Price unavailable"}</b><em>{match}% genre fit</em></span>{ownerStatus?.bought || videoCount ? <span className="suggestion-owner-badges">{ownerStatus?.bought && <b><Check aria-hidden="true" /> Bought</b>}{videoCount > 0 && <b><Youtube aria-hidden="true" /> {videoCount} video{videoCount === 1 ? "" : "s"}</b>}</span> : null}</span><i>{suggestion.recommendationCount}<Users aria-hidden="true" /></i></button>;
+          }) : <p className="suggestion-empty">No games have been suggested yet. Close this view and add the first one.</p>}</div>
+          {selected && <aside className={`suggestion-details${selectedOwnerStatus?.bought ? " is-bought" : ""}`}><button type="button" className="suggestion-details-close" aria-label="Close game details" title="Close game details" onClick={() => setSelectedKey("")}><X aria-hidden="true" /></button><SteamArtwork item={{ appid: selected.appid || undefined, image: selected.imageUrl || undefined }} title={selected.title} className="suggestion-detail-art" /><div><span className="steam-label">Game details</span><h4>{selected.title}</h4>{selectedOwnerStatus?.bought || selectedOwnerStatus?.videos?.length ? <section className="suggestion-owner-status" aria-label="EchoOps ownership and video status"><div>{selectedOwnerStatus?.bought && <span><Check aria-hidden="true" /><b>Bought</b><small>{selectedOwnerStatus.boughtDetectedAt ? `Detected in the Steam library ${formatDate(selectedOwnerStatus.boughtDetectedAt)}` : "Detected in the Steam library"}</small></span>}{selectedOwnerStatus?.videos?.length ? <span><Youtube aria-hidden="true" /><b>{selectedOwnerStatus.videos.length} YouTube video{selectedOwnerStatus.videos.length === 1 ? "" : "s"}</b><small>Automatically matched from the SilvaDevelops upload feed</small></span> : null}</div></section> : null}<div className="suggestion-detail-stats"><span><b>{selected.priceLabel || "Unknown"}</b><small>Current AU price</small></span><span><b>{selected.reviewPercent !== null && selected.reviewPercent !== undefined ? `${selected.reviewPercent}%` : "Unknown"}</b><small>{selected.reviewSummary || "Review score"}</small></span><span><b>{selected.dlcCount ?? "Unknown"}</b><small>DLC on Store page</small></span><span><b>{suggestionMatch(selected, steam)}%</b><small>Genre-footprint fit</small></span></div>{selected.genres?.length ? <div className="suggestion-genres">{selected.genres.map((genre) => <span key={genre}>{genre}</span>)}</div> : null}<div className="suggestion-recommenders"><strong>Recommended by</strong><p>{selected.recommenders.join(", ")}</p></div>{selectedOwnerStatus?.videos?.length ? <div className="suggestion-video-list"><strong>Videos made on this game</strong>{selectedOwnerStatus.videos.map((video, index) => <a key={video.id || video.url || `${video.title}-${index}`} href={video.url} target="_blank" rel="noopener noreferrer"><span>{video.image ? <img src={video.image} alt="" loading="lazy" /> : <Youtube aria-hidden="true" />}</span><span><b>{video.title || "YouTube video"}</b><small>{video.publishedAt ? `Published ${formatDate(video.publishedAt)}` : "Watch on YouTube"}</small></span><ExternalLink aria-hidden="true" /></a>)}</div> : null}{selected.storeUrl && <a className="button primary" href={selected.storeUrl} target="_blank" rel="noopener noreferrer">Open Steam Store <ExternalLink aria-hidden="true" /></a>}</div></aside>}
         </div>
       </section></div>}
     </section>
