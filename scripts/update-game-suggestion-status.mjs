@@ -21,6 +21,35 @@ function normalize(value) {
     .trim();
 }
 
+function sequelNumber(value) {
+  const romanNumbers = new Map([
+    ["i", 1],
+    ["ii", 2],
+    ["iii", 3],
+    ["iv", 4],
+    ["v", 5],
+    ["vi", 6]
+  ]);
+  if (/^\d+$/.test(value)) return Number(value);
+  return romanNumbers.get(value) || null;
+}
+
+function callOfDutyIdentity(value) {
+  const text = normalize(value);
+  if (!text) return null;
+
+  const blackOps = text.match(/\bblack ops(?:\s+(i{1,3}|iv|v|vi|\d+))?\b/) || text.match(/\bbo\s*(\d+)\b/);
+  if (blackOps) return `black-ops:${sequelNumber(blackOps[1] || "i") || 1}`;
+
+  const modernWarfare = text.match(/\bmodern warfare(?:\s+(i{1,3}|iv|v|vi|\d+))?\b/) || text.match(/\bmw\s*(\d+)\b/);
+  if (modernWarfare) return `modern-warfare:${sequelNumber(modernWarfare[1] || "i") || 1}`;
+
+  const numbered = text.match(/\bcall of duty\s+(\d+)\b/) || text.match(/\bcod\s*(\d+)\b/);
+  if (numbered) return `main:${Number(numbered[1])}`;
+
+  return /\bcall of duty\b|\bcod\b/.test(text) ? "franchise:unspecified" : null;
+}
+
 async function readJson(path, fallback) {
   try {
     return JSON.parse(await readFile(path, "utf8"));
@@ -34,6 +63,11 @@ function videoMatchesGame(video, game) {
   const videoTitle = normalize(video.title);
   const videoDescription = normalize(video.description);
   if (!gameName || !videoTitle) return false;
+  const gameCodIdentity = callOfDutyIdentity(gameName);
+  const videoCodIdentity = callOfDutyIdentity(videoTitle);
+  if (gameCodIdentity) {
+    return Boolean(videoCodIdentity && videoCodIdentity === gameCodIdentity);
+  }
   if (videoTitle.includes(gameName)) return true;
 
   const ignored = new Set(["the", "and", "for", "with", "game", "edition", "remastered", "tm"]);

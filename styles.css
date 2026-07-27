@@ -7372,16 +7372,75 @@ a.provider-pulse-item:focus-visible {
 .suggestion-modal > header h3 { margin: 0; font-size: clamp(1.3rem, 3vw, 2rem); }
 .suggestion-modal > header p { max-width: 70ch; margin: 7px 0 0; color: var(--muted); font-size: 0.78rem; line-height: 1.45; }
 .suggestion-modal > header > button,
-.suggestion-toolbar > button,
+.suggestion-toolbar-heading > button,
 .suggestion-details-close { display: grid; flex: 0 0 auto; place-items: center; width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); cursor: pointer; }
 .suggestion-modal > header button svg,
-.suggestion-toolbar > button svg,
+.suggestion-toolbar-heading > button svg,
 .suggestion-details-close svg { width: 19px; height: 19px; }
 
-.suggestion-toolbar { display: flex; gap: 10px; align-items: center; padding: 12px 20px; border-bottom: 1px solid var(--line); }
-.suggestion-toolbar label { color: var(--muted); font-size: 0.72rem; font-weight: 900; }
-.suggestion-toolbar select { min-height: 42px; margin-left: auto; }
-.suggestion-browser { display: grid; grid-template-columns: 1fr; min-height: 0; overflow: hidden; }
+.suggestion-toolbar {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 10px;
+  max-height: 48vh;
+  padding: 14px 20px 16px;
+  overflow: auto;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 54%, transparent);
+}
+.suggestion-toolbar-heading { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+.suggestion-toolbar-heading > span { display: grid; grid-template-columns: 20px auto auto; gap: 3px 8px; align-items: center; min-width: 0; }
+.suggestion-toolbar-heading > span svg { grid-row: 1 / span 2; width: 18px; height: 18px; color: var(--accent); }
+.suggestion-toolbar-heading b { font-size: 0.84rem; }
+.suggestion-toolbar-heading small { color: var(--muted); font-size: 0.68rem; font-weight: 800; }
+.suggestion-toolbar-heading > button:disabled { cursor: wait; opacity: 0.65; }
+.suggestion-toolbar-heading > button.is-refreshing svg { animation: suggestion-refresh-spin 850ms linear infinite; }
+@keyframes suggestion-refresh-spin { to { transform: rotate(360deg); } }
+.suggestion-search {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--muted);
+}
+.suggestion-search:focus-within { border-color: var(--accent); outline: 2px solid color-mix(in srgb, var(--accent) 26%, transparent); }
+.suggestion-search svg { width: 17px; height: 17px; }
+.suggestion-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 0.76rem; }
+.suggestion-ownership-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.suggestion-ownership-filter button,
+.suggestion-clear-filters,
+.suggestion-empty button {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+.suggestion-ownership-filter button svg,
+.suggestion-clear-filters svg { width: 14px; height: 14px; }
+.suggestion-ownership-filter button.is-active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, var(--bg)); color: var(--text); }
+.suggestion-ownership-filter button.is-active:last-child { border-color: #39dd8f; color: #59e9a3; }
+.suggestion-filter-grid { display: grid; grid-template-columns: repeat(6, minmax(125px, 1fr)); gap: 8px; }
+.suggestion-filter-grid label { display: grid; gap: 5px; min-width: 0; color: var(--muted); font-size: 0.64rem; font-weight: 900; }
+.suggestion-filter-grid select { width: 100%; min-width: 0; min-height: 40px; margin: 0; }
+.suggestion-clear-filters { justify-self: start; color: var(--accent-2); }
+.suggestion-clear-filters:hover,
+.suggestion-empty button:hover { border-color: var(--accent-2); color: var(--text); }
+.suggestion-browser { display: grid; flex: 1 1 auto; grid-template-columns: 1fr; min-height: 0; overflow: hidden; }
 .suggestion-browser.has-selection { grid-template-columns: minmax(320px, 0.82fr) minmax(360px, 1.18fr); }
 .suggestion-list { display: grid; align-content: start; gap: 8px; min-height: 240px; padding: 16px 20px 22px; overflow: auto; }
 
@@ -7453,7 +7512,8 @@ a.provider-pulse-item:focus-visible {
 .suggestion-list > .suggestion-load-more > span { text-align: center; }
 .suggestion-list > .suggestion-load-more strong { color: var(--accent); }
 .suggestion-list > .suggestion-load-more > svg { width: 19px; height: 19px; }
-.suggestion-empty { align-self: center; justify-self: center; max-width: 45ch; margin: 50px 20px; color: var(--muted); text-align: center; }
+.suggestion-empty { display: grid; gap: 13px; align-self: center; justify-items: center; justify-self: center; max-width: 45ch; margin: 50px 20px; color: var(--muted); text-align: center; }
+.suggestion-empty strong { color: var(--muted); }
 
 .suggestion-details { position: relative; min-width: 0; padding: 18px 20px 24px; overflow: auto; border-left: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 64%, transparent); }
 .suggestion-details.is-bought { box-shadow: inset 3px 0 #39dd8f; }
@@ -7533,9 +7593,8 @@ a.provider-pulse-item:focus-visible {
   .suggestion-modal-backdrop { padding: 0; }
   .suggestion-modal { width: 100%; max-height: 100vh; min-height: 100vh; border: 0; border-radius: 0; }
   .suggestion-modal > header { padding: 15px; }
-  .suggestion-toolbar { align-items: stretch; flex-wrap: wrap; padding-inline: 15px; }
-  .suggestion-toolbar label { width: 100%; }
-  .suggestion-toolbar select { flex: 1 1 220px; margin-left: 0; }
+  .suggestion-toolbar { max-height: 46vh; padding-inline: 15px; }
+  .suggestion-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .suggestion-browser.has-selection { grid-template-columns: 1fr; overflow: auto; }
   .suggestion-browser.has-selection .suggestion-list { display: none; }
   .suggestion-list { padding-inline: 15px; }
@@ -7555,6 +7614,9 @@ a.provider-pulse-item:focus-visible {
   .steam-showcase-controls button span { display: none; }
   .steam-suggestion-identity { align-items: stretch; flex-direction: column; }
   .suggestion-modal > header p { display: none; }
+  .suggestion-filter-grid { grid-template-columns: 1fr; }
+  .suggestion-ownership-filter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .suggestion-ownership-filter button { padding-inline: 6px; }
   .suggestion-detail-stats { grid-template-columns: 1fr 1fr; }
   .suggestion-video-list > a { grid-template-columns: 72px minmax(0, 1fr) 16px; }
   .suggestion-video-list > a > span:first-child { width: 72px; }
@@ -7565,7 +7627,8 @@ a.provider-pulse-item:focus-visible {
   .steam-showcase-progress i,
   .steam-wishlist-game,
   .steam-wishlist-game > i,
-  .suggestion-modal { animation: none !important; }
+  .suggestion-modal,
+  .suggestion-toolbar-heading > button.is-refreshing svg { animation: none !important; }
 }
 
 .steam-watch .steam-label {
