@@ -7244,6 +7244,19 @@ a.provider-pulse-item:focus-visible {
 .steam-wishlist-copy small { color: var(--accent); font-size: 0.65rem; font-weight: 950; text-transform: uppercase; }
 .steam-wishlist-copy strong { margin-top: 5px; font-size: clamp(1rem, 2vw, 1.35rem); }
 .steam-wishlist-copy > span { margin-top: 5px; color: var(--muted); font-size: 0.7rem; }
+.steam-wishlist-copy .steam-wishlist-price {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 9px;
+}
+.steam-wishlist-price b { color: var(--accent-2); font-size: 0.78rem; }
+.steam-wishlist-price s { color: var(--muted); }
+.steam-wishlist-price em {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-style: normal;
+}
 .steam-wishlist-count { display: grid; justify-items: end; min-width: 70px; }
 .steam-wishlist-count b { color: var(--accent-2); font-size: 1.45rem; line-height: 1; }
 .steam-wishlist-count small { margin-top: 4px; color: var(--muted); font-size: 0.62rem; }

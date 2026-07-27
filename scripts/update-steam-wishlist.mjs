@@ -7,6 +7,7 @@ const wishlistUrl = process.env.STEAM_WISHLIST_URL
 const syncEndpoint = String(process.env.GAME_SUGGESTION_ENDPOINT || "").replace(/\/+$/, "");
 const syncToken = process.env.WISHLIST_SYNC_TOKEN || "";
 const outputPath = new URL("../data/steam-wishlist.json", import.meta.url);
+const storeBatchSize = 100;
 
 async function readExisting() {
   try {
@@ -25,6 +26,68 @@ async function fetchJson(url) {
   });
   if (!response.ok) throw new Error(`Steam returned ${response.status} for ${new URL(url).pathname}`);
   return response.json();
+}
+
+function chunks(items, size) {
+  return Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
+    items.slice(index * size, (index + 1) * size)
+  );
+}
+
+function storeArtwork(item, appid) {
+  const format = String(item?.assets?.asset_url_format || "").trim();
+  const filename = item?.assets?.header || item?.assets?.main_capsule || "header.jpg";
+  if (format && filename) {
+    return `https://shared.fastly.steamstatic.com/store_item_assets/${format.replace("${FILENAME}", filename)}`;
+  }
+  return `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`;
+}
+
+async function loadStoreDetails(appids) {
+  const details = new Map();
+  for (const batch of chunks(appids, storeBatchSize)) {
+    try {
+      const input = {
+        ids: batch.map((appid) => ({ appid })),
+        context: { language: "english", country_code: "AU", steam_realm: 1 },
+        data_request: {
+          include_basic_info: true,
+          include_assets: true,
+          include_all_purchase_options: true
+        }
+      };
+      const payload = await fetchJson(
+        `https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json=${encodeURIComponent(JSON.stringify(input))}`
+      );
+      const items = Array.isArray(payload?.response?.store_items)
+        ? payload.response.store_items
+        : [];
+      items.forEach((item) => {
+        const appid = Number(item.appid || 0);
+        if (!appid) return;
+        const option = item.best_purchase_option
+          || (Array.isArray(item.purchase_options)
+            ? item.purchase_options
+              .filter((entry) => Number.isFinite(Number(entry?.final_price_in_cents)))
+              .sort((a, b) => Number(a.final_price_in_cents) - Number(b.final_price_in_cents))[0]
+            : null);
+        details.set(appid, {
+          title: String(item.name || "").trim(),
+          image: storeArtwork(item, appid),
+          priceCents: option ? Number(option.final_price_in_cents) : null,
+          priceLabel: option?.formatted_final_price || null,
+          originalPriceCents: option?.original_price_in_cents
+            ? Number(option.original_price_in_cents)
+            : null,
+          originalPriceLabel: option?.formatted_original_price || null,
+          discountPercent: Number(option?.discount_pct || 0)
+        });
+      });
+    } catch (error) {
+      console.warn(`Store details unavailable for a ${batch.length}-game wishlist batch.`, error);
+    }
+  }
+  return details;
 }
 
 async function loadWishlist(existing) {
@@ -67,23 +130,41 @@ async function loadWishlist(existing) {
     } while (lastAppid < highestWishlistAppid);
   }
 
+  const storeDetails = await loadStoreDetails(
+    wishlistItems.map((item) => Number(item.appid || 0)).filter(Boolean)
+  );
+
   return wishlistItems
     .map((item) => {
       const appid = Number(item.appid || 0);
       if (!appid) return null;
+      const store = storeDetails.get(appid) || {};
       return {
         appid,
-        title: catalog.get(appid) || `Steam App ${appid}`,
+        title: store.title || catalog.get(appid) || `Steam App ${appid}`,
         priority: Number(item.priority || 0),
         addedAt: Number(item.date_added || 0)
           ? new Date(Number(item.date_added) * 1000).toISOString()
           : null,
-        image: `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+        image: store.image || `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+        priceCents: store.priceCents ?? null,
+        priceLabel: store.priceLabel || null,
+        originalPriceCents: store.originalPriceCents ?? null,
+        originalPriceLabel: store.originalPriceLabel || null,
+        discountPercent: Number(store.discountPercent || 0),
         url: `https://store.steampowered.com/app/${appid}/`
       };
     })
     .filter(Boolean)
-    .sort((a, b) => a.priority - b.priority || String(b.addedAt || "").localeCompare(String(a.addedAt || "")));
+    .sort((a, b) => {
+      const discountOrder = Number(b.discountPercent || 0) - Number(a.discountPercent || 0);
+      if (discountOrder) return discountOrder;
+      const aPrice = Number.isFinite(a.priceCents) ? a.priceCents : Number.POSITIVE_INFINITY;
+      const bPrice = Number.isFinite(b.priceCents) ? b.priceCents : Number.POSITIVE_INFINITY;
+      return aPrice - bPrice
+        || a.priority - b.priority
+        || String(b.addedAt || "").localeCompare(String(a.addedAt || ""));
+    });
 }
 
 async function syncSuggestions(games) {
@@ -120,10 +201,10 @@ async function main() {
     const generatedAt = new Date().toISOString();
     await mkdir(new URL("../data/", import.meta.url), { recursive: true });
     await writeFile(outputPath, `${JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: 2,
       generatedAt,
       lastGoodAt: generatedAt,
-      source: "Steam IWishlistService + ISteamApps catalog",
+      source: "Steam IWishlistService + IStoreService catalog + IStoreBrowseService pricing",
       status: synced
         ? `${games.length} wishlist games refreshed and synced to the suggestion board.`
         : `${games.length} wishlist games refreshed; suggestion sync is waiting for its private token.`,

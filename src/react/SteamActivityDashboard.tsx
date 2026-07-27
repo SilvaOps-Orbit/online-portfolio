@@ -90,6 +90,11 @@ interface WishlistGame {
   priority?: number;
   addedAt?: string | null;
   image?: string;
+  priceCents?: number | null;
+  priceLabel?: string | null;
+  originalPriceCents?: number | null;
+  originalPriceLabel?: string | null;
+  discountPercent?: number;
   url?: string;
 }
 
@@ -370,7 +375,16 @@ function artworkCandidates(item: SteamItem): string[] {
     );
     if (akamaiFallback !== primary) candidates.push(akamaiFallback);
   }
-  if (item.appid) candidates.push(`https://cdn.cloudflare.steamstatic.com/steam/apps/${item.appid}/header.jpg`);
+  if (item.appid) {
+    const appid = item.appid;
+    candidates.push(
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+      `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
+      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_616x353.jpg`
+    );
+  }
   return [...new Set(candidates)];
 }
 // Resilient game cover image. Tries each candidate URL in turn; on a load error it advances
@@ -636,7 +650,13 @@ function SteamWishlistSpotlight() {
   const configuredUrl = getPortfolioConfig().gameSuggestions?.wishlistUrl || "https://store.steampowered.com/wishlist/profiles/76561199192411740/";
   const [snapshot, setSnapshot] = useState<WishlistSnapshot>({ games: [] });
   const [index, setIndex] = useState(0);
-  const games = snapshot.games || [];
+  const games = useMemo(() => [...(snapshot.games || [])].sort((a, b) => {
+    const discountOrder = Number(b.discountPercent || 0) - Number(a.discountPercent || 0);
+    if (discountOrder) return discountOrder;
+    const aPrice = a.priceCents === null || a.priceCents === undefined ? Number.POSITIVE_INFINITY : Number(a.priceCents);
+    const bPrice = b.priceCents === null || b.priceCents === undefined ? Number.POSITIVE_INFINITY : Number(b.priceCents);
+    return aPrice - bPrice || Number(a.priority || 0) - Number(b.priority || 0);
+  }), [snapshot.games]);
   const game = games[index % Math.max(1, games.length)];
 
   useEffect(() => {
@@ -682,7 +702,7 @@ function SteamWishlistSpotlight() {
       <a className="steam-wishlist-tab" href={wishlistUrl} target="_blank" rel="noopener noreferrer"><Gift aria-hidden="true" /><span>Buy me a game off my wishlist</span><ExternalLink aria-hidden="true" /></a>
       {game ? <a className="steam-wishlist-game" key={game.appid} href={wishlistUrl} target="_blank" rel="noopener noreferrer" title={`Find ${game.title} on the EchoOps wishlist and buy it as a gift`}>
         <SteamArtwork item={{ appid: game.appid, image: game.image }} title={game.title} className="steam-wishlist-art" />
-        <span className="steam-wishlist-copy"><small>Rotating wishlist pick</small><strong id="steam-wishlist-title">{game.title}</strong><span>{game.addedAt ? `Wishlisted ${formatDate(game.addedAt)} · Find and gift through Steam` : "Find this game on the EchoOps wishlist and buy it as a gift"}</span></span>
+        <span className="steam-wishlist-copy"><small>{game.discountPercent ? `On sale · ${game.discountPercent}% off` : "Cheapest wishlist picks first"}</small><strong id="steam-wishlist-title">{game.title}</strong><span className="steam-wishlist-price">{game.priceLabel ? <><b>{game.priceLabel}</b>{game.originalPriceLabel && game.originalPriceLabel !== game.priceLabel ? <s>{game.originalPriceLabel}</s> : null}</> : "Price unavailable"}<em>{game.addedAt ? `Wishlisted ${formatDate(game.addedAt)}` : "Find and gift through Steam"}</em></span></span>
         <span className="steam-wishlist-count"><b>{String(index + 1).padStart(2, "0")}</b><small>of {games.length}</small></span>
         <ChevronRight aria-hidden="true" />
         <i aria-hidden="true" />
