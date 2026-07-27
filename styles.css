@@ -1359,6 +1359,22 @@ h3 {
   color: #66c0f4;
 }
 
+.connection-stats .is-youtube-stat {
+  border-color: color-mix(in srgb, #ff0033 54%, var(--line));
+  color: color-mix(in srgb, #ff5a72 82%, var(--text));
+}
+
+.connection-stats .is-youtube-status {
+  border-color: color-mix(in srgb, var(--muted) 56%, var(--line));
+  color: var(--muted);
+}
+
+.connection-stats .is-youtube-monetized {
+  border-color: color-mix(in srgb, #3ef28f 62%, var(--line));
+  color: #3ef28f;
+  box-shadow: 0 0 12px color-mix(in srgb, #3ef28f 18%, transparent);
+}
+
 .status-line {
   display: flex;
   align-items: center;

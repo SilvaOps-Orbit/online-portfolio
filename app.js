@@ -18,7 +18,7 @@
   let githubRefreshTimer = 0;
   let roadmapCourseSwitchTimer = 0;
   let roadmapStageAutoTimer = 0;
-  let latestDynamicData = { steam: null, spotify: null, market: null, news: null };
+  let latestDynamicData = { steam: null, spotify: null, market: null, news: null, youtube: null };
 
   const qs = (selector, scope = document) => scope.querySelector(selector);
   const qsa = (selector, scope = document) => Array.from(scope.querySelectorAll(selector));
@@ -1763,18 +1763,20 @@
     const fallbackSpotify = config.spotify || {};
     const fallbackMarket = config.market || {};
     const fallbackNews = config.news || {};
-    const [liveSteam, liveSpotify, liveMarket, liveNews] = await Promise.all([
+    const [liveSteam, liveSpotify, liveMarket, liveNews, liveYouTube] = await Promise.all([
       fetchDataFile("data/steam.json"),
       fetchSpotifyDataFile(),
       fetchDataFile("data/market.json"),
-      fetchDataFile("data/news.json")
+      fetchDataFile("data/news.json"),
+      fetchDataFile("data/youtube.json")
     ]);
 
     return {
       steam: liveSteam ? mergeSteamData(fallbackSteam, liveSteam) : fallbackSteam,
       spotify: liveSpotify ? mergeSpotifyData(fallbackSpotify, liveSpotify) : fallbackSpotify,
       market: liveMarket ? mergeMarketData(fallbackMarket, liveMarket) : fallbackMarket,
-      news: liveNews ? mergeNewsData(fallbackNews, liveNews) : fallbackNews
+      news: liveNews ? mergeNewsData(fallbackNews, liveNews) : fallbackNews,
+      youtube: liveYouTube || {}
     };
   }
 
@@ -1783,7 +1785,8 @@
       steam: config.steam || {},
       spotify: config.spotify || {},
       market: config.market || {},
-      news: config.news || {}
+      news: config.news || {},
+      youtube: {}
     };
   }
 
@@ -2955,8 +2958,12 @@
     const profile = config.profile || {};
     const steam = { ...(config.steam || {}), ...((data || {}).steam || {}) };
     const spotify = { ...(config.spotify || {}), ...((data || {}).spotify || {}) };
+    const youtube = (data || {}).youtube || {};
     const steamProfile = steam.profile || {};
     const spotifyProfile = spotify.profile || {};
+    const youtubeProfile = youtube.profile || {};
+    const youtubeStats = youtube.statistics || {};
+    const youtubeMonetization = youtube.monetization || {};
     const discordUrl = profile.discordUrl || "#contact";
     const steamStats = Array.isArray(steam.stats) ? steam.stats : [];
     const ownedGames = withGameLabel(findStatValue(steamStats, ["owned games", "games owned", "game count"]));
@@ -2966,6 +2973,17 @@
       ? `Member since ${formatDate(Number(steamProfile.timeCreated) * 1000)}`
       : "";
     const spotifyUrl = spotifyProfile.url || spotify.profileUrl || "";
+    const formatYouTubeCount = (value) => {
+      const count = Number(value || 0);
+      return Number.isFinite(count) && count >= 0 ? new Intl.NumberFormat().format(count) : "";
+    };
+    const subscriberCount = youtubeStats.hiddenSubscriberCount ? "Hidden" : formatYouTubeCount(youtubeStats.subscribers);
+    const viewCount = formatYouTubeCount(youtubeStats.views);
+    const videoCount = formatYouTubeCount(youtubeStats.videos);
+    const monetizationStatus = String(youtubeMonetization.status || "Unmonetised").trim();
+    const monetizationClass = /^(moneti[sz]ed|active|youtube partner)/i.test(monetizationStatus)
+      ? "is-youtube-monetized"
+      : "is-youtube-status";
 
     const links = [
       {
@@ -3005,12 +3023,17 @@
         stats: []
       },
       {
-        label: "YouTube",
+        label: youtubeProfile.title || "YouTube",
         icon: "youtube",
         short: "YT",
-        href: profile.youtubeUrl || "#contact",
-        meta: profile.youtubeUrl ? "Videos and channel" : "Channel link coming soon",
-        stats: []
+        href: youtubeProfile.url || profile.youtubeUrl || "#contact",
+        meta: youtubeProfile.handle || (profile.youtubeUrl ? "Videos and channel" : "Channel link coming soon"),
+        stats: [
+          subscriberCount ? { text: `${subscriberCount} Subs`, className: "is-youtube-stat" } : "",
+          videoCount ? { text: `${videoCount} Videos`, className: "is-youtube-stat" } : "",
+          viewCount ? { text: `${viewCount} Views`, className: "is-youtube-stat" } : "",
+          monetizationStatus ? { text: `Monetisation: ${monetizationStatus}`, className: monetizationClass } : ""
+        ].filter(Boolean)
       },
       {
         label: "Content Hub",

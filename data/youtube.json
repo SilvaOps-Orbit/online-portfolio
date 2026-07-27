@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": null,
+  "lastGoodAt": null,
+  "source": "pending first YouTube refresh",
+  "stale": true,
+  "profile": {
+    "id": "",
+    "title": "SilvaDevelops",
+    "description": "",
+    "handle": "@SilvaDevelops",
+    "url": "https://www.youtube.com/@SilvaDevelops",
+    "image": ""
+  },
+  "statistics": {
+    "subscribers": 0,
+    "views": 0,
+    "videos": 0,
+    "hiddenSubscriberCount": false
+  },
+  "monetization": {
+    "status": "Unmonetised",
+    "source": "Channel owner configured"
+  },
+  "latestVideos": [],
+  "status": "Last successful YouTube snapshot preserved: YouTube credentials are not configured."
+}

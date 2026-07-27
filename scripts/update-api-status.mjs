@@ -8,6 +8,7 @@ const providers = [
   { id: "cloudflare", label: "Cloudflare", role: "Workers and D1", slug: "cloudflare", coverage: "external" },
   { id: "steam", label: "Steam", role: "Profile and game data", slug: "steam", coverage: "external" },
   { id: "spotify", label: "Spotify", role: "Playback and playlists", slug: "spotify", coverage: "external" },
+  { id: "youtube", label: "YouTube", role: "Channel and analytics", snapshot: "youtube.json", coverage: "snapshot" },
   { id: "discord", label: "Discord", role: "Community connection", slug: "discord", coverage: "external" },
   { id: "finnhub", label: "Finnhub", role: "Market quotes", snapshot: "market.json", coverage: "snapshot" },
   { id: "yfinance", label: "yfinance", role: "Market cross-reference", snapshot: "market.json", coverage: "snapshot" },
