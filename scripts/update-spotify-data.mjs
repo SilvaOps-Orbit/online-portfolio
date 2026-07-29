@@ -6,6 +6,21 @@ const clientId = process.env.SPOTIFY_CLIENT_ID || "";
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || "";
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN || "";
 const outputPath = new URL("../data/spotify.json", import.meta.url);
+const EXCLUDED_PLAYLIST_TITLES = new Set(["sex"]);
+
+function isExcludedPlaylist(playlist) {
+  const title = typeof playlist === "string" ? playlist : playlist?.name || playlist?.title || "";
+  return EXCLUDED_PLAYLIST_TITLES.has(String(title).trim().toLowerCase());
+}
+
+function withoutExcludedPlaylistContext(track) {
+  if (!track || !isExcludedPlaylist(track.context || track.contextTitle)) {
+    return track;
+  }
+
+  const { context, contextTitle, contextUrl, ...safeTrack } = track;
+  return safeTrack;
+}
 
 async function readExistingData() {
   try {
@@ -231,6 +246,16 @@ function withLastValues(output, previous) {
     result.stale = true;
   }
 
+  if (Array.isArray(result.playlists)) {
+    result.playlists = result.playlists.filter((playlist) => !isExcludedPlaylist(playlist));
+  }
+  result.current = withoutExcludedPlaylistContext(result.current);
+  result.lastTrack = withoutExcludedPlaylistContext(result.lastTrack);
+  if (Array.isArray(result.insights?.recentlyPlayed)) {
+    result.insights.recentlyPlayed = result.insights.recentlyPlayed
+      .map(withoutExcludedPlaylistContext);
+  }
+
   if (result.source === "spotify-web-api") {
     result.lastGoodAt = result.generatedAt;
     result.stale = false;
@@ -384,6 +409,10 @@ async function loadPlaylistContext(playback, token) {
   const playlist = await spotifyGet(`playlists/${encodeURIComponent(playlistId)}`, token, {
     fields: "id,name,external_urls,images,owner(display_name)"
   }).catch(() => null);
+
+  if (isExcludedPlaylist(playlist)) {
+    return null;
+  }
 
   return {
     id: playlistId,
@@ -600,7 +629,7 @@ async function loadPlaylists(token, profileId) {
 
     items.forEach((playlist) => {
       const ownedByProfile = !profileId || playlist.owner?.id === profileId;
-      if (ownedByProfile && playlist.public !== false) {
+      if (ownedByProfile && playlist.public !== false && !isExcludedPlaylist(playlist)) {
         playlists.push(toPlaylist(playlist));
       }
     });
@@ -655,6 +684,9 @@ async function resolvePlaybackContext(entry, token, playlistCache) {
   }
 
   const playlist = await playlistCache.get(playlistId);
+  if (isExcludedPlaylist(playlist)) {
+    return fallback;
+  }
   return playlist?.name
     ? { contextType: "Playlist", contextTitle: playlist.name, contextUrl: externalUrl(playlist) }
     : { ...fallback, contextType: "Playlist" };
