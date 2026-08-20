@@ -591,6 +591,29 @@ function formatEventDate(value?: string): string {
   return Number.isNaN(date.getTime()) ? "Date TBA" : date.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
 }
 
+const releaseArtwork: Record<string, string> = {
+  "mw4-early-beta-2026": "assets/media/mw4-beta-rewards.png",
+  "mw4-open-beta-2026": "assets/media/mw4-beta-content.png"
+};
+
+function calendarDate(value?: string): Date | null {
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function startOfDay(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function eventCoversDay(event: SteamReleaseEvent, day: Date): boolean {
+  const start = calendarDate(event.startDate);
+  if (!start) return false;
+  const end = calendarDate(event.endDate) || start;
+  const target = startOfDay(day).getTime();
+  return target >= startOfDay(start).getTime() && target <= startOfDay(end).getTime();
+}
+
 function eventState(event: SteamReleaseEvent): string {
   const now = Date.now();
   const start = Date.parse(event.startDate || "");
@@ -607,6 +630,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
     return leftTime - rightTime;
   }), [events]);
   const [selectedId, setSelectedId] = useState("");
+  const [intelOpen, setIntelOpen] = useState(false);
   const selected = releaseEvents.find((event) => event.id === selectedId) || releaseEvents[0];
 
   useEffect(() => {
@@ -614,9 +638,26 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
   }, [releaseEvents, selectedId]);
 
   if (!selected) return null;
+  const today = startOfDay(new Date());
+  const nextDatedEvent = releaseEvents.find((event) => {
+    const end = calendarDate(event.endDate) || calendarDate(event.startDate);
+    return end && end.getTime() >= today.getTime();
+  }) || releaseEvents.find((event) => calendarDate(event.startDate));
+  const visibleMonth = calendarDate(nextDatedEvent?.startDate) || today;
+  const monthStart = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth(), 1);
+  const monthEnd = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 0);
+  const gridStart = new Date(monthStart);
+  gridStart.setDate(monthStart.getDate() - ((monthStart.getDay() + 6) % 7));
+  const gridDays = Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(gridStart);
+    day.setDate(gridStart.getDate() + index);
+    return day;
+  });
+  const watchEvents = releaseEvents.filter((event) => !calendarDate(event.startDate));
   const dateLabel = selected.endDate && formatEventDate(selected.endDate) !== formatEventDate(selected.startDate)
     ? `${formatEventDate(selected.startDate)} - ${formatEventDate(selected.endDate)}`
     : formatEventDate(selected.startDate);
+  const selectedArt = selected.image || releaseArtwork[selected.id || ""] || "";
   const detailGroups = [
     { label: "Maps / content", values: selected.maps },
     { label: "Modes", values: selected.modes },
@@ -624,19 +665,33 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
     { label: "Access", values: selected.access }
   ].filter((group) => group.values?.length);
 
+  const openIntel = (event: SteamReleaseEvent) => {
+    setSelectedId(event.id || "");
+    setIntelOpen(true);
+  };
+
   return <section className="steam-release-radar" id="steam-release-intel" aria-labelledby="steam-release-radar-title">
-    <div className="steam-release-heading"><div><span className="steam-label"><CalendarClock aria-hidden="true" /> Release Intel</span><h3 id="steam-release-radar-title">Upcoming operations, betas, and major events</h3><p className="steam-release-instruction"><span className="steam-release-desktop-instruction">Hover over an operation card to receive its intel briefing.</span><span className="steam-release-mobile-instruction">Tap an operation card to view its intel briefing.</span> Dates and access details link back to the official source.</p>{snapshot?.status && <small className="steam-release-status">{snapshot.stale ? "Last verified intel: " : "Official intel: "}{snapshot.status}</small>}</div><span className="steam-release-count">{releaseEvents.length} tracked</span></div>
-    <div className="steam-release-timeline" role="list" aria-label="Gaming event calendar">
-      {releaseEvents.map((event) => {
-        const active = event.id === selected.id;
-        return <button className={`steam-release-card is-${event.type || "showcase"}${active ? " is-active" : ""}`} key={event.id || event.title} type="button" role="listitem" aria-pressed={active} aria-label={`View intel briefing: ${event.title}`} title={`View intel briefing: ${event.title}`} onMouseEnter={() => setSelectedId(event.id || "")} onFocus={() => setSelectedId(event.id || "")} onClick={() => setSelectedId(event.id || "")}><span className="steam-release-date"><b>{formatEventDate(event.startDate)}</b><small>{event.timezone || "Local time"}</small></span><span className="steam-release-type">{event.type || "event"}</span><strong>{event.title}</strong><small>{event.game || "Gaming event"}</small><em>Intel ready</em><i aria-hidden="true" /></button>;
-      })}
+    <div className="steam-release-heading"><div><span className="steam-label"><CalendarClock aria-hidden="true" /> Release Intel</span><h3 id="steam-release-radar-title">Upcoming operations, betas, and major events</h3><p className="steam-release-instruction"><span className="steam-release-desktop-instruction">Hover over an operation marker to receive its intel briefing.</span><span className="steam-release-mobile-instruction">Tap an operation marker to view its intel briefing.</span> Dates and access details link back to the official source.</p>{snapshot?.status && <small className="steam-release-status">{snapshot.stale ? "Last verified intel: " : "Official intel: "}{snapshot.status}</small>}</div><span className="steam-release-count">{releaseEvents.length} tracked</span></div>
+    <div className="steam-release-month" aria-label={`${visibleMonth.toLocaleDateString("en-AU", { month: "long", year: "numeric" })} gaming calendar`}>
+      <div className="steam-release-month-title"><span>{visibleMonth.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</span><small>Operation calendar · live details only</small></div>
+      <div className="steam-release-weekdays" aria-hidden="true">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}</div>
+      <div className="steam-release-month-grid">
+        {gridDays.map((day) => {
+          const dayEvents = releaseEvents.filter((event) => eventCoversDay(event, day));
+          const isCurrentMonth = day.getMonth() === visibleMonth.getMonth();
+          const isToday = day.getTime() === today.getTime();
+          return <div className={`steam-release-day${isCurrentMonth ? "" : " is-outside"}${isToday ? " is-today" : ""}`} key={day.toISOString()}><span>{day.getDate()}</span>{dayEvents.slice(0, 2).map((event) => <button className={`steam-release-marker is-${event.type || "showcase"}`} key={`${event.id}-${day.getDate()}`} type="button" aria-label={`View Intel: ${event.title}`} onMouseEnter={() => openIntel(event)} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}><i aria-hidden="true" />{event.title}</button>)}</div>;
+        })}
+      </div>
+      {watchEvents.length > 0 && <div className="steam-release-watch"><span>Monitoring</span>{watchEvents.map((event) => <button type="button" key={event.id || event.title} onMouseEnter={() => openIntel(event)} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}>{event.title}<small>{event.game}</small></button>)}</div>}
+      {intelOpen && <article className="steam-release-popover" aria-live="polite">
+        <button className="steam-release-popover-close" type="button" aria-label="Close Intel briefing" title="Close Intel briefing" onClick={() => setIntelOpen(false)}><X aria-hidden="true" /></button>
+        {selectedArt ? <img src={selectedArt} alt="" className="steam-release-popover-art" /> : <div className={`steam-release-popover-art is-${selected.type || "showcase"}`} aria-hidden="true"><CalendarClock /></div>}
+        <div className="steam-release-popover-copy"><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
+        {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}
+        {selected.links?.length ? <div className="steam-release-links">{selected.links.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer">{link.official ? "Official: " : ""}{link.label}<ExternalLink aria-hidden="true" /></a> : null)}</div> : null}
+      </article>}
     </div>
-    <article className="steam-release-detail" aria-live="polite">
-      <div className="steam-release-detail-intro"><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
-      {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}
-      {selected.links?.length ? <div className="steam-release-links">{selected.links.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer">{link.official ? "Official: " : ""}{link.label}<ExternalLink aria-hidden="true" /></a> : null)}</div> : null}
-    </article>
   </section>;
 }
 
