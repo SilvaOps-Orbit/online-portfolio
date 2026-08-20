@@ -190,6 +190,11 @@ export interface SteamReleaseEvent {
   modes?: string[];
   rewards?: string[];
   access?: string[];
+  hype?: {
+    score?: number;
+    label?: string;
+    basis?: string;
+  };
   links?: Array<{ label?: string; url?: string; official?: boolean }>;
 }
 

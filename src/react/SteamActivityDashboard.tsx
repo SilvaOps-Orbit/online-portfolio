@@ -676,6 +676,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
     : formatEventDate(selected.startDate);
   const selectedArt = selected.image || releaseArtwork[selected.id || ""] || "";
   const selectedWordmark = releaseWordmarks[selected.id || ""] || selected.game || "Gaming event";
+  const hypeScore = Math.max(0, Math.min(100, Number(selected.hype?.score) || 0));
   const detailGroups = [
     { label: "Maps / content", values: selected.maps },
     { label: "Modes", values: selected.modes },
@@ -713,6 +714,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
       {intelOpen && <article className="steam-release-popover" aria-live="polite" onMouseEnter={keepIntelOpen} onMouseLeave={scheduleIntelClose}>
         <button className="steam-release-popover-close" type="button" aria-label="Close Intel briefing" title="Close Intel briefing" onClick={() => setIntelOpen(false)}><X aria-hidden="true" /></button>
         <div className="steam-release-popover-copy"><span className="steam-release-game-logo">{selectedWordmark}</span><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
+        {selected.hype && <div className="steam-release-hype" aria-label={`Public interest signal: ${hypeScore} out of 100`}><div><span>Public interest signal</span><strong>{selected.hype.label || "Tracking"}</strong></div><b>{hypeScore}<small>/100</small></b><div className="steam-release-hype-track" aria-hidden="true"><i style={{ "--hype-score": `${hypeScore}%` } as CSSProperties} /></div><p>{selected.hype.basis || "A transparent editorial signal from confirmed public attention, not a sales, wishlist, or player count."}</p></div>}
         {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}
         {selectedArt ? <img src={selectedArt} alt={`${selected.title} content preview`} className="steam-release-popover-media" /> : null}
         {selected.links?.length ? <div className="steam-release-links">{selected.links.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer">{link.official ? "Official: " : ""}{link.label}<ExternalLink aria-hidden="true" /></a> : null)}</div> : null}

@@ -7341,7 +7341,7 @@ a.provider-pulse-item:focus-visible {
 .steam-release-watch button { display: grid; gap: 2px; padding: 7px 9px; border: 1px dashed color-mix(in srgb, var(--accent) 56%, var(--line)); border-radius: 4px; background: transparent; color: var(--text); font-size: 0.72rem; font-weight: 850; text-align: left; cursor: pointer; }
 .steam-release-watch button:hover, .steam-release-watch button:focus-visible { border-style: solid; border-color: var(--accent); color: var(--accent); outline: none; }
 .steam-release-watch small { color: var(--muted); font-size: 0.62rem; font-weight: 700; }
-.steam-release-popover { position: absolute; z-index: 6; top: 64px; right: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: min(720px, calc(100% - 36px)); padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 72%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--bg) 96%, #080d10); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48); animation: steam-intel-popover-in 180ms ease-out both; }
+.steam-release-popover { position: absolute; z-index: 6; top: 64px; right: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: min(720px, calc(100% - 36px)); max-height: min(72vh, 680px); padding: 16px; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: var(--accent) color-mix(in srgb, var(--panel) 78%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 72%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--bg) 96%, #080d10); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48); animation: steam-intel-popover-in 180ms ease-out both; }
 @keyframes steam-intel-popover-in { from { opacity: 0; transform: translateY(-7px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .steam-release-popover-close { position: absolute; z-index: 1; top: 8px; right: 8px; display: grid; width: 32px; aspect-ratio: 1; place-items: center; border: 1px solid color-mix(in srgb, var(--line) 88%, transparent); border-radius: 4px; background: color-mix(in srgb, var(--bg) 86%, transparent); color: var(--text); cursor: pointer; }
 .steam-release-popover-close:hover, .steam-release-popover-close:focus-visible { border-color: var(--accent-3); color: var(--accent-3); outline: none; }
@@ -7350,6 +7350,16 @@ a.provider-pulse-item:focus-visible {
 .steam-release-game-logo { display: block; width: fit-content; margin-bottom: 12px; padding: 8px 10px 6px; border-left: 3px solid var(--accent-3); background: color-mix(in srgb, var(--accent-3) 12%, transparent); color: var(--text); font-size: clamp(1rem, 3vw, 1.5rem); font-weight: 1000; letter-spacing: 0.12em; line-height: 1; text-transform: uppercase; }
 .steam-release-popover-copy h4 { margin: 8px 0 0; font-size: clamp(1.15rem, 3vw, 1.65rem); }
 .steam-release-popover-copy p { margin: 8px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.55; }
+.steam-release-hype { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; padding: 12px; border: 1px solid color-mix(in srgb, var(--accent-3) 42%, var(--line)); border-radius: 5px; background: color-mix(in srgb, var(--accent-3) 7%, var(--panel)); }
+.steam-release-hype > div:first-child { display: grid; gap: 2px; }
+.steam-release-hype span { color: var(--accent-2); font-size: 0.64rem; font-weight: 950; letter-spacing: 0.06em; text-transform: uppercase; }
+.steam-release-hype strong { color: var(--text); font-size: 0.87rem; }
+.steam-release-hype > b { align-self: center; color: var(--accent-3); font-size: 1.28rem; line-height: 1; }
+.steam-release-hype > b small { font-size: 0.65rem; }
+.steam-release-hype-track { grid-column: 1 / -1; height: 8px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--line) 82%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--bg) 76%, transparent); }
+.steam-release-hype-track i { display: block; width: var(--hype-score); height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--accent-3)); box-shadow: 0 0 16px color-mix(in srgb, var(--accent-3) 65%, transparent); animation: steam-hype-fill 640ms cubic-bezier(0.2, 0.9, 0.2, 1) both; transform-origin: left; }
+@keyframes steam-hype-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.steam-release-hype p { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 0.69rem; line-height: 1.4; }
 .steam-release-popover .steam-release-groups, .steam-release-popover .steam-release-links { grid-column: 1 / -1; }
 .steam-release-popover-media { grid-column: 1 / -1; display: block; width: 100%; max-height: 330px; border: 1px solid color-mix(in srgb, var(--line) 76%, transparent); border-radius: 5px; object-fit: contain; background: #080c0f; }
 

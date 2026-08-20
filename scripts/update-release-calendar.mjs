@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const outputPath = new URL("../data/release-calendar.json", import.meta.url);
-const allowedHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com", "youtube.com", "www.youtube.com", "x.com", "www.x.com", "detonated.com", "www.detonated.com", "rockstargames.com", "www.rockstargames.com", "blog.playstation.com"]);
+const allowedHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com", "youtube.com", "www.youtube.com", "x.com", "www.x.com", "detonated.com", "www.detonated.com", "rockstargames.com", "www.rockstargames.com", "blog.playstation.com", "news.xbox.com"]);
 const fetchableHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com"]);
 const timeoutMs = 18_000;
 const socialCacheMs = 60 * 60 * 1_000;
@@ -98,15 +98,16 @@ const fallbackEvents = [
     title: "Grand Theft Auto VI: Extended Look",
     game: "Grand Theft Auto VI",
     type: "showcase",
-    startDate: "2026-08-06T00:00:00+10:00",
+    startDate: "2026-08-28T05:00:00+10:00",
     timezone: "AEST",
-    summary: "Rockstar's official extended look at Grand Theft Auto VI.",
-    details: "Rockstar published an official extended-look update for Grand Theft Auto VI. This calendar keeps the official reveal and launch briefings together for easy tracking.",
+    summary: "Netflix premieres Rockstar's Grand Theft Auto VI extended look before the Rockstar and YouTube release later the same day.",
+    details: "Rockstar confirms the extended look premieres on Netflix at 3 PM ET on 27 August. It follows on Rockstar's official YouTube channel and the GTA VI site at 9 PM ET, which is 5 AM and 11 AM AEST respectively on 28 August.",
     maps: ["Leonida and Vice City coverage"],
-    modes: ["Official extended-look briefing"],
+    modes: ["Netflix premiere", "Official YouTube and GTA VI site release"],
     rewards: ["No event rewards were announced by Rockstar."],
-    access: ["Watch through Rockstar Games official channels."],
-    links: [{ label: "Official GTA VI hub", url: "https://www.rockstargames.com/VI", official: true }]
+    access: ["Netflix premiere at 3 PM ET on 27 August.", "Rockstar YouTube and GTA VI site release at 9 PM ET."],
+    hype: { score: 98, label: "Maximum signal", basis: "Editorial public-interest signal based on Rockstar's global premiere, official platform rollout, and confirmed launch campaign. It is not a people, sales, or wishlist count." },
+    links: [{ label: "Official Rockstar announcement", url: "https://www.rockstargames.com/newswire/article/9k2kaa1o3297k9/", official: true }, { label: "Official GTA VI hub", url: "https://www.rockstargames.com/VI", official: true }]
   },
   {
     id: "gta-vi-launch-2026",
@@ -122,6 +123,70 @@ const fallbackEvents = [
     rewards: ["No launch rewards were announced by Rockstar."],
     access: ["Follow Rockstar's official GTA VI hub for release updates."],
     links: [{ label: "Official GTA VI launch announcement", url: "https://www.rockstargames.com/newswire/article/ak3ak31a49a221/grand-theft-auto-vi-is-now-set-to-launch-november-19-2026", official: true }]
+  },
+  {
+    id: "dune-awakening-xbox-2026",
+    title: "Dune: Awakening Xbox Launch",
+    game: "Dune: Awakening",
+    type: "launch",
+    startDate: "2026-09-22T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "Funcom's open-world survival game arrives on Xbox and Game Pass.",
+    details: "Xbox players receive the expanded PC content base with cross-play and cross-progression. Deluxe and Ultimate pre-orders unlock five days of early access from 17 September.",
+    maps: ["Arrakis", "Post-launch Polar Cap update"],
+    modes: ["Open-world survival", "PvE and optional PvP multiplayer"],
+    rewards: ["Pre-order Terrarium of Muad'Dib", "Deluxe and Ultimate early access"],
+    access: ["Xbox Series X|S, Xbox on PC, Cloud, and Game Pass."],
+    hype: { score: 78, label: "Strong signal", basis: "Editorial public-interest signal based on a confirmed Xbox/Game Pass launch and cross-platform rollout. It is not a people, sales, or wishlist count." },
+    links: [{ label: "Official Xbox briefing", url: "https://news.xbox.com/en-us/2026/06/04/dune-awakening-xbox-release-date-details/", official: true }]
+  },
+  {
+    id: "runescape-dragonwilds-xbox-2026",
+    title: "RuneScape: Dragonwilds Xbox Launch",
+    game: "RuneScape: Dragonwilds",
+    type: "launch",
+    startDate: "2026-09-15T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "RuneScape's open-world survival crafting adventure makes its console debut.",
+    details: "Xbox Series X|S players head to Ashenfall to gather, build, skill, craft, and take on the Dragon Queen in solo play or four-player co-op.",
+    maps: ["Ashenfall"],
+    modes: ["Open-world survival crafting", "Four-player co-op"],
+    rewards: ["No pre-order reward announced by Xbox Wire."],
+    access: ["Xbox Series X|S."],
+    hype: { score: 69, label: "Building signal", basis: "Editorial public-interest signal based on the franchise's first console launch and confirmed co-op support. It is not a people, sales, or wishlist count." },
+    links: [{ label: "Official Xbox briefing", url: "https://news.xbox.com/en-us/2026/06/05/runescape-dragonwilds-sgf-reveal/", official: true }]
+  },
+  {
+    id: "valor-mortis-xbox-2026",
+    title: "Valor Mortis Xbox Launch",
+    game: "Valor Mortis",
+    type: "launch",
+    startDate: "2026-09-24T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "A first-person action-Soulslike marches onto Xbox and Game Pass.",
+    details: "Set in a warped Napoleonic era, Valor Mortis combines supernatural powers, close-quarters combat, and a dark campaign featuring Vincent Cassel as Napoleon Bonaparte.",
+    maps: ["Napoleonic war-torn campaign settings"],
+    modes: ["First-person action-Soulslike"],
+    rewards: ["No pre-order reward announced by Xbox Wire."],
+    access: ["Xbox Series X|S, Xbox on PC, Cloud, Game Pass, and Play Anywhere."],
+    hype: { score: 74, label: "Strong signal", basis: "Editorial public-interest signal based on its Xbox Showcase reveal, Game Pass availability, and confirmed launch platforms. It is not a people, sales, or wishlist count." },
+    links: [{ label: "Official Xbox Showcase recap", url: "https://news.xbox.com/en-us/2026/06/07/xbox-games-showcase-2026-recap-everything-announced/", official: true }]
+  },
+  {
+    id: "minecraft-dungeons-ii-xbox-2026",
+    title: "Minecraft Dungeons II Xbox Launch",
+    game: "Minecraft Dungeons II",
+    type: "launch",
+    startDate: "2026-09-29T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "Minecraft Dungeons returns with a new Xbox and Game Pass adventure.",
+    details: "The sequel brings unexplored lands, new customisation, and a growing threat to the Overworld. Xbox's showcase confirms day-one Game Pass availability.",
+    maps: ["New Overworld lands"],
+    modes: ["Action dungeon-crawling adventure"],
+    rewards: ["Pre-orders include two hero skins, the Twisted cape, and a Twisted chicken pet."],
+    access: ["Xbox Series X|S, Xbox on PC, Cloud, and Game Pass."],
+    hype: { score: 82, label: "High signal", basis: "Editorial public-interest signal based on the Minecraft audience, confirmed Xbox Showcase reveal, and Game Pass launch. It is not a people, sales, or wishlist count." },
+    links: [{ label: "Official Xbox Showcase recap", url: "https://news.xbox.com/en-us/2026/06/07/xbox-games-showcase-2026-recap-everything-announced/", official: true }]
   },
   {
     id: "lous-lagoon-2026",
