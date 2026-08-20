@@ -7311,13 +7311,18 @@ a.provider-pulse-item:focus-visible {
 .steam-release-links svg { width: 14px; height: 14px; }
 
 .steam-release-month { position: relative; min-width: 0; padding: clamp(12px, 2vw, 20px); border: 1px solid color-mix(in srgb, var(--line) 78%, transparent); border-radius: 7px; background: color-mix(in srgb, var(--bg) 66%, transparent); }
-.steam-release-month-title { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.steam-release-month-title { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.steam-release-month-title > div { display: grid; gap: 3px; }
 .steam-release-month-title span { color: var(--text); font-size: clamp(1.05rem, 2.4vw, 1.45rem); font-weight: 950; }
 .steam-release-month-title small { color: var(--muted); font-size: 0.72rem; font-weight: 750; }
+.steam-release-view-toggle { padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--accent) 56%, var(--line)); border-radius: 5px; background: transparent; color: var(--accent); font: inherit; font-size: 0.72rem; font-weight: 900; cursor: pointer; }
+.steam-release-view-toggle:hover, .steam-release-view-toggle:focus-visible { border-color: var(--accent-2); color: var(--text); outline: none; }
 .steam-release-weekdays, .steam-release-month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .steam-release-weekdays { gap: 6px; margin-bottom: 6px; color: var(--accent-2); font-size: 0.65rem; font-weight: 950; letter-spacing: 0.06em; text-transform: uppercase; text-align: right; }
 .steam-release-weekdays span { padding-right: 7px; }
 .steam-release-month-grid { gap: 6px; }
+.steam-release-month-grid.is-week { grid-template-rows: minmax(120px, 1fr); }
+.steam-release-month-grid.is-week .steam-release-day { min-height: 128px; }
 .steam-release-day { display: grid; grid-template-rows: auto 1fr; gap: 5px; min-height: 92px; padding: 7px; border: 1px solid color-mix(in srgb, var(--line) 72%, transparent); border-radius: 5px; background: color-mix(in srgb, var(--panel) 65%, transparent); }
 .steam-release-day > span { justify-self: end; color: var(--muted); font-size: 0.7rem; font-weight: 850; }
 .steam-release-day.is-outside { opacity: 0.34; }
@@ -7336,18 +7341,17 @@ a.provider-pulse-item:focus-visible {
 .steam-release-watch button { display: grid; gap: 2px; padding: 7px 9px; border: 1px dashed color-mix(in srgb, var(--accent) 56%, var(--line)); border-radius: 4px; background: transparent; color: var(--text); font-size: 0.72rem; font-weight: 850; text-align: left; cursor: pointer; }
 .steam-release-watch button:hover, .steam-release-watch button:focus-visible { border-style: solid; border-color: var(--accent); color: var(--accent); outline: none; }
 .steam-release-watch small { color: var(--muted); font-size: 0.62rem; font-weight: 700; }
-.steam-release-popover { position: absolute; z-index: 6; top: 64px; right: 18px; display: grid; grid-template-columns: minmax(144px, 0.54fr) minmax(0, 1fr); gap: 16px; width: min(720px, calc(100% - 36px)); padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 72%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--bg) 96%, #080d10); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48); animation: steam-intel-popover-in 180ms ease-out both; }
+.steam-release-popover { position: absolute; z-index: 6; top: 64px; right: 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; width: min(720px, calc(100% - 36px)); padding: 16px; border: 1px solid color-mix(in srgb, var(--accent) 72%, var(--line)); border-radius: 7px; background: color-mix(in srgb, var(--bg) 96%, #080d10); box-shadow: 0 22px 60px rgba(0, 0, 0, 0.48); animation: steam-intel-popover-in 180ms ease-out both; }
 @keyframes steam-intel-popover-in { from { opacity: 0; transform: translateY(-7px) scale(0.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .steam-release-popover-close { position: absolute; z-index: 1; top: 8px; right: 8px; display: grid; width: 32px; aspect-ratio: 1; place-items: center; border: 1px solid color-mix(in srgb, var(--line) 88%, transparent); border-radius: 4px; background: color-mix(in srgb, var(--bg) 86%, transparent); color: var(--text); cursor: pointer; }
 .steam-release-popover-close:hover, .steam-release-popover-close:focus-visible { border-color: var(--accent-3); color: var(--accent-3); outline: none; }
 .steam-release-popover-close svg { width: 16px; height: 16px; }
-.steam-release-popover-art { width: 100%; min-height: 170px; height: 100%; max-height: 250px; border: 1px solid color-mix(in srgb, var(--line) 76%, transparent); border-radius: 5px; object-fit: cover; background: #11181d; }
-.steam-release-popover-art:not(img) { display: grid; place-items: center; color: var(--release-color, var(--accent)); background: linear-gradient(135deg, color-mix(in srgb, var(--release-color, var(--accent)) 26%, transparent), color-mix(in srgb, var(--bg) 84%, transparent)); }
-.steam-release-popover-art svg { width: 46px; height: 46px; }
 .steam-release-popover-copy { min-width: 0; padding-right: 24px; }
+.steam-release-game-logo { display: block; width: fit-content; margin-bottom: 12px; padding: 8px 10px 6px; border-left: 3px solid var(--accent-3); background: color-mix(in srgb, var(--accent-3) 12%, transparent); color: var(--text); font-size: clamp(1rem, 3vw, 1.5rem); font-weight: 1000; letter-spacing: 0.12em; line-height: 1; text-transform: uppercase; }
 .steam-release-popover-copy h4 { margin: 8px 0 0; font-size: clamp(1.15rem, 3vw, 1.65rem); }
 .steam-release-popover-copy p { margin: 8px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.55; }
 .steam-release-popover .steam-release-groups, .steam-release-popover .steam-release-links { grid-column: 1 / -1; }
+.steam-release-popover-media { grid-column: 1 / -1; display: block; width: 100%; max-height: 330px; border: 1px solid color-mix(in srgb, var(--line) 76%, transparent); border-radius: 5px; object-fit: contain; background: #080c0f; }
 
 @media (max-width: 760px) {
   .steam-release-radar { padding: 16px; }
@@ -7368,7 +7372,8 @@ a.provider-pulse-item:focus-visible {
   .steam-release-marker { padding: 3px; font-size: 0; }
   .steam-release-marker i { width: 7px; height: 7px; }
   .steam-release-popover { position: fixed; inset: auto 12px 12px; grid-template-columns: 1fr; width: auto; max-height: min(78vh, 720px); overflow-y: auto; }
-  .steam-release-popover-art { min-height: 140px; max-height: 210px; }
+  .steam-release-month-grid.is-week .steam-release-day { min-height: 94px; }
+  .steam-release-popover-media { max-height: 210px; }
 }
 
 .steam-wishlist-spotlight {

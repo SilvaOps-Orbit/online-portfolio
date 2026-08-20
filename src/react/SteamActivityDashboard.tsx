@@ -596,6 +596,16 @@ const releaseArtwork: Record<string, string> = {
   "mw4-open-beta-2026": "assets/media/mw4-beta-content.png"
 };
 
+const releaseWordmarks: Record<string, string> = {
+  "cod-next-2026": "MW4",
+  "mw4-early-beta-2026": "MW4",
+  "mw4-open-beta-2026": "MW4",
+  "codm-season-6-to-7-2026": "COD MOBILE",
+  "fortnite-season-watch": "FORTNITE",
+  "gta-vi-extended-look-2026": "GTA VI",
+  "gta-vi-launch-2026": "GTA VI"
+};
+
 function calendarDate(value?: string): Date | null {
   const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!match) return null;
@@ -631,6 +641,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
   }), [events]);
   const [selectedId, setSelectedId] = useState("");
   const [intelOpen, setIntelOpen] = useState(false);
+  const [view, setView] = useState<"week" | "month">("week");
   const selected = releaseEvents.find((event) => event.id === selectedId) || releaseEvents[0];
 
   useEffect(() => {
@@ -653,11 +664,17 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
     day.setDate(gridStart.getDate() + index);
     return day;
   });
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  const visibleDays = view === "month" ? gridDays : gridDays.filter((day) => day.getTime() >= weekStart.getTime() && day.getTime() <= weekEnd.getTime());
   const watchEvents = releaseEvents.filter((event) => !calendarDate(event.startDate));
   const dateLabel = selected.endDate && formatEventDate(selected.endDate) !== formatEventDate(selected.startDate)
     ? `${formatEventDate(selected.startDate)} - ${formatEventDate(selected.endDate)}`
     : formatEventDate(selected.startDate);
   const selectedArt = selected.image || releaseArtwork[selected.id || ""] || "";
+  const selectedWordmark = releaseWordmarks[selected.id || ""] || selected.game || "Gaming event";
   const detailGroups = [
     { label: "Maps / content", values: selected.maps },
     { label: "Modes", values: selected.modes },
@@ -673,10 +690,10 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
   return <section className="steam-release-radar" id="steam-release-intel" aria-labelledby="steam-release-radar-title">
     <div className="steam-release-heading"><div><span className="steam-label"><CalendarClock aria-hidden="true" /> Release Intel</span><h3 id="steam-release-radar-title">Upcoming operations, betas, and major events</h3><p className="steam-release-instruction"><span className="steam-release-desktop-instruction">Hover over an operation marker to receive its intel briefing.</span><span className="steam-release-mobile-instruction">Tap an operation marker to view its intel briefing.</span> Dates and access details link back to the official source.</p>{snapshot?.status && <small className="steam-release-status">{snapshot.stale ? "Last verified intel: " : "Official intel: "}{snapshot.status}</small>}</div><span className="steam-release-count">{releaseEvents.length} tracked</span></div>
     <div className="steam-release-month" aria-label={`${visibleMonth.toLocaleDateString("en-AU", { month: "long", year: "numeric" })} gaming calendar`}>
-      <div className="steam-release-month-title"><span>{visibleMonth.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</span><small>Operation calendar · live details only</small></div>
+      <div className="steam-release-month-title"><div><span>{view === "week" ? "This week" : visibleMonth.toLocaleDateString("en-AU", { month: "long", year: "numeric" })}</span><small>Operation calendar · live details only</small></div><button type="button" className="steam-release-view-toggle" onClick={() => setView((current) => current === "week" ? "month" : "week")}>{view === "week" ? "View this month" : "Show this week"}</button></div>
       <div className="steam-release-weekdays" aria-hidden="true">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => <span key={day}>{day}</span>)}</div>
-      <div className="steam-release-month-grid">
-        {gridDays.map((day) => {
+      <div className={`steam-release-month-grid is-${view}`}>
+        {visibleDays.map((day) => {
           const dayEvents = releaseEvents.filter((event) => eventCoversDay(event, day));
           const isCurrentMonth = day.getMonth() === visibleMonth.getMonth();
           const isToday = day.getTime() === today.getTime();
@@ -686,9 +703,9 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
       {watchEvents.length > 0 && <div className="steam-release-watch"><span>Monitoring</span>{watchEvents.map((event) => <button type="button" key={event.id || event.title} onMouseEnter={() => openIntel(event)} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}>{event.title}<small>{event.game}</small></button>)}</div>}
       {intelOpen && <article className="steam-release-popover" aria-live="polite">
         <button className="steam-release-popover-close" type="button" aria-label="Close Intel briefing" title="Close Intel briefing" onClick={() => setIntelOpen(false)}><X aria-hidden="true" /></button>
-        {selectedArt ? <img src={selectedArt} alt="" className="steam-release-popover-art" /> : <div className={`steam-release-popover-art is-${selected.type || "showcase"}`} aria-hidden="true"><CalendarClock /></div>}
-        <div className="steam-release-popover-copy"><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
+        <div className="steam-release-popover-copy"><span className="steam-release-game-logo">{selectedWordmark}</span><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
         {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}
+        {selectedArt ? <img src={selectedArt} alt={`${selected.title} content preview`} className="steam-release-popover-media" /> : null}
         {selected.links?.length ? <div className="steam-release-links">{selected.links.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer">{link.official ? "Official: " : ""}{link.label}<ExternalLink aria-hidden="true" /></a> : null)}</div> : null}
       </article>}
     </div>

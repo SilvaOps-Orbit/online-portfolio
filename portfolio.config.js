@@ -818,6 +818,36 @@ window.PORTFOLIO_CONFIG = {
         ]
       },
       {
+        id: "gta-vi-extended-look-2026",
+        title: "Grand Theft Auto VI: Extended Look",
+        game: "Grand Theft Auto VI",
+        type: "showcase",
+        startDate: "2026-08-06T00:00:00+10:00",
+        timezone: "AEST",
+        summary: "Rockstar's official extended look at Grand Theft Auto VI.",
+        details: "Rockstar published an official extended-look update for Grand Theft Auto VI. This calendar keeps the official reveal and launch briefings together for easy tracking.",
+        maps: ["Leonida and Vice City coverage"],
+        modes: ["Official extended-look briefing"],
+        rewards: ["No event rewards were announced by Rockstar."],
+        access: ["Watch through Rockstar Games official channels."],
+        links: [{ label: "Official GTA VI hub", url: "https://www.rockstargames.com/VI", official: true }]
+      },
+      {
+        id: "gta-vi-launch-2026",
+        title: "Grand Theft Auto VI Launch",
+        game: "Grand Theft Auto VI",
+        type: "launch",
+        startDate: "2026-11-19T00:00:00+11:00",
+        timezone: "AEDT",
+        summary: "Rockstar's currently announced Grand Theft Auto VI launch date.",
+        details: "Rockstar lists Grand Theft Auto VI for launch on 19 November 2026. Platform availability and final launch timings should be confirmed from Rockstar's official hub closer to release.",
+        maps: ["Leonida and Vice City"],
+        modes: ["Launch details to be confirmed by Rockstar"],
+        rewards: ["No launch rewards were announced by Rockstar."],
+        access: ["Follow Rockstar's official GTA VI hub for release updates."],
+        links: [{ label: "Official GTA VI launch announcement", url: "https://www.rockstargames.com/newswire/article/ak3ak31a49a221/grand-theft-auto-vi-is-now-set-to-launch-november-19-2026", official: true }]
+      },
+      {
         id: "mw4-launch-2026",
         title: "Modern Warfare 4 Launch",
         game: "Call of Duty: Modern Warfare 4",
