@@ -308,7 +308,7 @@ export interface SpotifyArchiveData {
     podcasts?: { plays?: number; hours?: number };
     recentlyPlayed?: SpotifyItem[];
     heatmap?: { labels?: string[]; hours?: number[]; maxMinutes?: number; cells?: number[][] };
-    soundCapsule?: Array<{ id?: string; date?: string; title?: string; note?: string }>;
+    soundCapsule?: Array<{ id?: string; date?: string; title?: string; note?: string; entities?: string[] }>;
   };
 }
 

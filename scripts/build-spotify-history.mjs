@@ -84,7 +84,37 @@ function safeMoments(capsule) {
       const type = cleanText(highlight?.highlightType, 56).replace(/([a-z])([A-Z])/g, "$1 $2");
       const date = cleanText(highlight?.date, 16);
       if (!type || !date) return null;
-      return { id: `capsule-${index + 1}`, date, title: type, note: "Spotify Sound Capsule highlight" };
+      const firstDiscovery = highlight?.firstToDiscoverHighlight;
+      const unlike = highlight?.unlikeCombinationHighlight;
+      const streak = highlight?.streaksHighlight;
+      const repeat = highlight?.onRepeatHighlight;
+      const proportion = highlight?.proportionListeningHighlight;
+      const milestone = highlight?.multiEntityMilestoneHighlight;
+      let detail = "Spotify saved this listening moment in the private Sound Capsule archive.";
+      let entities = [];
+
+      if (firstDiscovery?.entity) {
+        entities = [cleanText(firstDiscovery.entity, 100)];
+        detail = `Early discovery: ${entities[0]} reached position #${Number(firstDiscovery.position || 0).toLocaleString("en-AU")} in ${cleanText(firstDiscovery.country, 12) || "your region"}.`;
+      } else if (unlike?.firstEntity && unlike?.secondEntity) {
+        entities = [cleanText(unlike.firstEntity, 100), cleanText(unlike.secondEntity, 100)];
+        detail = `Unexpected combination: Spotify paired ${entities[0]} with ${entities[1]} in your listening pattern.`;
+      } else if (streak?.entity) {
+        entities = [cleanText(streak.entity, 100)];
+        detail = `Listening streak: ${entities[0]} appeared across ${Number(streak.dayStreaks || 0)} consecutive listening days.`;
+      } else if (repeat?.entity) {
+        entities = [cleanText(repeat.entity, 100)];
+        detail = `On repeat: ${entities[0]} was streamed ${Number(repeat.streamCount || 0).toLocaleString("en-AU")} times in this highlight window.`;
+      } else if (proportion?.entity) {
+        entities = [cleanText(proportion.entity, 100)];
+        detail = `Listening milestone: ${entities[0]} represented ${Number(proportion.listeningPercentage || 0).toLocaleString("en-AU", { maximumFractionDigits: 1 })}% of the highlighted listening time.`;
+      } else if (Array.isArray(milestone?.entities) && milestone.entities.length) {
+        entities = milestone.entities.map((entity) => cleanText(entity, 100)).filter(Boolean).slice(0, 5);
+        const hours = Number(milestone.milestoneListeningSeconds || 0) / 3600;
+        detail = `Listening milestone: ${hours.toLocaleString("en-AU", { maximumFractionDigits: 1 })} hours across ${entities.join(", ")}${milestone.entities.length > entities.length ? ", and more" : ""}.`;
+      }
+
+      return { id: `capsule-${index + 1}`, date, title: type, note: detail, entities };
     })
     .filter(Boolean)
     .slice(-12)

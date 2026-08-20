@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-08-20T00:36:19.481Z",
+  "updatedAt": "2026-08-20T03:53:52.860Z",
   "privacy": "Curated public listening summaries only. Raw Spotify exports, identifiers, searches, private communications, billing records, and full play-by-play history are excluded. Only a short public recent-listening display is retained.",
   "snapshots": [],
   "archive": {
@@ -682,73 +682,114 @@
         "id": "capsule-26",
         "date": "2026-01-04",
         "title": "PROPORTION_LISTENING_ENTITY",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening milestone: Party/hype music represented 84.6% of the highlighted listening time.",
+        "entities": [
+          "Party/hype music"
+        ]
       },
       {
         "id": "capsule-25",
         "date": "2026-01-18",
         "title": "UNLIKE_COMBINATION",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Unexpected combination: Spotify paired Gone with Loving The Shark in your listening pattern.",
+        "entities": [
+          "Gone",
+          "Loving The Shark"
+        ]
       },
       {
         "id": "capsule-24",
         "date": "2026-01-25",
         "title": "MILESTONE",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening milestone: 18.5 hours across NF, Sik World, Skrillex, She Will Be Loved - Radio Mix, All Eyez On Me (ft. Big Syke), and more.",
+        "entities": [
+          "NF",
+          "Sik World",
+          "Skrillex",
+          "She Will Be Loved - Radio Mix",
+          "All Eyez On Me (ft. Big Syke)"
+        ]
       },
       {
         "id": "capsule-23",
         "date": "2026-02-08",
         "title": "PROPORTION_LISTENING_ENTITY",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening milestone: Sleep/deppresed represented 99.7% of the highlighted listening time.",
+        "entities": [
+          "Sleep/deppresed"
+        ]
       },
       {
         "id": "capsule-22",
         "date": "2026-02-15",
         "title": "PROPORTION_LISTENING_ENTITY",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening milestone: Sleep/deppresed represented 79.7% of the highlighted listening time.",
+        "entities": [
+          "Sleep/deppresed"
+        ]
       },
       {
         "id": "capsule-21",
         "date": "2026-02-22",
         "title": "STREAKS",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening streak: NF appeared across 6 consecutive listening days.",
+        "entities": [
+          "NF"
+        ]
       },
       {
         "id": "capsule-20",
         "date": "2026-03-01",
         "title": "FIRST_TO_DISCOVER",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Early discovery: leavemealone reached position #6,015 in AU.",
+        "entities": [
+          "leavemealone"
+        ]
       },
       {
         "id": "capsule-19",
         "date": "2026-03-08",
         "title": "UNLIKE_COMBINATION",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Unexpected combination: Spotify paired My Gang with HIGHWAY in your listening pattern.",
+        "entities": [
+          "My Gang",
+          "HIGHWAY"
+        ]
       },
       {
         "id": "capsule-18",
         "date": "2026-03-15",
         "title": "MILESTONE",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Spotify saved this listening moment in the private Sound Capsule archive.",
+        "entities": []
       },
       {
         "id": "capsule-17",
         "date": "2026-03-22",
         "title": "UNLIKE_COMBINATION",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Unexpected combination: Spotify paired deep in it with Intro in your listening pattern.",
+        "entities": [
+          "deep in it",
+          "Intro"
+        ]
       },
       {
         "id": "capsule-16",
         "date": "2026-03-29",
         "title": "PROPORTION_LISTENING_ENTITY",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening milestone: Party/hype music represented 50.8% of the highlighted listening time.",
+        "entities": [
+          "Party/hype music"
+        ]
       },
       {
         "id": "capsule-15",
         "date": "2026-04-05",
         "title": "STREAKS",
-        "note": "Spotify Sound Capsule highlight"
+        "note": "Listening streak: Skrillex appeared across 4 consecutive listening days.",
+        "entities": [
+          "Skrillex"
+        ]
       }
     ]
   }
