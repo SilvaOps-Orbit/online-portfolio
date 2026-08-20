@@ -4,6 +4,9 @@ const outputPath = new URL("../data/release-calendar.json", import.meta.url);
 const allowedHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com", "youtube.com", "www.youtube.com", "x.com", "www.x.com", "detonated.com", "www.detonated.com"]);
 const fetchableHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com"]);
 const timeoutMs = 18_000;
+const socialCacheMs = 60 * 60 * 1_000;
+const socialWatchBatchSize = 4;
+const ensembleDataRoot = "https://ensembledata.com/apis";
 
 // These are official, allowlisted seeds. The Call of Duty blog index is also scanned for
 // relevant new MW4 posts, but no external giveaway or reseller pages are ever imported.
@@ -272,9 +275,12 @@ async function readExisting() {
 async function readSourceRegistry() {
   try {
     const payload = JSON.parse(await readFile(new URL("../data/release-source-registry.json", import.meta.url), "utf8"));
-    return Array.isArray(payload?.profiles) ? payload.profiles : [];
+    return {
+      profiles: Array.isArray(payload?.profiles) ? payload.profiles : [],
+      socialWatchlist: Array.isArray(payload?.socialWatchlist) ? payload.socialWatchlist : []
+    };
   } catch {
-    return [];
+    return { profiles: [], socialWatchlist: [] };
   }
 }
 
@@ -301,12 +307,128 @@ function attachOfficialProfileLinks(events, profiles) {
   });
 }
 
+function listFromUnknown(value) {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.tweets)) return value.tweets;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.items)) return value.items;
+  if (Array.isArray(value?.entries)) return value.entries;
+  return [];
+}
+
+function socialUserId(payload) {
+  const data = payload?.data ?? payload;
+  const user = data?.user ?? data?.data?.user ?? data;
+  return String(user?.id_str || user?.id || user?.rest_id || "").trim();
+}
+
+function socialPostText(post) {
+  return cleanText(post?.full_text || post?.text || post?.legacy?.full_text || post?.tweet?.full_text || post?.tweet?.text, 800);
+}
+
+function socialPostId(post) {
+  return String(post?.id_str || post?.id || post?.rest_id || post?.tweet?.id_str || post?.tweet?.id || "").trim();
+}
+
+async function fetchEnsembleData(path, params) {
+  const url = new URL(`${ensembleDataRoot}${path}`);
+  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+  const response = await fetch(url, {
+    headers: { Accept: "application/json", "User-Agent": "EchoOps-Portfolio-Release-Radar/1.0" },
+    signal: AbortSignal.timeout(timeoutMs)
+  });
+  if (!response.ok) throw new Error(`EnsembleData returned ${response.status}`);
+  return response.json();
+}
+
+function selectRotatingWatchEntries(profiles, watchlist) {
+  const mandatory = profiles.filter((profile) => Array.isArray(profile?.socialHandles) && profile.socialHandles.length);
+  const optional = watchlist.filter((profile) => Array.isArray(profile?.socialHandles) && profile.socialHandles.length);
+  if (!optional.length) return mandatory;
+  const cycle = Math.floor(Date.now() / socialCacheMs);
+  const start = (cycle * socialWatchBatchSize) % optional.length;
+  const rotated = Array.from({ length: Math.min(socialWatchBatchSize, optional.length) }, (_, index) => optional[(start + index) % optional.length]);
+  return [...mandatory, ...rotated];
+}
+
+async function readOfficialSocialSignals(profiles, watchlist, existing) {
+  const token = String(process.env.ENSEMBLEDATA_API_KEY || "").trim();
+  const cached = existing?.socialSignals;
+  const cachedAt = Date.parse(cached?.checkedAt || "");
+  if (!token) return cached || { checkedAt: null, status: "Official X monitoring is ready when ENSEMBLEDATA_API_KEY is configured.", posts: [] };
+  if (Number.isFinite(cachedAt) && Date.now() - cachedAt < socialCacheMs) return cached;
+
+  const posts = [];
+  const entries = selectRotatingWatchEntries(profiles, watchlist);
+  for (const profile of entries) {
+    const handles = Array.isArray(profile?.socialHandles) ? profile.socialHandles.slice(0, 3) : [];
+    for (const handle of handles) {
+      const safeHandle = String(handle || "").replace(/^@/, "").trim();
+      if (!/^[A-Za-z0-9_]{1,15}$/.test(safeHandle)) continue;
+      try {
+        const user = await fetchEnsembleData("/twitter/user/info", { name: safeHandle, token });
+        const id = socialUserId(user);
+        if (!id) throw new Error("No public X user ID returned");
+        const response = await fetchEnsembleData("/twitter/user/tweets", { id, token });
+        const candidates = listFromUnknown(response?.data ?? response).slice(0, 20);
+        for (const post of candidates) {
+          const postId = socialPostId(post);
+          const text = socialPostText(post);
+          if (!postId || !text) continue;
+          posts.push({ profileId: profile.id, handle: safeHandle, postId, text, url: `https://x.com/${safeHandle}/status/${postId}` });
+        }
+      } catch (error) {
+        console.warn(`Could not refresh official X account @${safeHandle}: ${cleanText(error.message, 140)}`);
+      }
+    }
+  }
+  return {
+    checkedAt: new Date().toISOString(),
+    status: posts.length ? `${posts.length} public posts checked from ${entries.length} allowlisted official X accounts.` : "No usable official X posts were returned; official web sources remain active.",
+    posts
+  };
+}
+
+function attachOfficialSocialLinks(events, profiles, socialSignals) {
+  const posts = Array.isArray(socialSignals?.posts) ? socialSignals.posts : [];
+  return events.map((event) => {
+    const profile = matchingProfile(event, profiles);
+    if (!profile) return event;
+    const terms = [event.title, event.game, ...(profile.keywords || [])].map((term) => String(term || "").toLowerCase()).filter(Boolean);
+    const post = posts.find((candidate) => candidate.profileId === profile.id
+      && terms.some((term) => term.length > 3 && candidate.text.toLowerCase().includes(term)));
+    if (!post) return event;
+    const links = Array.isArray(event.links) ? event.links : [];
+    if (links.some((link) => link?.url === post.url)) return event;
+    return {
+      ...event,
+      links: [...links, { label: `Official social update from @${post.handle}`, url: post.url, official: true }]
+    };
+  });
+}
+
+function publicSocialSignals(socialSignals) {
+  return {
+    checkedAt: socialSignals?.checkedAt || null,
+    status: cleanText(socialSignals?.status, 260),
+    posts: (Array.isArray(socialSignals?.posts) ? socialSignals.posts : []).map(({ profileId, handle, postId, url }) => ({
+      profileId,
+      handle,
+      postId,
+      url
+    }))
+  };
+}
+
 const existing = await readExisting();
 const checkedAt = new Date().toISOString();
 const textByUrl = new Map();
 const sources = [];
 const candidates = [...sourceSeeds];
-const sourceProfiles = await readSourceRegistry();
+const sourceRegistry = await readSourceRegistry();
+const sourceProfiles = sourceRegistry.profiles;
+const socialSignals = await readOfficialSocialSignals(sourceProfiles, sourceRegistry.socialWatchlist, existing);
+const safeSocialSignals = publicSocialSignals(socialSignals);
 
 for (const profile of sourceProfiles) {
   for (const url of Array.isArray(profile?.feeds) ? profile.feeds : []) {
@@ -347,9 +469,10 @@ try {
     generatedAt: checkedAt,
     lastGoodAt: checkedAt,
     stale: false,
-    status: `${sources.length} official sources checked. Only confirmed details and official access links are shown.`,
+    status: `${sources.length} official web sources checked. ${socialSignals.status} Only confirmed details and official access links are shown.`,
     sources,
-    events: attachOfficialProfileLinks(buildEvents(textByUrl), sourceProfiles)
+    socialSignals: safeSocialSignals,
+    events: attachOfficialSocialLinks(attachOfficialProfileLinks(buildEvents(textByUrl), sourceProfiles), sourceProfiles, socialSignals)
   };
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
@@ -363,7 +486,8 @@ try {
     stale: true,
     status: `Last good official briefing preserved while refresh retries: ${cleanText(error.message, 160)}`,
     sources: existing?.sources || sourceSeeds.map((source) => ({ ...source, official: true })),
-    events: attachOfficialProfileLinks(fallback, sourceProfiles)
+    socialSignals: safeSocialSignals,
+    events: attachOfficialSocialLinks(attachOfficialProfileLinks(fallback, sourceProfiles), sourceProfiles, socialSignals)
   };
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");

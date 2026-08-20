@@ -1,5 +1,36 @@
 {
-  "description": "Official source profiles for the Release Intel refresh. Add a game by giving it keyword matches, official news pages or feeds, and verified studio links. X links are shown as sources but are not scraped. Secondary reporting is link-only and must never be presented as confirmed official intel.",
+  "description": "Official source profiles for the Release Intel refresh. Add a game by giving it keyword matches, official news pages or feeds, verified studio links, and optional verified X handles. EnsembleData checks only these allowlisted handles and only adds direct official-post links; official websites remain the source of truth for dates and rewards. Secondary reporting is link-only and must never be presented as confirmed official intel.",
+  "socialWatchlist": [
+    { "id": "xbox", "label": "Xbox", "socialHandles": ["Xbox"] },
+    { "id": "playstation", "label": "PlayStation", "socialHandles": ["PlayStation"] },
+    { "id": "nintendo", "label": "Nintendo of America", "socialHandles": ["NintendoAmerica"] },
+    { "id": "steam", "label": "Steam", "socialHandles": ["Steam"] },
+    { "id": "epic-games", "label": "Epic Games", "socialHandles": ["EpicGames"] },
+    { "id": "electronic-arts", "label": "Electronic Arts", "socialHandles": ["EA"] },
+    { "id": "ubisoft", "label": "Ubisoft", "socialHandles": ["Ubisoft"] },
+    { "id": "rockstar-games", "label": "Rockstar Games", "socialHandles": ["RockstarGames"] },
+    { "id": "bethesda", "label": "Bethesda", "socialHandles": ["bethesda"] },
+    { "id": "bandai-namco", "label": "Bandai Namco US", "socialHandles": ["BandaiNamcoUS"] },
+    { "id": "square-enix", "label": "Square Enix", "socialHandles": ["SquareEnix"] },
+    { "id": "sega", "label": "SEGA", "socialHandles": ["SEGA"] },
+    { "id": "capcom", "label": "Capcom USA", "socialHandles": ["CapcomUSA_"] },
+    { "id": "cd-projekt-red", "label": "CD PROJEKT RED", "socialHandles": ["CDPROJEKTRED"] },
+    { "id": "larian", "label": "Larian Studios", "socialHandles": ["larianstudios"] },
+    { "id": "bungie", "label": "Bungie", "socialHandles": ["Bungie"] },
+    { "id": "riot-games", "label": "Riot Games", "socialHandles": ["riotgames"] },
+    { "id": "supergiant", "label": "Supergiant Games", "socialHandles": ["SupergiantGames"] },
+    { "id": "team-cherry", "label": "Team Cherry", "socialHandles": ["TeamCherryGames"] },
+    { "id": "concernedape", "label": "ConcernedApe", "socialHandles": ["ConcernedApe"] },
+    { "id": "klei", "label": "Klei", "socialHandles": ["klei"] },
+    { "id": "devolver", "label": "Devolver Digital", "socialHandles": ["devolverdigital"] },
+    { "id": "re-logic", "label": "Re-Logic", "socialHandles": ["ReLogicGames"] },
+    { "id": "poncle", "label": "poncle", "socialHandles": ["poncle_games"] },
+    { "id": "megacrit", "label": "Mega Crit", "socialHandles": ["MegaCrit"] },
+    { "id": "landfall", "label": "Landfall", "socialHandles": ["LandfallGames"] },
+    { "id": "innersloth", "label": "Innersloth", "socialHandles": ["InnerslothDevs"] },
+    { "id": "motion-twin", "label": "Motion Twin", "socialHandles": ["motiontwin"] },
+    { "id": "ghost-ship", "label": "Ghost Ship Games", "socialHandles": ["GhostShipGames"] }
+  ],
   "profiles": [
     {
       "id": "call-of-duty",
@@ -13,7 +44,8 @@
         { "label": "Call of Duty on YouTube", "url": "https://www.youtube.com/callofduty", "official": true },
         { "label": "@CODUpdates on X", "url": "https://x.com/CODUpdates", "official": true },
         { "label": "Detonated: COD news and unconfirmed reports", "url": "https://detonated.com/all-modern-warfare-4-beta-rewards-secret-challenges/", "official": false }
-      ]
+      ],
+      "socialHandles": ["CODUpdates", "CallofDuty"]
     },
     {
       "id": "gamescom",
@@ -22,7 +54,8 @@
       "links": [
         { "label": "gamescom on YouTube", "url": "https://www.youtube.com/@gamescom", "official": true },
         { "label": "@gamescom on X", "url": "https://x.com/gamescom", "official": true }
-      ]
+      ],
+      "socialHandles": ["gamescom"]
     },
     {
       "id": "fortnite",
@@ -32,7 +65,8 @@
         { "label": "Fortnite news", "url": "https://www.fortnite.com/news", "official": true },
         { "label": "Fortnite on YouTube", "url": "https://www.youtube.com/@Fortnite", "official": true },
         { "label": "@Fortnite on X", "url": "https://x.com/Fortnite", "official": true }
-      ]
+      ],
+      "socialHandles": ["Fortnite"]
     }
   ]
 }

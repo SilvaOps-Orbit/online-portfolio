@@ -80,6 +80,8 @@ jobs:
 
       - name: Refresh official game release calendar
         run: node scripts/update-release-calendar.mjs
+        env:
+          ENSEMBLEDATA_API_KEY: ${{ secrets.ENSEMBLEDATA_API_KEY }}
 
       - name: Generate market and news data
         run: node scripts/update-market-news-data.mjs
