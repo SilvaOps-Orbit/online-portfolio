@@ -2,6 +2,9 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  // GitHub Pages serves this site from /online-portfolio/, so lazy React chunks
+  // must resolve relative to the loader rather than from the domain root.
+  base: "./",
   plugins: [{
     name: "trim-generated-whitespace",
     generateBundle(_options, bundle) {
