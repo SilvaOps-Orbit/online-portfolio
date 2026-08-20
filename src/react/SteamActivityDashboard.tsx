@@ -1,5 +1,5 @@
 // React + DOM rendering primitives.
-import { StrictMode, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { StrictMode, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 // `createRoot` mounts a React tree into a plain DOM node (the "island" pattern).
 import { createRoot } from "react-dom/client";
 // Icon set used throughout the dashboard (lucide is a tree-shakeable icon library).
@@ -642,6 +642,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
   const [selectedId, setSelectedId] = useState("");
   const [intelOpen, setIntelOpen] = useState(false);
   const [view, setView] = useState<"week" | "month">("week");
+  const closeTimer = useRef<number | null>(null);
   const selected = releaseEvents.find((event) => event.id === selectedId) || releaseEvents[0];
 
   useEffect(() => {
@@ -683,8 +684,16 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
   ].filter((group) => group.values?.length);
 
   const openIntel = (event: SteamReleaseEvent) => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
     setSelectedId(event.id || "");
     setIntelOpen(true);
+  };
+  const scheduleIntelClose = () => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setIntelOpen(false), 180);
+  };
+  const keepIntelOpen = () => {
+    if (closeTimer.current !== null) window.clearTimeout(closeTimer.current);
   };
 
   return <section className="steam-release-radar" id="steam-release-intel" aria-labelledby="steam-release-radar-title">
@@ -697,11 +706,11 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
           const dayEvents = releaseEvents.filter((event) => eventCoversDay(event, day));
           const isCurrentMonth = day.getMonth() === visibleMonth.getMonth();
           const isToday = day.getTime() === today.getTime();
-          return <div className={`steam-release-day${isCurrentMonth ? "" : " is-outside"}${isToday ? " is-today" : ""}`} key={day.toISOString()}><span>{day.getDate()}</span>{dayEvents.slice(0, 2).map((event) => <button className={`steam-release-marker is-${event.type || "showcase"}`} key={`${event.id}-${day.getDate()}`} type="button" aria-label={`View Intel: ${event.title}`} onMouseEnter={() => openIntel(event)} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}><i aria-hidden="true" />{event.title}</button>)}</div>;
+          return <div className={`steam-release-day${isCurrentMonth ? "" : " is-outside"}${isToday ? " is-today" : ""}`} key={day.toISOString()}><span>{day.getDate()}</span>{dayEvents.slice(0, 2).map((event) => <button className={`steam-release-marker is-${event.type || "showcase"}`} key={`${event.id}-${day.getDate()}`} type="button" aria-label={`View Intel: ${event.title}`} onMouseEnter={() => openIntel(event)} onMouseLeave={scheduleIntelClose} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}><i aria-hidden="true" />{event.title}</button>)}</div>;
         })}
       </div>
-      {watchEvents.length > 0 && <div className="steam-release-watch"><span>Monitoring</span>{watchEvents.map((event) => <button type="button" key={event.id || event.title} onMouseEnter={() => openIntel(event)} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}>{event.title}<small>{event.game}</small></button>)}</div>}
-      {intelOpen && <article className="steam-release-popover" aria-live="polite">
+      {watchEvents.length > 0 && <div className="steam-release-watch"><span>Monitoring</span>{watchEvents.map((event) => <button type="button" key={event.id || event.title} onMouseEnter={() => openIntel(event)} onMouseLeave={scheduleIntelClose} onFocus={() => openIntel(event)} onClick={() => openIntel(event)}>{event.title}<small>{event.game}</small></button>)}</div>}
+      {intelOpen && <article className="steam-release-popover" aria-live="polite" onMouseEnter={keepIntelOpen} onMouseLeave={scheduleIntelClose}>
         <button className="steam-release-popover-close" type="button" aria-label="Close Intel briefing" title="Close Intel briefing" onClick={() => setIntelOpen(false)}><X aria-hidden="true" /></button>
         <div className="steam-release-popover-copy"><span className="steam-release-game-logo">{selectedWordmark}</span><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
         {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}

@@ -6,6 +6,7 @@ const clientId = process.env.SPOTIFY_CLIENT_ID || "";
 const clientSecret = process.env.SPOTIFY_CLIENT_SECRET || "";
 const refreshToken = process.env.SPOTIFY_REFRESH_TOKEN || "";
 const outputPath = new URL("../data/spotify.json", import.meta.url);
+const archiveOutputPath = new URL("../data/spotify-history.json", import.meta.url);
 const EXCLUDED_PLAYLIST_TITLES = new Set(["sex"]);
 
 function isExcludedPlaylist(playlist) {
@@ -27,6 +28,14 @@ async function readExistingData() {
     return JSON.parse(await readFile(outputPath, "utf8"));
   } catch (error) {
     return {};
+  }
+}
+
+async function readArchiveData() {
+  try {
+    return JSON.parse(await readFile(archiveOutputPath, "utf8"));
+  } catch {
+    return null;
   }
 }
 
@@ -848,6 +857,46 @@ async function loadDiscovery(token, taste) {
   return releases.sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
 }
 
+async function enrichArchiveArtwork(token) {
+  const snapshot = await readArchiveData();
+  const archive = snapshot?.archive;
+  if (!archive) return;
+
+  const artistCache = new Map();
+  const trackCache = new Map();
+  const lookupArtist = async (name) => {
+    const query = cleanText(name, 100);
+    if (!query) return "";
+    if (artistCache.has(query)) return artistCache.get(query);
+    const result = await spotifyGet("search", token, { q: query, type: "artist", limit: 1 }).catch(() => null);
+    const image = imageFrom(result?.artists?.items?.[0]?.images);
+    artistCache.set(query, image);
+    return image;
+  };
+  const lookupTrack = async (title, artist = "") => {
+    const query = cleanText([title, artist].filter(Boolean).join(" "), 160);
+    if (!query) return "";
+    if (trackCache.has(query)) return trackCache.get(query);
+    const result = await spotifyGet("search", token, { q: query, type: "track", limit: 1, market: "AU" }).catch(() => null);
+    const image = imageFrom(result?.tracks?.items?.[0]?.album?.images);
+    trackCache.set(query, image);
+    return image;
+  };
+
+  const topArtists = Array.isArray(archive?.taste?.topArtists) ? archive.taste.topArtists : [];
+  const topTracks = Array.isArray(archive?.taste?.topTracks) ? archive.taste.topTracks : [];
+  const recentlyPlayed = Array.isArray(archive?.recentlyPlayed) ? archive.recentlyPlayed : [];
+  for (const artist of topArtists) {
+    if (!artist.image) artist.image = await lookupArtist(artist.title);
+  }
+  for (const track of [...topTracks, ...recentlyPlayed]) {
+    if (!track.image) track.image = await lookupTrack(track.title, track.artists?.[0] || "");
+  }
+
+  snapshot.artworkSource = "Spotify Web API public artist and album metadata.";
+  await writeFile(archiveOutputPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
+}
+
 async function main() {
   const previous = await readExistingData();
 
@@ -864,7 +913,10 @@ async function main() {
     spotifyGet("me/player/currently-playing", token, { additional_types: "track,episode" }).catch(() => null),
     spotifyGet("me/player", token, { additional_types: "track,episode" }).catch(() => null)
   ]);
-  const playlists = await loadPlaylists(token, profile?.id);
+  const playlists = await loadPlaylists(token, profile?.id).catch((error) => {
+    console.warn(`Spotify playlists unavailable: ${error.message}`);
+    return Array.isArray(previous.playlists) ? previous.playlists : [];
+  });
   const tasteResult = await loadTaste(token);
   const [recentlyPlayed, playlistAnalytics, discovery] = await Promise.all([
     loadRecentlyPlayed(token),
@@ -911,6 +963,7 @@ async function main() {
 
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+  await enrichArchiveArtwork(token);
   console.log(`Wrote Spotify data to ${outputPath.pathname}`);
 }
 
