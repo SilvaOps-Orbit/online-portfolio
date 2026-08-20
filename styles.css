@@ -3981,6 +3981,23 @@ a.provider-pulse-item:focus-visible {
 .spotify-age-copy strong b { color: var(--wrapped-b); font-size: 1.45em; }
 .spotify-age-copy p { max-width: 650px; margin-top: 6px; color: color-mix(in srgb, #fff 72%, var(--wrapped-a)); font-size: 0.78rem; line-height: 1.5; }
 
+.spotify-taste-profile {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 20px;
+}
+
+.spotify-taste-profile article {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--wrapped-c) 26%, var(--line));
+  background: color-mix(in srgb, #10171b 80%, transparent);
+}
+
+.spotify-taste-profile span { color: var(--wrapped-a); font-size: 0.68rem; font-weight: 950; text-transform: uppercase; }
+.spotify-taste-profile p { margin-top: 7px; color: color-mix(in srgb, #fff 78%, var(--wrapped-c)); font-size: 0.78rem; line-height: 1.55; }
+
 .spotify-age-signal {
   display: flex;
   min-height: 66px;
@@ -4095,6 +4112,79 @@ a.provider-pulse-item:focus-visible {
 .spotify-wrapped .discovery-orbit i {
   background: var(--wrapped-b);
   box-shadow: 0 0 12px var(--wrapped-b);
+}
+
+.spotify-library-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--wrapped-c) 32%, var(--line));
+  background: color-mix(in srgb, var(--wrapped-deep) 68%, transparent);
+}
+
+.spotify-library-strip > svg { width: 28px; height: 28px; color: var(--wrapped-a); }
+.spotify-library-strip span { display: grid; gap: 2px; }
+.spotify-library-strip span:last-child { text-align: right; }
+.spotify-library-strip b { color: #fffdf7; font-size: 0.86rem; }
+.spotify-library-strip small { color: color-mix(in srgb, #fff 66%, var(--wrapped-c)); font-size: 0.7rem; }
+
+.spotify-moments { display: grid; gap: 20px; }
+
+.spotify-wrapped-year {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.64fr) minmax(0, 1fr);
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--wrapped-a) 54%, var(--line));
+  background:
+    linear-gradient(130deg, color-mix(in srgb, var(--wrapped-b) 20%, transparent), transparent 48%),
+    color-mix(in srgb, var(--wrapped-deep) 70%, transparent);
+  box-shadow: 0 20px 42px rgb(0 0 0 / 20%);
+}
+
+.spotify-wrapped-year > div:first-child { display: grid; align-content: start; gap: 4px; }
+.spotify-wrapped-year > div:first-child span { color: var(--wrapped-a); font-size: 0.72rem; font-weight: 950; letter-spacing: 0; text-transform: uppercase; }
+.spotify-wrapped-year > div:first-child strong { color: #fffdf7; font-size: clamp(3.4rem, 8vw, 6.5rem); line-height: 0.84; letter-spacing: 0; }
+.spotify-wrapped-year > div:first-child small { color: color-mix(in srgb, #fff 72%, var(--wrapped-c)); font-weight: 750; }
+
+.spotify-wrapped-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-items: stretch; }
+.spotify-wrapped-metrics span { display: grid; align-content: center; min-height: 92px; padding: 12px; border: 1px solid color-mix(in srgb, #fff 16%, transparent); background: color-mix(in srgb, #10181d 60%, transparent); color: color-mix(in srgb, #fff 68%, var(--wrapped-c)); font-size: 0.7rem; font-weight: 800; }
+.spotify-wrapped-metrics b { display: block; margin-bottom: 4px; color: var(--wrapped-b); font-size: clamp(1.4rem, 3vw, 2.1rem); line-height: 1; }
+
+.spotify-heatmap-wrap,
+.spotify-capsule { padding: 18px; border: 1px solid color-mix(in srgb, var(--wrapped-c) 26%, var(--line)); background: color-mix(in srgb, #10161a 82%, transparent); }
+
+.spotify-heatmap { display: grid; gap: 5px; margin-top: 12px; align-items: center; overflow-x: auto; }
+.spotify-heatmap-corner,
+.spotify-heatmap-hour,
+.spotify-heatmap-day { min-height: 18px; color: color-mix(in srgb, #fff 56%, var(--wrapped-c)); font-size: 0.59rem; font-weight: 850; text-align: center; }
+.spotify-heatmap-day { align-self: center; text-align: left; }
+.spotify-heatmap-cell { display: block; min-width: 10px; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--wrapped-c) 12%, transparent); background: color-mix(in srgb, var(--wrapped-a) calc(var(--heat) * 68%), #151c21); box-shadow: 0 0 calc(var(--heat) * 14px) color-mix(in srgb, var(--wrapped-b) calc(var(--heat) * 48%), transparent); transition: transform 180ms ease, filter 180ms ease; }
+.spotify-heatmap-cell:hover { position: relative; z-index: 1; filter: brightness(1.35); transform: scale(1.32); }
+
+.spotify-capsule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.spotify-capsule-list article { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 72px; padding: 11px; border: 1px solid color-mix(in srgb, var(--wrapped-a) 21%, var(--line)); background: color-mix(in srgb, #151c21 84%, transparent); transition: transform 180ms ease, border-color 180ms ease; }
+.spotify-capsule-list article:hover { border-color: var(--wrapped-b); transform: translateY(-3px) rotateX(2deg); }
+.spotify-capsule-list article > span { color: var(--wrapped-a); font-size: 0.68rem; font-weight: 950; }
+.spotify-capsule-list article > div { min-width: 0; }
+.spotify-capsule-list strong,
+.spotify-capsule-list small { display: block; }
+.spotify-capsule-list strong { color: #fffdf7; font-size: 0.78rem; }
+.spotify-capsule-list small,
+.spotify-capsule-list time { color: color-mix(in srgb, #fff 62%, var(--wrapped-c)); font-size: 0.64rem; }
+.spotify-capsule-list time { white-space: nowrap; }
+
+@media (max-width: 720px) {
+  .spotify-library-strip,
+  .spotify-wrapped-year { grid-template-columns: 1fr; }
+  .spotify-library-strip span:last-child { text-align: left; }
+  .spotify-wrapped-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .spotify-wrapped-metrics span { min-height: 76px; padding: 9px; }
+  .spotify-capsule-list { grid-template-columns: 1fr; }
+  .spotify-taste-profile { grid-template-columns: 1fr; }
 }
 
 .insight-deck {

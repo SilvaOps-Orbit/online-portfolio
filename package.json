@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "build:react": "vite build",
+    "spotify:archive": "node scripts/build-spotify-history.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

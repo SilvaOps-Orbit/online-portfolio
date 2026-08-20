@@ -244,6 +244,39 @@ export interface SpotifyArchiveData {
   schemaVersion?: number;
   updatedAt?: string;
   snapshots?: SpotifyWeeklySnapshot[];
+  archive?: {
+    periodStart?: string;
+    periodEnd?: string;
+    summary?: {
+      musicEvents?: number;
+      meaningfulPlays?: number;
+      hours?: number;
+      uniqueArtists?: number;
+      uniqueTracks?: number;
+    };
+    taste?: {
+      musicalIdentity?: string;
+      contentRhythms?: string;
+      topArtists?: SpotifyItem[];
+      topTracks?: SpotifyItem[];
+    };
+    wrapped?: {
+      year?: number;
+      listeningAge?: number;
+      minutes?: number;
+      uniqueArtists?: number;
+      uniqueTracks?: number;
+      uniqueGenres?: number;
+      club?: string;
+      clubPercentile?: number;
+    };
+    playlists?: { count?: number; tracks?: number; followers?: number };
+    library?: { savedTracks?: number; savedAlbums?: number; savedArtists?: number };
+    podcasts?: { plays?: number; hours?: number };
+    recentlyPlayed?: SpotifyItem[];
+    heatmap?: { labels?: string[]; hours?: number[]; maxMinutes?: number; cells?: number[][] };
+    soundCapsule?: Array<{ id?: string; date?: string; title?: string; note?: string }>;
+  };
 }
 
 export interface SpotifyInsights {
