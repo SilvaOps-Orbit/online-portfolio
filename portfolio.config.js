@@ -736,6 +736,174 @@ window.PORTFOLIO_CONFIG = {
         note: "Shows one randomized upcoming/pre-order or top 20 Steam game at a time after the store refresh runs.",
         url: "https://store.steampowered.com/"
       }
+    ],
+    // Release Radar is deliberately hand-curated. Add or update events here with official
+    // source links; the dashboard handles the date cards, hover/tap detail panel, and links.
+    releaseCalendar: [
+      {
+        id: "cod-next-2026",
+        title: "Call of Duty: NEXT",
+        game: "Modern Warfare 4",
+        type: "showcase",
+        startDate: "2026-08-21T00:00:00+10:00",
+        timezone: "AEST",
+        summary: "The live reveal briefing before the Modern Warfare 4 beta.",
+        details: "A global Call of Duty presentation with live gameplay, developer insight, a detailed Multiplayer briefing, and new reveals before the beta begins.",
+        maps: ["Multiplayer map line-up briefing", "First look at Zodiac"],
+        modes: ["6v6 Multiplayer", "Kill Block gameplay"],
+        rewards: ["Check official broadcast announcements for time-limited drops and beta-code windows."],
+        access: ["Watch through official Call of Duty channels.", "Only follow verified official posts for codes or drops."],
+        links: [
+          { label: "Official MW4 NEXT + beta intel", url: "https://www.callofduty.com/blog/2026/07/call-of-duty-modern-warfare-4-open-beta-next-fanatics-fest-recap-serialized-camo-preorder-bonus", official: true },
+          { label: "Call of Duty on YouTube", url: "https://www.youtube.com/callofduty", official: true },
+          { label: "@CODUpdates on X", url: "https://x.com/CODUpdates", official: true },
+          { label: "Detonated: COD news and unconfirmed reports", url: "https://detonated.com/all-modern-warfare-4-beta-rewards-secret-challenges/", official: false }
+        ]
+      },
+      {
+        id: "mw4-early-beta-2026",
+        title: "MW4 Early Access Beta",
+        game: "Call of Duty: Modern Warfare 4",
+        type: "beta",
+        startDate: "2026-08-21T00:00:00+10:00",
+        endDate: "2026-08-25T23:59:00+10:00",
+        timezone: "AEST",
+        summary: "Early access beta weekend for players who pre-order on the supported launch platforms.",
+        details: "The beta begins immediately after NEXT. The final playlist and timing can change, so the official beta page is the source of truth.",
+        maps: ["Multiple Multiplayer maps"],
+        modes: ["Search & Destroy", "Kill Block", "3v3 skirmishes", "Training Mobility Course", "Large tactical battles"],
+        rewards: ["Vault Edition Operators are available to eligible pre-order players during the beta."],
+        access: ["Pre-order access for Xbox Series X|S, PlayStation 5, and PC.", "Limited official beta-code drops may be announced by Call of Duty."],
+        links: [
+          { label: "Official beta page", url: "https://www.callofduty.com/uk/en/modernwarfare4/beta?path=beta", official: true },
+          { label: "Pre-order information", url: "https://www.callofduty.com/blog/2026/05/call-of-duty-modern-warfare-4-preorder-benefits-game-editions-details", official: true }
+        ]
+      },
+      {
+        id: "mw4-open-beta-2026",
+        title: "MW4 Open Beta",
+        game: "Call of Duty: Modern Warfare 4",
+        type: "beta",
+        startDate: "2026-08-28T00:00:00+10:00",
+        endDate: "2026-09-01T23:59:00+10:00",
+        timezone: "AEST",
+        summary: "The open weekend is available across all announced platforms, including Nintendo Switch 2.",
+        details: "No pre-order is required for the open portion. Check the official beta page before downloading for final local start times and platform requirements.",
+        maps: ["All early-access Multiplayer maps", "Additional beta content announced at NEXT"],
+        modes: ["Multiplayer playlist", "Open-beta playlist updates"],
+        rewards: ["Any beta participation rewards are announced by Call of Duty, not by this portfolio."],
+        access: ["Open to all supported platforms.", "Nintendo Switch Online is required for Nintendo Switch 2 players."],
+        links: [
+          { label: "Official open-beta information", url: "https://www.callofduty.com/uk/en/modernwarfare4/beta?path=beta", official: true },
+          { label: "Official beta intel", url: "https://www.callofduty.com/blog/2026/07/call-of-duty-modern-warfare-4-open-beta-next-fanatics-fest-recap-serialized-camo-preorder-bonus", official: true }
+        ]
+      },
+      {
+        id: "gamescom-2026",
+        title: "gamescom 2026",
+        game: "Industry showcase",
+        type: "convention",
+        startDate: "2026-08-25T00:00:00+02:00",
+        endDate: "2026-08-30T23:59:00+02:00",
+        timezone: "CEST",
+        summary: "Opening Night Live starts August 25, followed by gamescom in Cologne from August 26 to 30.",
+        details: "A major industry showcase for upcoming games, publishers, developers, live streams, and community events.",
+        maps: ["Show floor, streams, and publisher reveals"],
+        modes: ["Opening Night Live", "Hands-on demos", "Developer and community sessions"],
+        rewards: ["Watch publisher channels for event-specific drops, demos, and giveaways."],
+        access: ["Follow the official gamescom schedule and each publisher's verified channels."],
+        links: [
+          { label: "Official gamescom event page", url: "https://www.gamescom.global/en/live/events", official: true },
+          { label: "gamescom 2026 schedule", url: "https://exhibitors.gamescom.global/en/gamescom-exhibitors/list-of-exhibitors/?route=kalender2", official: true }
+        ]
+      },
+      {
+        id: "mw4-launch-2026",
+        title: "Modern Warfare 4 Launch",
+        game: "Call of Duty: Modern Warfare 4",
+        type: "launch",
+        startDate: "2026-10-23T00:00:00+11:00",
+        timezone: "AEDT",
+        summary: "Modern Warfare 4 is scheduled to launch worldwide on October 23, 2026.",
+        details: "Official launch coverage and platform availability can change. Use the Call of Duty site for the current launch plan.",
+        maps: ["Full launch map line-up to be confirmed by Call of Duty."],
+        modes: ["Campaign", "Multiplayer", "Post-launch live-service updates"],
+        rewards: ["Pre-order and edition benefits are listed on the official Call of Duty site."],
+        access: ["Steam, Battle.net, Xbox on PC, consoles, and Nintendo Switch 2 are listed by Call of Duty."],
+        links: [
+          { label: "Official launch + beta intel", url: "https://www.callofduty.com/blog/2026/07/call-of-duty-modern-warfare-4-open-beta-next-fanatics-fest-recap-serialized-camo-preorder-bonus", official: true },
+          { label: "Steam store", url: "https://store.steampowered.com/", official: true }
+        ]
+      },
+      {
+        id: "codm-season-6-to-7-2026",
+        title: "COD Mobile: Season 6 to Season 7",
+        game: "Call of Duty: Mobile",
+        type: "season",
+        startDate: "2026-08-06T10:00:00+10:00",
+        timezone: "AEST",
+        summary: "Season 7: Terminated takes over from Season 6, with a Terminator 2 collaboration.",
+        details: "Season 7 launched at 5 PM Pacific on 5 August. It adds Multiplayer and Battle Royale content, a Nuketown refresh, a new Battle Pass, and seasonal events.",
+        maps: ["Nuketown map refresh"],
+        modes: ["Operator Skill Overdrive", "Hardpoint: Mayhem", "Battle Royale: Lockdown"],
+        rewards: ["Terminated Battle Pass", "Season 7 Challenge Pass", "Cronen Squall Assault Rifle", "Overload Battle Royale class"],
+        access: ["Available through Call of Duty: Mobile."],
+        links: [
+          { label: "Official Season 7 briefing", url: "https://www.callofduty.com/au/en/blog/2026/07/call-of-duty-mobile-season-7-terminated", official: true },
+          { label: "Call of Duty Mobile on YouTube", url: "https://www.youtube.com/callofduty", official: true }
+        ]
+      },
+      {
+        id: "fortnite-season-watch",
+        title: "Fortnite Season Transition Watch",
+        game: "Fortnite",
+        type: "season",
+        summary: "Monitoring Epic's official newsroom for the next confirmed season handover.",
+        details: "This card stays on watch until Epic publishes a start or end time. Rumours and unverified social posts are not used as calendar dates.",
+        maps: ["Map changes will be listed after Epic confirms them."],
+        modes: ["Playlist changes will be listed after Epic confirms them."],
+        rewards: ["Battle Pass and event rewards will be listed after Epic confirms them."],
+        access: ["Follow the official Fortnite news channel for the confirmed schedule."],
+        links: [
+          { label: "Official Fortnite news", url: "https://www.fortnite.com/news", official: true },
+          { label: "Fortnite on YouTube", url: "https://www.youtube.com/@Fortnite", official: true },
+          { label: "@Fortnite on X", url: "https://x.com/Fortnite", official: true }
+        ]
+      },
+      {
+        id: "bo7-warzone-season-05-2026",
+        title: "Black Ops 7 + Warzone Season 05",
+        game: "Call of Duty: Black Ops 7 and Warzone",
+        type: "season",
+        startDate: "2026-07-24T02:00:00+10:00",
+        timezone: "AEST",
+        summary: "Season 05 launch briefing for Black Ops 7 and Warzone.",
+        details: "Season 05 launched at 9 AM Pacific on 23 July, with new Multiplayer, Zombies, Endgame, Warzone, and Battle Pass content.",
+        maps: ["Jubilee Multiplayer map", "Eidskallen Lighthouse Zombies Survival map", "Drone Labs POI on Verdansk"],
+        modes: ["Burn Run Endgame Assignment", "Resurgence Ranked Play", "New Warzone modes"],
+        rewards: ["Season 05 Battle Pass", "100+ Battle Pass rewards", "FG42 Assault Rifle", "Gremlin SMG", "BlackCell rewards"],
+        access: ["Battle Pass is available for 1,100 COD Points; the Battle Pass Bundle is 2,400 COD Points."],
+        links: [
+          { label: "Official Season 05 briefing", url: "https://www.callofduty.com/blog/2026/07/call-of-duty-black-ops-7-warzone-season-05-announcement", official: true },
+          { label: "Detonated: COD news and unconfirmed reports", url: "https://detonated.com/all-modern-warfare-4-beta-rewards-secret-challenges/", official: false }
+        ]
+      },
+      {
+        id: "bo7-warzone-season-06-watch",
+        title: "Black Ops 7 + Warzone Season 06 Watch",
+        game: "Call of Duty: Black Ops 7 and Warzone",
+        type: "season",
+        summary: "Monitoring official Call of Duty channels for the Season 05 handover and Season 06 launch order.",
+        details: "This is a watch card until Call of Duty confirms the date, maps, modes, Battle Pass, and rewards. It will not turn rumours into calendar facts.",
+        maps: ["Awaiting official Season 06 confirmation."],
+        modes: ["Awaiting official Season 06 confirmation."],
+        rewards: ["Awaiting official Battle Pass and reward confirmation."],
+        access: ["Follow official Black Ops 7 and Warzone news."],
+        links: [
+          { label: "Official Black Ops 7 news", url: "https://www.callofduty.com/au/en/blog/blackops7", official: true },
+          { label: "Detonated: COD news and unconfirmed reports", url: "https://detonated.com/all-modern-warfare-4-beta-rewards-secret-challenges/", official: false }
+        ]
+      }
     ]
   },
   spotify: {

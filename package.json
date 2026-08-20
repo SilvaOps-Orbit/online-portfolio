@@ -5,6 +5,7 @@
   "scripts": {
     "build:react": "vite build",
     "spotify:archive": "node scripts/build-spotify-history.mjs",
+    "release-calendar:refresh": "node scripts/update-release-calendar.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

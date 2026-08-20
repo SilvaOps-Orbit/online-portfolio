@@ -6,7 +6,7 @@ import { createRoot } from "react-dom/client";
 import { CalendarClock, Check, ChevronRight, Clock3, Coins, Dice5, ExternalLink, Eye, Flame, Gamepad2, Gift, Grid3X3, Keyboard, LibraryBig, LockKeyhole, Mouse, RotateCw, Search, Send, SlidersHorizontal, Sparkles, TrendingUp, Trophy, UserRound, Users, WalletCards, X, Youtube } from "lucide-react";
 // Error boundary that renders a graceful fallback if this React island throws.
 import { IslandBoundary } from "./IslandBoundary";
-import type { SteamData, SteamItem } from "./portfolio-types";
+import type { SteamData, SteamItem, SteamReleaseCalendarSnapshot, SteamReleaseEvent } from "./portfolio-types";
 // Reads the baked-in `window.PORTFOLIO_CONFIG` object (set by the build / inline script).
 import { getPortfolioConfig } from "./portfolio-types";
 
@@ -585,6 +585,61 @@ function SteamShowcaseStage({ steam }: { steam: SteamData }) {
   );
 }
 
+function formatEventDate(value?: string): string {
+  if (!value) return "Date TBA";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Date TBA" : date.toLocaleDateString("en-AU", { day: "numeric", month: "short" });
+}
+
+function eventState(event: SteamReleaseEvent): string {
+  const now = Date.now();
+  const start = Date.parse(event.startDate || "");
+  const end = Date.parse(event.endDate || event.startDate || "");
+  if (Number.isFinite(start) && now < start) return "UP NEXT";
+  if (Number.isFinite(end) && now <= end + 86_400_000) return "LIVE NOW";
+  return "RECAP";
+}
+
+function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent[]; snapshot?: SteamReleaseCalendarSnapshot | null }) {
+  const releaseEvents = useMemo(() => (events || []).filter((event) => event.title).slice().sort((left, right) => {
+    const leftTime = Date.parse(left.startDate || "") || Number.POSITIVE_INFINITY;
+    const rightTime = Date.parse(right.startDate || "") || Number.POSITIVE_INFINITY;
+    return leftTime - rightTime;
+  }), [events]);
+  const [selectedId, setSelectedId] = useState("");
+  const selected = releaseEvents.find((event) => event.id === selectedId) || releaseEvents[0];
+
+  useEffect(() => {
+    if (!releaseEvents.some((event) => event.id === selectedId)) setSelectedId(releaseEvents[0]?.id || "");
+  }, [releaseEvents, selectedId]);
+
+  if (!selected) return null;
+  const dateLabel = selected.endDate && formatEventDate(selected.endDate) !== formatEventDate(selected.startDate)
+    ? `${formatEventDate(selected.startDate)} - ${formatEventDate(selected.endDate)}`
+    : formatEventDate(selected.startDate);
+  const detailGroups = [
+    { label: "Maps / content", values: selected.maps },
+    { label: "Modes", values: selected.modes },
+    { label: "Rewards", values: selected.rewards },
+    { label: "Access", values: selected.access }
+  ].filter((group) => group.values?.length);
+
+  return <section className="steam-release-radar" aria-labelledby="steam-release-radar-title">
+    <div className="steam-release-heading"><div><span className="steam-label"><CalendarClock aria-hidden="true" /> Release Intel</span><h3 id="steam-release-radar-title">Upcoming operations, betas, and major events</h3><p className="steam-release-instruction"><span className="steam-release-desktop-instruction">Hover over an operation card to receive its intel briefing.</span><span className="steam-release-mobile-instruction">Tap an operation card to view its intel briefing.</span> Dates and access details link back to the official source.</p>{snapshot?.status && <small className="steam-release-status">{snapshot.stale ? "Last verified intel: " : "Official intel: "}{snapshot.status}</small>}</div><span className="steam-release-count">{releaseEvents.length} tracked</span></div>
+    <div className="steam-release-timeline" role="list" aria-label="Gaming event calendar">
+      {releaseEvents.map((event) => {
+        const active = event.id === selected.id;
+        return <button className={`steam-release-card is-${event.type || "showcase"}${active ? " is-active" : ""}`} key={event.id || event.title} type="button" role="listitem" aria-pressed={active} aria-label={`View intel briefing: ${event.title}`} title={`View intel briefing: ${event.title}`} onMouseEnter={() => setSelectedId(event.id || "")} onFocus={() => setSelectedId(event.id || "")} onClick={() => setSelectedId(event.id || "")}><span className="steam-release-date"><b>{formatEventDate(event.startDate)}</b><small>{event.timezone || "Local time"}</small></span><span className="steam-release-type">{event.type || "event"}</span><strong>{event.title}</strong><small>{event.game || "Gaming event"}</small><em>Intel ready</em><i aria-hidden="true" /></button>;
+      })}
+    </div>
+    <article className="steam-release-detail" aria-live="polite">
+      <div className="steam-release-detail-intro"><span className={`steam-release-live ${eventState(selected).toLowerCase().replace(/\s+/g, "-")}`}>{eventState(selected)}</span><span className="steam-release-detail-date">{dateLabel}{selected.timezone ? ` · ${selected.timezone}` : ""}</span><h4>{selected.title}</h4><p>{selected.details || selected.summary}</p></div>
+      {detailGroups.length > 0 && <div className="steam-release-groups">{detailGroups.map((group) => <div key={group.label}><span>{group.label}</span><ul>{group.values?.map((value) => <li key={value}>{value}</li>)}</ul></div>)}</div>}
+      {selected.links?.length ? <div className="steam-release-links">{selected.links.map((link) => link.url ? <a key={`${link.label}-${link.url}`} href={link.url} target="_blank" rel="noopener noreferrer">{link.official ? "Official: " : ""}{link.label}<ExternalLink aria-hidden="true" /></a> : null)}</div> : null}
+    </article>
+  </section>;
+}
+
 function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   const endpoint = String(getPortfolioConfig().gameSuggestions?.endpoint || "").replace(/\/+$/, "");
   const [game, setGame] = useState("");
@@ -911,6 +966,7 @@ function SteamWishlistSpotlight() {
 // panel, and the scrolling store-radar marquee.
 function SteamActivityDashboard() {
   const [steam, setSteam] = useState<SteamData>(steamFallback);
+  const [releaseSnapshot, setReleaseSnapshot] = useState<SteamReleaseCalendarSnapshot | null>(null);
   const [watchIndex, setWatchIndex] = useState(0);
   const watch = useMemo(() => steam.preorderWatch || [], [steam.preorderWatch]);
 
@@ -942,6 +998,31 @@ function SteamActivityDashboard() {
     };
     void loadSnapshot();
     return () => { controller.abort(); document.removeEventListener("echoops:steam-data", receive); };
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const isLocal = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+    const paths = isLocal
+      ? ["https://silvaops-orbit.github.io/online-portfolio/data/release-calendar.json", "data/release-calendar.json"]
+      : ["data/release-calendar.json"];
+    const loadReleaseCalendar = async () => {
+      for (const path of paths) {
+        try {
+          const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-cache", credentials: path.startsWith("http") ? "omit" : "same-origin", referrerPolicy: "no-referrer", signal: controller.signal });
+          if (!response.ok) continue;
+          const payload = await response.json() as SteamReleaseCalendarSnapshot;
+          if (Array.isArray(payload.events) && payload.events.length) {
+            setReleaseSnapshot(payload);
+            return;
+          }
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+      }
+    };
+    void loadReleaseCalendar();
+    return () => controller.abort();
   }, []);
 
   // Rotates the single "Pre-Order / Top 20 watch" slot through the watch list every 6.5s.
@@ -984,6 +1065,7 @@ function SteamActivityDashboard() {
       <SteamCommunityQueue steam={steam} />
       <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
+      <SteamReleaseCalendar events={releaseSnapshot?.events?.length ? releaseSnapshot.events : steam.releaseCalendar} snapshot={releaseSnapshot} />
       {/* Store-radar marquee: the ticker list is duplicated so the CSS can loop seamlessly.
           The second copy is hidden from assistive tech and skipped via tabIndex. */}
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>

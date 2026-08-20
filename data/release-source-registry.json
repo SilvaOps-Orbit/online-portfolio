@@ -1,0 +1,38 @@
+{
+  "description": "Official source profiles for the Release Intel refresh. Add a game by giving it keyword matches, official news pages or feeds, and verified studio links. X links are shown as sources but are not scraped. Secondary reporting is link-only and must never be presented as confirmed official intel.",
+  "profiles": [
+    {
+      "id": "call-of-duty",
+      "keywords": ["call of duty", "modern warfare", "mw4"],
+      "feeds": [
+        "https://www.callofduty.com/au/en/blog/",
+        "https://www.callofduty.com/au/en/blog/2026/08/call-of-duty-modern-warfare-4-next-early-intel-pc-specs",
+        "https://www.callofduty.com/uk/en/modernwarfare4/beta?path=beta"
+      ],
+      "links": [
+        { "label": "Call of Duty on YouTube", "url": "https://www.youtube.com/callofduty", "official": true },
+        { "label": "@CODUpdates on X", "url": "https://x.com/CODUpdates", "official": true },
+        { "label": "Detonated: COD news and unconfirmed reports", "url": "https://detonated.com/all-modern-warfare-4-beta-rewards-secret-challenges/", "official": false }
+      ]
+    },
+    {
+      "id": "gamescom",
+      "keywords": ["gamescom", "opening night live"],
+      "feeds": ["https://www.gamescom.global/en/live/events"],
+      "links": [
+        { "label": "gamescom on YouTube", "url": "https://www.youtube.com/@gamescom", "official": true },
+        { "label": "@gamescom on X", "url": "https://x.com/gamescom", "official": true }
+      ]
+    },
+    {
+      "id": "fortnite",
+      "keywords": ["fortnite", "battle royale season"],
+      "feeds": ["https://www.fortnite.com/news"],
+      "links": [
+        { "label": "Fortnite news", "url": "https://www.fortnite.com/news", "official": true },
+        { "label": "Fortnite on YouTube", "url": "https://www.youtube.com/@Fortnite", "official": true },
+        { "label": "@Fortnite on X", "url": "https://x.com/Fortnite", "official": true }
+      ]
+    }
+  ]
+}

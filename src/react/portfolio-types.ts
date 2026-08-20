@@ -175,6 +175,33 @@ export interface SteamReplay {
   topGames?: SteamReplayGame[];
 }
 
+export interface SteamReleaseEvent {
+  id?: string;
+  title?: string;
+  game?: string;
+  type?: "showcase" | "beta" | "launch" | "convention" | "drop" | "season";
+  startDate?: string;
+  endDate?: string;
+  timezone?: string;
+  image?: string;
+  summary?: string;
+  details?: string;
+  maps?: string[];
+  modes?: string[];
+  rewards?: string[];
+  access?: string[];
+  links?: Array<{ label?: string; url?: string; official?: boolean }>;
+}
+
+export interface SteamReleaseCalendarSnapshot {
+  generatedAt?: string;
+  lastGoodAt?: string;
+  stale?: boolean;
+  status?: string;
+  sources?: Array<{ title?: string; url?: string; official?: boolean; checkedAt?: string }>;
+  events?: SteamReleaseEvent[];
+}
+
 // The full shape of the Steam dashboard's data model. This is what the static
 // `window.PORTFOLIO_CONFIG.steam` fallback and the fetched `data/steam.json` snapshot both
 // conform to. The dashboard reads lists (mostPlayed, achievements, completedGames, ...),
@@ -199,6 +226,7 @@ export interface SteamData {
   replay?: SteamReplay;
   insights?: SteamInsights;
   spending?: SteamSpending;
+  releaseCalendar?: SteamReleaseEvent[];
 }
 
 export interface SpotifyItem {
