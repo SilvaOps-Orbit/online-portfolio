@@ -4166,16 +4166,22 @@ a.provider-pulse-item:focus-visible {
 .spotify-heatmap-cell:hover { position: relative; z-index: 1; filter: brightness(1.35); transform: scale(1.32); }
 
 .spotify-capsule-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-.spotify-capsule-list article { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 72px; padding: 11px; border: 1px solid color-mix(in srgb, var(--wrapped-a) 21%, var(--line)); background: color-mix(in srgb, #151c21 84%, transparent); transition: transform 180ms ease, border-color 180ms ease; }
-.spotify-capsule-list article:hover { border-color: var(--wrapped-b); transform: translateY(-3px) rotateX(2deg); }
-.spotify-capsule-list article > span { color: var(--wrapped-a); font-size: 0.68rem; font-weight: 950; }
-.spotify-capsule-list article > div { min-width: 0; }
+.spotify-capsule-list button { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 10px; align-items: center; min-height: 72px; padding: 11px; border: 1px solid color-mix(in srgb, var(--wrapped-a) 21%, var(--line)); background: color-mix(in srgb, #151c21 84%, transparent); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.spotify-capsule-list button:hover, .spotify-capsule-list button:focus-visible, .spotify-capsule-list button.is-selected { border-color: var(--wrapped-b); background: color-mix(in srgb, var(--wrapped-b) 12%, #151c21); outline: none; transform: translateY(-3px) rotateX(2deg); }
+.spotify-capsule-list button > span { color: var(--wrapped-a); font-size: 0.68rem; font-weight: 950; }
+.spotify-capsule-list button > div { min-width: 0; }
 .spotify-capsule-list strong,
 .spotify-capsule-list small { display: block; }
 .spotify-capsule-list strong { color: #fffdf7; font-size: 0.78rem; }
 .spotify-capsule-list small,
 .spotify-capsule-list time { color: color-mix(in srgb, #fff 62%, var(--wrapped-c)); font-size: 0.64rem; }
 .spotify-capsule-list time { white-space: nowrap; }
+.spotify-capsule-briefing { display: grid; gap: 7px; margin-top: 12px; padding: 14px; border: 1px solid color-mix(in srgb, var(--wrapped-b) 52%, var(--line)); background: color-mix(in srgb, var(--wrapped-b) 8%, #11171b); animation: spotify-capsule-briefing-in 200ms ease-out both; }
+.spotify-capsule-briefing > span { color: var(--wrapped-a); font-size: 0.64rem; font-weight: 950; letter-spacing: 0.08em; text-transform: uppercase; }
+.spotify-capsule-briefing strong { color: #fffdf7; font-size: 1rem; }
+.spotify-capsule-briefing p { margin: 0; color: color-mix(in srgb, #fff 72%, var(--wrapped-c)); line-height: 1.55; }
+.spotify-capsule-briefing button { width: fit-content; padding: 7px 9px; border: 1px solid color-mix(in srgb, var(--wrapped-c) 45%, var(--line)); border-radius: 4px; background: transparent; color: var(--wrapped-c); font: inherit; font-size: 0.72rem; font-weight: 850; cursor: pointer; }
+@keyframes spotify-capsule-briefing-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 720px) {
   .spotify-library-strip,

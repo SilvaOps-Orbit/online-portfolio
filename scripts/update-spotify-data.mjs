@@ -868,17 +868,21 @@ async function enrichArchiveArtwork(token) {
     const query = cleanText(name, 100);
     if (!query) return "";
     if (artistCache.has(query)) return artistCache.get(query);
-    const result = await spotifyGet("search", token, { q: query, type: "artist", limit: 1 }).catch(() => null);
-    const image = imageFrom(result?.artists?.items?.[0]?.images);
+    const result = await spotifyGet("search", token, { q: `artist:${query}`, type: "artist", limit: 5 }).catch(() => null);
+    const match = result?.artists?.items?.find((item) => cleanText(item?.name, 100).toLowerCase() === query.toLowerCase()) || result?.artists?.items?.[0];
+    const image = imageFrom(match?.images);
     artistCache.set(query, image);
     return image;
   };
   const lookupTrack = async (title, artist = "") => {
-    const query = cleanText([title, artist].filter(Boolean).join(" "), 160);
+    const cleanedTitle = cleanText(title, 120);
+    const cleanedArtist = cleanText(artist, 100);
+    const query = cleanText([cleanedTitle, cleanedArtist].filter(Boolean).join(" "), 160);
     if (!query) return "";
     if (trackCache.has(query)) return trackCache.get(query);
-    const result = await spotifyGet("search", token, { q: query, type: "track", limit: 1, market: "AU" }).catch(() => null);
-    const image = imageFrom(result?.tracks?.items?.[0]?.album?.images);
+    const result = await spotifyGet("search", token, { q: cleanedArtist ? `track:${cleanedTitle} artist:${cleanedArtist}` : `track:${cleanedTitle}`, type: "track", limit: 5, market: "AU" }).catch(() => null);
+    const match = result?.tracks?.items?.find((item) => cleanText(item?.name, 160).toLowerCase() === cleanedTitle.toLowerCase()) || result?.tracks?.items?.[0];
+    const image = imageFrom(match?.album?.images);
     trackCache.set(query, image);
     return image;
   };
@@ -886,12 +890,13 @@ async function enrichArchiveArtwork(token) {
   const topArtists = Array.isArray(archive?.taste?.topArtists) ? archive.taste.topArtists : [];
   const topTracks = Array.isArray(archive?.taste?.topTracks) ? archive.taste.topTracks : [];
   const recentlyPlayed = Array.isArray(archive?.recentlyPlayed) ? archive.recentlyPlayed : [];
-  for (const artist of topArtists) {
-    if (!artist.image) artist.image = await lookupArtist(artist.title);
-  }
-  for (const track of [...topTracks, ...recentlyPlayed]) {
-    if (!track.image) track.image = await lookupTrack(track.title, track.artists?.[0] || "");
-  }
+  await Promise.all(topArtists.filter((artist) => !artist.image).map(async (artist) => { artist.image = await lookupArtist(artist.title); }));
+  await Promise.all([...topTracks, ...recentlyPlayed].filter((track) => !track.image).map(async (track) => {
+    const titleParts = cleanText(track.title, 160).split(" - ");
+    const inferredArtist = track.artists?.[0] || (titleParts.length > 1 ? titleParts.at(-1) : "");
+    const inferredTitle = track.artists?.[0] ? track.title : titleParts.slice(0, -1).join(" - ") || track.title;
+    track.image = await lookupTrack(inferredTitle, inferredArtist);
+  }));
 
   snapshot.artworkSource = "Spotify Web API public artist and album metadata.";
   await writeFile(archiveOutputPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");

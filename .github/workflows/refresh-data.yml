@@ -49,7 +49,7 @@ jobs:
         run: node scripts/preserve-deployed-data.mjs
         env:
           PRESERVE_DATA_BASE_URL: "https://silvaops-orbit.github.io/online-portfolio"
-          PRESERVE_DATA_FILES: "steam.json,steam-wishlist.json,spotify.json,market.json,news.json,github.json,api-status.json,youtube.json,game-suggestion-status.json,release-calendar.json"
+          PRESERVE_DATA_FILES: "steam.json,steam-wishlist.json,spotify.json,spotify-history.json,market.json,news.json,github.json,api-status.json,youtube.json,game-suggestion-status.json,release-calendar.json"
 
       - name: Generate Steam data
         run: node scripts/update-steam-data.mjs
