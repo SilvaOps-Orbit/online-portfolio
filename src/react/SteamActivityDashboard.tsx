@@ -624,7 +624,7 @@ function SteamReleaseCalendar({ events, snapshot }: { events?: SteamReleaseEvent
     { label: "Access", values: selected.access }
   ].filter((group) => group.values?.length);
 
-  return <section className="steam-release-radar" aria-labelledby="steam-release-radar-title">
+  return <section className="steam-release-radar" id="steam-release-intel" aria-labelledby="steam-release-radar-title">
     <div className="steam-release-heading"><div><span className="steam-label"><CalendarClock aria-hidden="true" /> Release Intel</span><h3 id="steam-release-radar-title">Upcoming operations, betas, and major events</h3><p className="steam-release-instruction"><span className="steam-release-desktop-instruction">Hover over an operation card to receive its intel briefing.</span><span className="steam-release-mobile-instruction">Tap an operation card to view its intel briefing.</span> Dates and access details link back to the official source.</p>{snapshot?.status && <small className="steam-release-status">{snapshot.stale ? "Last verified intel: " : "Official intel: "}{snapshot.status}</small>}</div><span className="steam-release-count">{releaseEvents.length} tracked</span></div>
     <div className="steam-release-timeline" role="list" aria-label="Gaming event calendar">
       {releaseEvents.map((event) => {
@@ -1063,9 +1063,9 @@ function SteamActivityDashboard() {
       </div>
       <SteamWishlistSpotlight />
       <SteamCommunityQueue steam={steam} />
+      <SteamReleaseCalendar events={releaseSnapshot?.events?.length ? releaseSnapshot.events : steam.releaseCalendar} snapshot={releaseSnapshot} />
       <SteamInsightsDeck steam={steam} />
       {steam.replay?.year && <SteamReplayPanel replay={steam.replay} />}
-      <SteamReleaseCalendar events={releaseSnapshot?.events?.length ? releaseSnapshot.events : steam.releaseCalendar} snapshot={releaseSnapshot} />
       {/* Store-radar marquee: the ticker list is duplicated so the CSS can loop seamlessly.
           The second copy is hidden from assistive tech and skipped via tabIndex. */}
       <div className="steam-store-strip"><span className="steam-label">Steam Store Radar</span><div className="store-marquee" aria-label="Steam store highlights"><div className="store-marquee-track">{[...ticker, ...ticker].map((item, index) => <a className="store-deal" key={`${item.appid || item.title}-${index}`} href={item.url || "https://store.steampowered.com/"} target="_blank" rel="noopener noreferrer" aria-hidden={index >= ticker.length || undefined} tabIndex={index >= ticker.length ? -1 : undefined}><span className="store-deal-tag">{item.tag || item.category || "Steam"}</span><span className="store-deal-title">{item.title || item.name}</span><span className="store-deal-price">{item.price || "Price TBA"}</span>{Boolean(item.discount) && <span className="store-deal-discount">{item.discount}% off</span>}</a>)}</div></div></div>

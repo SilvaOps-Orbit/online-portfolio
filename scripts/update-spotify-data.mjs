@@ -112,11 +112,19 @@ function compactFacts(facts, limit = 10) {
     .map((item) => item.fact);
 }
 
-function fallbackData(reason) {
+function safeRefreshError(error) {
+  const message = cleanText(error instanceof Error ? error.message : "Spotify refresh could not be completed.");
+  return message.replace(/(?:Bearer|Basic)\s+[A-Za-z0-9._~+\/-]+=*/gi, "[credential removed]").slice(0, 220);
+}
+
+function fallbackData(reason, refreshError = "") {
   return {
     generatedAt: new Date().toISOString(),
     source: reason,
-    status: "Spotify is ready for API secrets. Add the Spotify GitHub secrets to publish live listening and playlists.",
+    status: refreshError
+      ? `Spotify refresh needs attention: ${refreshError}`
+      : "Spotify is ready for API secrets. Add the Spotify GitHub secrets to publish live listening and playlists.",
+    refreshError,
     profile: {
       displayName: "Spotify",
       url: ""
@@ -265,9 +273,10 @@ function withLastValues(output, previous) {
   }
 
   if (result.stale) {
-    result.status = result.lastGoodAt
+    const cachedStatus = result.lastGoodAt
       ? `Showing last saved Spotify values from ${result.lastGoodAt}.`
       : "Spotify could not refresh right now, so saved values are being shown.";
+    result.status = result.refreshError ? `${cachedStatus} ${result.refreshError}` : cachedStatus;
   }
 
   return result;
@@ -906,9 +915,10 @@ async function main() {
 }
 
 main().catch(async (error) => {
-  console.error(error);
+  const refreshError = safeRefreshError(error);
+  console.error(`Spotify refresh failed: ${refreshError}`);
   const previous = await readExistingData();
-  const output = withLastValues(fallbackData("spotify-api-error"), previous);
+  const output = withLastValues(fallbackData("spotify-api-error", refreshError), previous);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 });
