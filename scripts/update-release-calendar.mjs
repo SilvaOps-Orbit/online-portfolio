@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
 const outputPath = new URL("../data/release-calendar.json", import.meta.url);
-const allowedHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com", "youtube.com", "www.youtube.com", "x.com", "www.x.com", "detonated.com", "www.detonated.com", "rockstargames.com", "www.rockstargames.com"]);
+const allowedHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com", "youtube.com", "www.youtube.com", "x.com", "www.x.com", "detonated.com", "www.detonated.com", "rockstargames.com", "www.rockstargames.com", "blog.playstation.com"]);
 const fetchableHosts = new Set(["callofduty.com", "www.callofduty.com", "gamescom.global", "www.gamescom.global", "fortnite.com", "www.fortnite.com", "store.steampowered.com"]);
 const timeoutMs = 18_000;
 const socialCacheMs = 60 * 60 * 1_000;
@@ -122,6 +122,111 @@ const fallbackEvents = [
     rewards: ["No launch rewards were announced by Rockstar."],
     access: ["Follow Rockstar's official GTA VI hub for release updates."],
     links: [{ label: "Official GTA VI launch announcement", url: "https://www.rockstargames.com/newswire/article/ak3ak31a49a221/grand-theft-auto-vi-is-now-set-to-launch-november-19-2026", official: true }]
+  },
+  {
+    id: "lous-lagoon-2026",
+    title: "Lou's Lagoon Launch",
+    game: "Lou's Lagoon",
+    type: "launch",
+    startDate: "2026-08-27T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "A high-flying adventure lands on PlayStation 5.",
+    details: "Tiny Roar's adventure blends seaplane customisation, building, crafting, and exploration around the island of Limbo.",
+    maps: ["Island of Limbo"],
+    modes: ["Adventure", "Building and crafting", "Seaplane customisation"],
+    rewards: ["Deluxe Edition includes a Lifeguard outfit, bubble-engine upgrade, and beachside items."],
+    access: ["Launches on PlayStation 5."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/07/22/fresh-look-at-lous-lagoon-coming-to-ps5-on-august-27/", official: true }]
+  },
+  {
+    id: "crimson-moon-2026",
+    title: "Crimson Moon Launch",
+    game: "Crimson Moon",
+    type: "launch",
+    startDate: "2026-09-01T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "A gothic high-renaissance action RPG with online co-op.",
+    details: "Play as a Nephilim reclaiming Gildenarch from demonic corruption, with replayable hunts, boss encounters, and two-player online co-op.",
+    maps: ["Gildenarch"],
+    modes: ["Action RPG", "Two-player online co-op", "Replayable hunts"],
+    rewards: ["No launch rewards announced."],
+    access: ["Launches on PlayStation 5."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/08/04/crimson-moon-battles-demonic-corruption-on-september-1/", official: true }]
+  },
+  {
+    id: "onimusha-way-of-the-sword-2026",
+    title: "Onimusha: Way of the Sword Launch",
+    game: "Onimusha: Way of the Sword",
+    type: "launch",
+    startDate: "2026-09-04T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "Capcom's supernatural sword-fighting return arrives in September.",
+    details: "Miyamoto Musashi's journey through a dark fantasy Kyoto combines exploration, sword stances, parries, and Oni powers.",
+    maps: ["Twisted Edo-period Kyoto", "Kiyomizu-dera Temple demo area"],
+    modes: ["Single-player action", "Demo available before launch"],
+    rewards: ["Demo save data unlocks the Charm: Kubi Akari in the full game."],
+    access: ["Pre-orders are open through PlayStation Store."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/08/06/onimusha-way-of-the-sword-opens-up-in-the-final-preview/", official: true }]
+  },
+  {
+    id: "marvel-wolverine-2026",
+    title: "Marvel's Wolverine Launch",
+    game: "Marvel's Wolverine",
+    type: "launch",
+    startDate: "2026-09-15T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "Insomniac's Wolverine arrives on PlayStation 5.",
+    details: "The official story update confirms the PlayStation 5 date, pre-orders, a prequel comic, and an upcoming soundtrack release.",
+    maps: ["Global story locations to be revealed by Insomniac"],
+    modes: ["Single-player action adventure"],
+    rewards: ["Pre-orders include early unlock bonuses and PS avatars."],
+    access: ["PlayStation 5 release; pre-orders available."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/07/23/marvels-wolverine-story-trailer-new-art-composer-details-and-more/", official: true }]
+  },
+  {
+    id: "control-resonant-2026",
+    title: "Control Resonant Launch",
+    game: "Control Resonant",
+    type: "launch",
+    startDate: "2026-09-24T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "Remedy's paranormal action sequel heads to a warped Manhattan.",
+    details: "Dylan Faden takes the lead, wielding the shapeshifting Aberrant weapon through a city reshaped by paranatural forces.",
+    maps: ["Paranatural Manhattan"],
+    modes: ["Single-player action adventure"],
+    rewards: ["No launch rewards announced."],
+    access: ["Launches globally on PlayStation 5."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/06/02/control-resonant-launches-september-24-on-ps5/", official: true }]
+  },
+  {
+    id: "silent-hill-townfall-2026",
+    title: "Silent Hill: Townfall Launch",
+    game: "Silent Hill: Townfall",
+    type: "launch",
+    startDate: "2026-09-24T00:00:00+10:00",
+    timezone: "AEST",
+    summary: "A first-person psychological horror story returns to Silent Hill.",
+    details: "Simon explores St. Amelia with a portable CRTV used to navigate signals, solve puzzles, and survive the Otherworld.",
+    maps: ["St. Amelia"],
+    modes: ["First-person psychological horror", "Puzzle and stealth survival"],
+    rewards: ["Pre-order cosmetics; Deluxe includes 48-hour early access and digital extras."],
+    access: ["Pre-orders are open through PlayStation Store."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/06/02/silent-hill-townfall-launches-september-24-on-ps5/", official: true }]
+  },
+  {
+    id: "ace-combat-8-2026",
+    title: "Ace Combat 8: Wings of Theve Launch",
+    game: "Ace Combat 8: Wings of Theve",
+    type: "launch",
+    startDate: "2026-10-02T00:00:00+11:00",
+    timezone: "AEDT",
+    summary: "A new Strangereal campaign launches in October.",
+    details: "The campaign brings new boss battles, allies and rivals, and the Land Battleship to the next Ace Combat story.",
+    maps: ["Strangereal campaign theatres"],
+    modes: ["Single-player campaign"],
+    rewards: ["Deluxe Edition holders receive early access from 28 September."],
+    access: ["Launches on PlayStation 5."],
+    links: [{ label: "Official PlayStation briefing", url: "https://blog.playstation.com/2026/06/02/ace-combat-8-wings-of-theve-launches-globally-october-2-on-ps5/", official: true }]
   },
   {
     id: "codm-season-6-to-7-2026",
