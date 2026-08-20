@@ -405,6 +405,73 @@ body:not(.is-booting) .boot-screen {
   color: var(--text);
 }
 
+.site-nav #steam-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.steam-nav-caret {
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 180ms ease;
+}
+
+.site-nav #steam-nav-link[aria-expanded="true"] .steam-nav-caret {
+  transform: translateY(2px) rotate(225deg);
+}
+
+.steam-subnav {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 10px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: calc(100vw - 24px);
+  padding: 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 44%, var(--line));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--panel) 96%, var(--bg));
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.34);
+  transform: translateX(-50%);
+}
+
+.steam-subnav.is-open { animation: steam-subnav-arrive 180ms ease-out both; }
+
+.steam-subnav a {
+  min-height: 34px;
+  padding: 7px 9px;
+  border-radius: 5px;
+  color: var(--muted);
+  font-size: 0.73rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.steam-subnav a:hover,
+.steam-subnav a:focus-visible {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--text);
+  outline: none;
+}
+
+@keyframes steam-subnav-arrive {
+  from { opacity: 0; transform: translateX(-50%) translateY(-7px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+#steam-activity,
+#steam-release-intel,
+#steam-replay,
+#steam-suggestions,
+#steam-wishlist { scroll-margin-top: 112px; }
+
 .fact-button {
   display: inline-flex;
   align-items: center;
@@ -751,6 +818,21 @@ body:not(.is-booting) .boot-screen {
 .site-header.is-compact-menu .site-nav a {
   width: 100%;
 }
+
+.site-header.is-compact-menu .steam-subnav {
+  position: static;
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: none;
+  margin-top: 4px;
+  transform: none;
+  box-shadow: none;
+}
+
+.site-header.is-compact-menu .steam-subnav.is-open { animation-name: header-menu-arrive; }
+.site-header.is-compact-menu .steam-subnav a { text-align: center; }
 
 .site-header.is-compact-menu .header-actions {
   display: grid;

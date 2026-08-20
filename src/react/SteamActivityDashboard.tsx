@@ -513,7 +513,7 @@ function SteamReplayPanel({ replay }: { replay: NonNullable<SteamData["replay"]>
   ];
 
   return (
-    <section className="steam-replay" aria-labelledby="steam-replay-title">
+    <section className="steam-replay" id="steam-replay" aria-labelledby="steam-replay-title">
       <div className="steam-replay-heading">
         <div><span className="steam-label">Latest Steam Replay</span><h3 id="steam-replay-title">The {replay.year || 2025} campaign log</h3><p>Steam's public year-in-review snapshot, kept as a last-good local record between refreshes.</p></div>
         {replay.sourceUrl && <a className="button ghost" href={replay.sourceUrl} target="_blank" rel="noopener noreferrer">Open full Replay</a>}
@@ -931,7 +931,7 @@ function SteamCommunityQueue({ steam }: { steam: SteamData }) {
   };
 
   return (
-    <section className="steam-community" aria-labelledby="steam-community-title">
+    <section className="steam-community" id="steam-suggestions" aria-labelledby="steam-community-title">
       <div className="steam-community-copy"><span className="steam-label"><Users aria-hidden="true" /> Community queue</span><h3 id="steam-community-title">What should EchoOps play next?</h3><p>Recommend a Steam game by name or paste its Store link. Matching Store details are added automatically, while your browser identity stays private.</p><div className="steam-community-status" role="status"><LockKeyhole aria-hidden="true" /><span>{status}</span></div></div>
       <form className="steam-suggestion-form" onSubmit={submit}>
         <label htmlFor="steam-suggestion-game">Game name or Steam Store link</label>
@@ -1031,7 +1031,7 @@ function SteamWishlistSpotlight() {
 
   const wishlistUrl = snapshot.profileUrl || configuredUrl;
   return (
-    <section className="steam-wishlist-spotlight" aria-labelledby="steam-wishlist-title">
+    <section className="steam-wishlist-spotlight" id="steam-wishlist" aria-labelledby="steam-wishlist-title">
       <a className="steam-wishlist-tab" href={wishlistUrl} target="_blank" rel="noopener noreferrer"><Gift aria-hidden="true" /><span>Buy me a game off my wishlist</span><ExternalLink aria-hidden="true" /></a>
       {game ? <a className="steam-wishlist-game" key={game.appid} href={wishlistUrl} target="_blank" rel="noopener noreferrer" title={`Find ${game.title} on the EchoOps wishlist and buy it as a gift`}>
         <SteamArtwork item={{ appid: game.appid, image: game.image }} title={game.title} className="steam-wishlist-art" />
@@ -1128,7 +1128,7 @@ function SteamActivityDashboard() {
   return (
     <>
       <p className="data-status">{steam.status || (steam.stale ? `Showing the last saved Steam snapshot from ${formatDate(steam.lastGoodAt)}.` : `Steam data updated ${formatDate(steam.generatedAt)}.`)}</p>
-      <div className="steam-layout">
+      <div className="steam-layout" id="steam-activity">
         <article className="steam-feature">
           {(steam.profile?.personaName || steam.profile?.avatarFull) && <div className="steam-profile-card">{steam.profile.avatarFull && <img className="steam-avatar" src={steam.profile.avatarFull} alt={`${steam.profile.personaName || "Steam"} avatar`} loading="lazy" />}<div><span className="steam-persona">{steam.profile.personaName || "Steam Profile"}</span><span className="steam-updated">{steam.generatedAt ? `Updated ${formatDate(steam.generatedAt)}` : ""}</span></div></div>}
           <div className="steam-actions">{steam.profileUrl && <a className="button ghost" href={steam.profileUrl} target="_blank" rel="noopener noreferrer">Steam Profile</a>}{steam.steamDbUrl && <a className="button" href={steam.steamDbUrl} target="_blank" rel="noopener noreferrer">SteamDB</a>}</div>

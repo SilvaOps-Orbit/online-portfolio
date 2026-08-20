@@ -3872,7 +3872,16 @@
     const toggle = document.getElementById("nav-toggle");
     const header = qs(".site-header");
     const languageSelect = document.getElementById("language-select");
+    const steamLink = document.getElementById("steam-nav-link");
+    const steamSubnav = document.getElementById("steam-subnav");
     let measureFrame = 0;
+
+    const setSteamSubnavOpen = (open) => {
+      if (!steamLink || !steamSubnav) return;
+      steamSubnav.hidden = !open;
+      steamSubnav.classList.toggle("is-open", open);
+      steamLink.setAttribute("aria-expanded", String(open));
+    };
 
     const setMenuOpen = (open) => {
       if (!toggle || !menu || !header) return;
@@ -3915,20 +3924,33 @@
       qsa("a", nav).forEach((link) => {
         link.addEventListener("click", () => {
           setActiveNav(link.getAttribute("href"));
-          setMenuOpen(false);
+          if (link === steamLink) {
+            setSteamSubnavOpen(true);
+          } else {
+            setSteamSubnavOpen(false);
+            setMenuOpen(false);
+          }
         });
+      });
+
+      qsa("a", steamSubnav).forEach((link) => {
+        link.addEventListener("click", () => setMenuOpen(false));
       });
 
       document.addEventListener("click", (event) => {
         if (toggle.getAttribute("aria-expanded") === "true" && !header.contains(event.target)) {
           setMenuOpen(false);
         }
+        if (!header.contains(event.target)) setSteamSubnavOpen(false);
       });
 
       document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
-          setMenuOpen(false);
-          toggle.focus();
+        if (event.key === "Escape") {
+          setSteamSubnavOpen(false);
+          if (toggle.getAttribute("aria-expanded") === "true") {
+            setMenuOpen(false);
+            toggle.focus();
+          }
         }
       });
 
