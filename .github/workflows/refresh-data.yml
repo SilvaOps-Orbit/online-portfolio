@@ -8,6 +8,11 @@ on:
       - "scripts/**"
       - "portfolio.config.js"
       - "data/**"
+      - "src/**"
+      - "assets/**"
+      - "styles.css"
+      - "index.html"
+      - "app.js"
       - ".github/workflows/**"
   schedule:
     # Backup refresh for all generated JSON. Staggered away from the other data jobs.
