@@ -18,6 +18,8 @@ const providers = [
   { id: "rss", label: "RSS feeds", role: "Publisher fallbacks", snapshot: "news.json", coverage: "snapshot" },
   { id: "genius", label: "Genius", role: "Song and artist context", snapshot: "spotify.json", coverage: "snapshot" },
   { id: "audiodb", label: "TheAudioDB", role: "Artist cross-reference", snapshot: "spotify.json", coverage: "snapshot" },
+  { id: "release-intel", label: "Release Intel", role: "Official game events and beta calendar", snapshot: "release-calendar.json", coverage: "snapshot" },
+  { id: "ensembledata", label: "EnsembleData", role: "Verified public X account monitoring", snapshot: "release-calendar.json", coverage: "release-social" },
   { id: "jokeapi", label: "JokeAPI", role: "Ops Console jokes", coverage: "browser" },
   { id: "uselessfacts", label: "Useless Facts", role: "Daily fact", coverage: "browser" },
   { id: "counterapi", label: "CounterAPI", role: "Credential-isolated raw counter", coverage: "browser" },
@@ -97,6 +99,17 @@ async function buildSnapshot(existing) {
         status: snapshotStatus(snapshot, provider),
         checkedAt: cleanText(snapshot?.lastGoodAt || snapshot?.generatedAt, 60) || null,
         source: `${provider.snapshot} generated snapshot`,
+        statusUrl: ""
+      };
+    }
+    if (provider.coverage === "release-social") {
+      const snapshot = snapshotFiles.get(provider.snapshot);
+      const social = snapshot?.socialSignals;
+      return {
+        ...provider,
+        status: !social?.checkedAt ? "unknown" : snapshot?.stale === true ? "degraded" : "up",
+        checkedAt: cleanText(social?.checkedAt, 60) || null,
+        source: cleanText(social?.status, 180) || "ENSEMBLEDATA_API_KEY is not configured for the release refresh.",
         statusUrl: ""
       };
     }

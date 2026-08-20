@@ -1,8 +1,7 @@
 name: Refresh GitHub Snapshot
 
 on:
-  schedule:
-    - cron: "13,43 * * * *"
+  # Legacy manual fallback. refresh-data.yml owns scheduled publishing.
   workflow_dispatch:
 
 permissions:

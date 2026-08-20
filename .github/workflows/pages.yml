@@ -1,9 +1,7 @@
 name: Deploy Portfolio to GitHub Pages
 
 on:
-  push:
-    branches:
-      - main
+  # Legacy manual fallback. refresh-data.yml is the sole scheduled Pages publisher.
   workflow_dispatch:
 
 permissions:

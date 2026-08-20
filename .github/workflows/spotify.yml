@@ -1,8 +1,7 @@
 name: Refresh Spotify Data
 
 on:
-  schedule:
-    - cron: "1,6,11,16,21,26,31,36,41,46,51,56 * * * *"
+  # Legacy manual fallback. refresh-data.yml owns scheduled publishing.
   workflow_dispatch:
 
 permissions:

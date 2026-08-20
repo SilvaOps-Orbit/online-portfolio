@@ -1,10 +1,7 @@
 name: Refresh Market and News Data
 
 on:
-  schedule:
-    # GitHub Actions scheduled workflows support a shortest interval of 5 minutes.
-    # Start at minute 2 to avoid the busiest top-of-hour queue.
-    - cron: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *"
+  # Legacy manual fallback. refresh-data.yml owns scheduled publishing.
   workflow_dispatch:
 
 permissions:

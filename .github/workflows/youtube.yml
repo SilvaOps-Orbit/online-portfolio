@@ -1,8 +1,7 @@
 name: Refresh YouTube Data
 
 on:
-  schedule:
-    - cron: "17 * * * *"
+  # Legacy manual fallback. refresh-data.yml owns scheduled publishing.
   workflow_dispatch:
 
 permissions:
