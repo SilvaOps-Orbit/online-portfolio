@@ -407,6 +407,28 @@ function withLastValues(output, previous) {
     result.stale = true;
   }
 
+  // Achievement collection endpoints can fail independently while the rest of the Steam
+  // refresh succeeds. Keep their last verified totals instead of publishing a misleading 0/0.
+  if (Array.isArray(result.achievements) && result.achievements.length && Array.isArray(previous.stats) && previous.stats.length) {
+    const previousStats = new Map(previous.stats.map((stat) => [stat.label, stat]));
+    const emptyAchievementStat = (stat) => {
+      const value = String(stat?.value || "").trim();
+      return (stat?.label === "Achievement Games" || stat?.label === "100% Games")
+        ? value === "0"
+        : stat?.label === "Achievements" && /^0\s*\/\s*0$/.test(value);
+    };
+    let usedPreviousAchievementStats = false;
+    result.stats = result.stats.map((stat) => {
+      const previousStat = previousStats.get(stat.label);
+      if (previousStat && emptyAchievementStat(stat)) {
+        usedPreviousAchievementStats = true;
+        return previousStat;
+      }
+      return stat;
+    });
+    if (usedPreviousAchievementStats) result.stale = true;
+  }
+
   if (result.source === "steam-web-api") {
     result.lastGoodAt = result.generatedAt;
     result.stale = false;
@@ -807,6 +829,8 @@ async function main() {
 
   output = withLastValues(output, previous);
   output.currentlyPlaying = await enrichGameArtwork(output.currentlyPlaying);
+  output.achievements = await enrichGameArtwork(output.achievements);
+  output.completedGames = await enrichGameArtwork(output.completedGames);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
   console.log(`Wrote Steam data for ${steamId} to ${outputPath.pathname}`);
