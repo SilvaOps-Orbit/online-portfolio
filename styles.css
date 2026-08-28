@@ -8967,6 +8967,10 @@ html.user-reduced-motion *::after {
   resize: vertical;
 }
 
+.project-brief-field textarea.brief-short-textarea {
+  min-height: 78px;
+}
+
 .project-brief-field input:focus,
 .project-brief-field select:focus,
 .project-brief-field textarea:focus {
@@ -8985,6 +8989,34 @@ html.user-reduced-motion *::after {
 .project-brief-form-status {
   color: var(--muted);
   font-size: 0.86rem;
+}
+
+.brief-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.brief-consent input {
+  width: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--accent);
+}
+
+.brief-readiness {
+  color: var(--accent-2);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.brief-readiness.is-ready {
+  color: #72e59c;
 }
 
 @media (max-width: 700px) {

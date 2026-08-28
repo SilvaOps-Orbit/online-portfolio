@@ -33,6 +33,7 @@
   const cartTotal = document.getElementById("brief-cart-total");
   const cartLines = document.getElementById("brief-price-lines");
   const cartNote = document.getElementById("brief-cart-note");
+  const readiness = document.getElementById("brief-readiness");
 
   if (!form || !profile.email) return;
 
@@ -329,13 +330,40 @@
     }
   };
 
+  const updateReadiness = () => {
+    if (!readiness) return;
+    const checks = [
+      document.getElementById("brief-name")?.value.trim(),
+      document.getElementById("brief-email")?.value.trim(),
+      typeSelect?.value,
+      timelineSelect?.value,
+      budgetRange?.value,
+      contactSelect?.value,
+      document.getElementById("brief-goal")?.value.trim(),
+      document.getElementById("brief-estimate-acknowledgement")?.checked
+    ];
+    const complete = checks.filter(Boolean).length;
+    const isReady = complete === checks.length;
+    readiness.classList.toggle("is-ready", isReady);
+    readiness.textContent = isReady
+      ? "Project brief: good to send."
+      : `Project brief: ${complete} of ${checks.length} essentials ready.`;
+  };
+
   form.addEventListener("input", (event) => {
-    if (event.target.matches("input, select, textarea")) estimateBuild();
+    if (event.target.matches("input, select, textarea")) {
+      estimateBuild();
+      updateReadiness();
+    }
   });
   form.addEventListener("change", (event) => {
-    if (event.target.matches("input, select, textarea")) estimateBuild();
+    if (event.target.matches("input, select, textarea")) {
+      estimateBuild();
+      updateReadiness();
+    }
   });
   estimateBuild();
+  updateReadiness();
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -365,6 +393,13 @@
       `Estimate notes: ${estimateNote?.textContent || "Not provided"}`,
       `Target timeline: ${value("timeline")}`,
       `Preferred contact: ${value("contactPreference")}`,
+      `Location: ${value("location")}`,
+      `Preferred start date: ${value("preferredStartDate")}`,
+      `Ongoing support: ${value("maintenancePreference")}`,
+      `Support preference: ${value("supportPreference")}`,
+      `Found EchoOps via: ${value("referralSource")}`,
+      `Showcase permission: ${value("showcasePermission")}`,
+      `Planning estimate acknowledged: ${details.has("estimateAcknowledgement") ? "Yes" : "No"}`,
       ...(value("type") === "Build a web portfolio" ? [
         `Portfolio style: ${value("portfolioStyle")}`,
         `Portfolio features: ${checkedValues("portfolioFeature").join(", ") || "Not provided"}`
@@ -400,6 +435,18 @@
       "",
       "Notes, links, and must-haves:",
       value("notes"),
+      "",
+      "Existing setup, tools, or equipment:",
+      value("existingSetup"),
+      "",
+      "Must-haves:",
+      value("mustHaves"),
+      "",
+      "Nice-to-haves:",
+      value("niceToHaves"),
+      "",
+      "Design references or examples:",
+      value("designReferences"),
       "",
       "Sent from the EchoOps project brief."
     ].join("\n");

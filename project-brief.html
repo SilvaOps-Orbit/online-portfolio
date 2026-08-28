@@ -48,6 +48,18 @@
               <label for="brief-organisation">Organisation or project name</label>
               <input id="brief-organisation" name="organisation" autocomplete="organization">
             </div>
+            <div class="project-brief-field">
+              <label for="brief-location" data-help="This helps confirm whether a project can be handled remotely or may need an on-site visit.">Where are you based?</label>
+              <select id="brief-location" name="location">
+                <option>Melbourne / Victoria</option><option>Elsewhere in Australia</option><option>Outside Australia</option><option>Remote only</option>
+              </select>
+            </div>
+            <div class="project-brief-field">
+              <label for="brief-referral" data-help="This is optional, but it helps EchoOps learn where people are finding the work.">How did you find EchoOps?</label>
+              <select id="brief-referral" name="referralSource">
+                <option>Portfolio website</option><option>GitHub</option><option>Discord</option><option>YouTube</option><option>Friend or referral</option><option>Search engine</option><option>Other</option>
+              </select>
+            </div>
           </div>
         </section>
 
@@ -90,6 +102,10 @@
                 <option>Discord</option>
                 <option>Either works</option>
               </select>
+            </div>
+            <div class="project-brief-field">
+              <label for="brief-start-date" data-help="This is the earliest date the project can realistically begin. It is different from the delivery timeline.">Preferred start date</label>
+              <input id="brief-start-date" name="preferredStartDate" type="date">
             </div>
             <section class="brief-conditional full" id="brief-portfolio-options" aria-hidden="false">
               <div class="brief-conditional-heading">
@@ -264,6 +280,48 @@
               </div>
               </div>
             </section>
+            <section class="brief-conditional brief-project-context full" aria-labelledby="brief-context-title">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Project context</span><h3 id="brief-context-title">Give the build a useful starting point.</h3></div>
+                <p>These optional details make the first conversation clearer without locking anyone into a final plan.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-maintenance" data-help="Choose whether the project needs support after launch, such as updates, small changes, or monitoring.">Ongoing support after launch</label>
+                  <select id="brief-maintenance" name="maintenancePreference">
+                    <option>No ongoing support planned</option><option>Occasional help when needed</option><option>Monthly upkeep and small improvements</option><option>Not sure yet</option>
+                  </select>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-on-site" data-help="For home or company network work, this tells EchoOps whether the request is remote, on-site, or either. On-site availability is confirmed before work begins.">Support preference</label>
+                  <select id="brief-on-site" name="supportPreference">
+                    <option>Remote support is fine</option><option>On-site support may be needed</option><option>Either works</option><option>Not sure yet</option>
+                  </select>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-existing-setup" data-help="List any useful current tools or equipment, such as a web host, router model, Discord server, current website, or software already in use.">Existing setup, tools, or equipment</label>
+                  <textarea id="brief-existing-setup" name="existingSetup" placeholder="For example: current website link, hosting provider, router model, Discord server, software, or anything already built."></textarea>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-must-haves" data-help="Must-haves are the pieces that make the project successful. They are protected first when balancing scope and budget.">Must-haves</label>
+                  <textarea id="brief-must-haves" name="mustHaves" placeholder="The things this project cannot be without."></textarea>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-nice-to-haves" data-help="Nice-to-haves are valuable extras that can be phased in later if they do not fit the first budget or timeline.">Nice-to-haves</label>
+                  <textarea id="brief-nice-to-haves" name="niceToHaves" placeholder="Useful extras that could be added later."></textarea>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-references" data-help="Add up to three links or describe a style you like. This is only a visual reference, not something that will be copied.">Design references or examples</label>
+                  <textarea class="brief-short-textarea" id="brief-references" name="designReferences" placeholder="Up to three links, or a short description of a style you like."></textarea>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-showcase-permission" data-help="This controls whether EchoOps can mention or show completed work in a portfolio, social post, or other media. It can always be discussed again before anything is shared.">May EchoOps showcase this work after it is complete?</label>
+                  <select id="brief-showcase-permission" name="showcasePermission">
+                    <option>Ask me before sharing anything</option><option>Yes, share the work with my company or project name</option><option>Yes, share the work but keep my name private</option><option>No, please keep this project confidential</option>
+                  </select>
+                </div>
+              </div>
+            </section>
             <section class="brief-estimate full" aria-labelledby="brief-estimate-title">
               <div class="brief-estimate-heading">
                 <div>
@@ -329,11 +387,16 @@
               <label for="brief-notes">Useful details, links, or must-haves</label>
               <textarea id="brief-notes" name="notes" placeholder="Existing site links, features you have in mind, examples you like, content you already have, and anything that should be avoided."></textarea>
             </div>
+            <label class="brief-consent">
+              <input id="brief-estimate-acknowledgement" name="estimateAcknowledgement" type="checkbox" required>
+              <span>I understand this is a planning estimate, not a final quote or guaranteed delivery date.</span>
+            </label>
           </div>
         </section>
 
         <div class="project-brief-form-actions">
           <button class="button primary" type="submit">Prepare project brief</button>
+          <span class="brief-readiness" id="brief-readiness" role="status" aria-live="polite">Project brief: add your contact details and goal to get ready.</span>
           <span class="project-brief-form-status" id="project-brief-status" role="status">This opens your email app with the details filled in.</span>
         </div>
       </form>
