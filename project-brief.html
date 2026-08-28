@@ -57,7 +57,7 @@
             <div class="project-brief-field">
               <label for="brief-type">What are we building?</label>
               <select id="brief-type" name="type">
-                <option>Website or portfolio</option>
+                <option>Build a web portfolio</option>
                 <option>Interactive dashboard</option>
                 <option>Discord bot or community tool</option>
                 <option>AI automation</option>
@@ -93,6 +93,49 @@
                 <option>Either works</option>
               </select>
             </div>
+            <section class="brief-conditional full" id="brief-portfolio-options" aria-hidden="false">
+              <div class="brief-conditional-heading">
+                <div>
+                  <span class="kicker">Portfolio direction</span>
+                  <h3>Give the portfolio a personality.</h3>
+                </div>
+                <p>Choose the visual direction and the parts that should do the heavy lifting.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-portfolio-style">Portfolio style</label>
+                  <select id="brief-portfolio-style" name="portfolioStyle">
+                    <option>Developer / cyber security</option>
+                    <option>Creative and animated</option>
+                    <option>Clean and professional</option>
+                    <option>Gaming / content creator</option>
+                    <option>Minimal and editorial</option>
+                    <option>Not sure yet</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Useful additions</legend>
+                  <label><input type="checkbox" name="portfolioFeature" value="Project showcase"> Project showcase</label>
+                  <label><input type="checkbox" name="portfolioFeature" value="Animations and interaction"> Animations and interaction</label>
+                  <label><input type="checkbox" name="portfolioFeature" value="Dark mode"> Dark mode</label>
+                  <label><input type="checkbox" name="portfolioFeature" value="Contact form"> Contact form</label>
+                  <label><input type="checkbox" name="portfolioFeature" value="Social or live data integrations"> Social or live data integrations</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-discord-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div>
+                  <span class="kicker">Discord contact</span>
+                  <h3>Where should EchoOps reach you?</h3>
+                </div>
+                <p>Your Discord username is only added to the email brief when you submit it.</p>
+              </div>
+              <div class="project-brief-field">
+                <label for="brief-discord">Discord username</label>
+                <input id="brief-discord" name="discordUsername" autocomplete="off" placeholder="username or @username">
+              </div>
+            </section>
             <div class="project-brief-field full">
               <label for="brief-goal">What should this project achieve?</label>
               <textarea id="brief-goal" name="goal" required placeholder="The outcome, the people it is for, and what would make the project a win."></textarea>
