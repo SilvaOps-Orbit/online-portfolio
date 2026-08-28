@@ -8842,6 +8842,26 @@ html.user-reduced-motion *::after {
 .brief-estimate-heading .kicker { margin: 0; }
 .brief-estimate-heading h3 { margin: 6px 0 0; font-size: 1.02rem; }
 .brief-estimate-total { color: var(--accent-2); font-size: 1.15rem; font-weight: 900; text-align: right; }
+.brief-estimate-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.brief-estimate-metrics div {
+  display: grid;
+  gap: 5px;
+  min-height: 76px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+.brief-estimate-metrics span { color: var(--muted); font-size: 0.74rem; font-weight: 800; text-transform: uppercase; }
+.brief-estimate-metrics output { color: var(--text); font-size: 1.02rem; font-weight: 900; }
+.brief-estimate-metrics output.is-focused { color: var(--accent); }
+.brief-estimate-metrics output.is-balanced { color: var(--accent-2); }
+.brief-estimate-metrics output.is-detailed { color: #ffb84d; }
+.brief-estimate-metrics output.is-high { color: #ff6565; }
 .brief-estimate-grid { align-items: end; }
 .brief-budget-readout { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .brief-range-value { color: var(--accent-2); font-size: 1.04rem; font-weight: 900; }
@@ -8910,6 +8930,7 @@ html.user-reduced-motion *::after {
   .brief-conditional-heading { align-items: start; flex-direction: column; gap: 8px; }
   .brief-estimate-heading { align-items: start; flex-direction: column; gap: 8px; }
   .brief-estimate-total { text-align: left; }
+  .brief-estimate-metrics { grid-template-columns: 1fr; }
   .brief-feature-field { grid-template-columns: 1fr; }
 }
 

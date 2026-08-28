@@ -25,6 +25,9 @@
   const portfolioStyleSelect = document.getElementById("brief-portfolio-style");
   const estimateTotal = document.getElementById("brief-estimate-total");
   const estimateNote = document.getElementById("brief-estimate-note");
+  const effortHours = document.getElementById("brief-effort-hours");
+  const complexityOutput = document.getElementById("brief-complexity");
+  const suggestedRate = document.getElementById("brief-suggested-rate");
 
   if (!form || !profile.email) return;
 
@@ -60,7 +63,8 @@
       "Something else": 24
     };
     let hours = baseHours[typeSelect?.value] || 24;
-    const features = form.querySelectorAll('.brief-conditional:not([hidden]) input[type="checkbox"]:checked').length;
+    const selectedFeatures = [...form.querySelectorAll('.brief-conditional:not([hidden]) input[type="checkbox"]:checked')];
+    const featureHours = selectedFeatures.reduce((total, field) => total + Number(field.dataset.effort || 3), 0);
     const styleHours = {
       "Creative and animated": 9,
       "Developer / cyber security": 5,
@@ -72,7 +76,10 @@
     const scopeWords = ["brief-goal", "brief-notes"]
       .map((id) => document.getElementById(id)?.value.trim().split(/\s+/).filter(Boolean).length || 0)
       .reduce((total, count) => total + count, 0);
-    hours += features * 3 + (styleHours[portfolioStyleSelect?.value] || 0) + Math.min(10, Math.floor(scopeWords / 35));
+    const portfolioStyleHours = typeSelect?.value === "Build a web portfolio"
+      ? (styleHours[portfolioStyleSelect?.value] || 0)
+      : 0;
+    hours += featureHours + portfolioStyleHours + Math.min(10, Math.floor(scopeWords / 35));
     if (newSkillSelect?.value === "unsure") hours += 5;
     if (newSkillSelect?.value === "yes") hours = Math.ceil(hours * 1.3 + 8);
 
@@ -101,6 +108,13 @@
         ? `${currency(guideLow)} to ${currency(guideHigh)} / hour`
         : `${currency(guideLow)} to ${currency(guideHigh)}`;
     }
+    if (effortHours) effortHours.textContent = `${lowHours}-${highHours} hrs`;
+    if (suggestedRate) suggestedRate.textContent = `${currency(hourly)}/hr`;
+    if (complexityOutput) {
+      const complexity = hours >= 70 ? "High" : hours >= 42 ? "Detailed" : hours >= 28 ? "Balanced" : "Focused";
+      complexityOutput.textContent = complexity;
+      complexityOutput.className = `is-${complexity.toLowerCase()}`;
+    }
     if (budgetFit) {
       const unit = perHour ? "hourly rate" : "project budget";
       budgetFit.className = "brief-budget-fit";
@@ -121,7 +135,7 @@
         : newSkillSelect?.value === "unsure"
           ? " Includes a small discovery allowance."
           : " Uses established tools and workflow.";
-      estimateNote.textContent = `Estimated scope: about ${lowHours} to ${highHours} hours.${learningNote} This is a planning guide, not a final quote.`;
+      estimateNote.textContent = `Based on the selected build, features, and written scope.${learningNote} Final pricing is confirmed after a proper conversation.`;
     }
   };
 
@@ -154,6 +168,9 @@
       `Payment model: ${value("paymentModel") === "hour" ? "Per hour" : "Per project"}`,
       `Comfortable budget: ${budgetValue?.textContent || "Not provided"}`,
       `Planning estimate: ${estimateTotal?.textContent || "Not provided"}`,
+      `Projected effort: ${effortHours?.textContent || "Not provided"}`,
+      `Scope complexity: ${complexityOutput?.textContent || "Not provided"}`,
+      `Suggested rate: ${suggestedRate?.textContent || "Not provided"}`,
       `Estimate notes: ${estimateNote?.textContent || "Not provided"}`,
       `Target timeline: ${value("timeline")}`,
       `Preferred contact: ${value("contactPreference")}`,
@@ -177,7 +194,10 @@
         `Review scope: ${value("securityScope")}`,
         `Review focus: ${checkedValues("securityFocus").join(", ") || "Not provided"}`
       ] : []),
-      ...(value("type") === "Something else" ? [`Closest fit: ${value("otherCategory")}`] : []),
+      ...(value("type") === "Something else" ? [
+        `Closest fit: ${value("otherCategory")}`,
+        `Idea stage: ${value("otherStage")}`
+      ] : []),
       ...(value("contactPreference") === "Discord" ? [`Discord username: ${value("discordUsername")}`] : []),
       "",
       "Goal:",
