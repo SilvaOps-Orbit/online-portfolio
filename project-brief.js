@@ -246,6 +246,10 @@
     const maintenancePlan = maintenancePlans[maintenanceSelect?.value] || maintenancePlans.none;
     const maintenanceIsMonthly = maintenancePaymentSelect?.value === "monthly";
     const maintenancePrice = maintenanceIsMonthly ? maintenancePlan.monthly : maintenancePlan.upfront;
+    const showcaseDiscount = document.getElementById("brief-showcase-permission")?.value === "Yes, share the work with my company or project name" ? 10 : 0;
+    const showcaseDiscountItem = showcaseDiscount
+      ? { label: "Portfolio showcase credit", value: `-${currency(showcaseDiscount)}`, detail: "A thank-you discount for allowing EchoOps to credit the completed work by company or project name." }
+      : null;
     const location = document.getElementById("brief-location")?.value || "";
     const supportPreference = document.getElementById("brief-on-site")?.value || "";
     const networkSetup = typeSelect?.value === "Home or company network setup";
@@ -266,8 +270,8 @@
         ? `${currency(maintenancePlan.monthly)}/month or ${currency(maintenancePlan.upfront)} upfront (${currency(maintenancePlan.upfront / 2)} deposit + ${currency(maintenancePlan.upfront / 2)} final payment).`
         : "No extra support cost selected.";
     }
-    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice;
-    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice;
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice - showcaseDiscount;
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice - showcaseDiscount;
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
     const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
@@ -308,6 +312,7 @@
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
           ...(travelItem ? [travelItem] : []),
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
+          ...(showcaseDiscountItem ? [{ ...showcaseDiscountItem, value: `${showcaseDiscountItem.value} first invoice` }] : []),
           { label: "Your selected rate", value: `${currency(selectedBudget)}/hr`, detail: "The rate preference selected with the budget slider." },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
@@ -318,6 +323,7 @@
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
           ...(travelItem ? [travelItem] : []),
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
+          ...(showcaseDiscountItem ? [showcaseDiscountItem] : []),
           { label: "Your comfortable budget", value: currency(selectedBudget), detail: "The project budget selected with the slider. It does not change the estimate, but shows whether the selected amount fits the scope." },
           ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
           ...(learningPrice ? [{ label: newSkillSelect?.value === "yes" ? "Research and learning" : "Discovery allowance", value: `+${currency(learningPrice)}`, detail: "Allows time to validate a new skill, service, or platform." }] : []),
@@ -354,7 +360,7 @@
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
         ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} solo-delivery allowance, because one person carries the planning, build, testing, communication, and delivery work that a team would normally share. ${timelinePrice.detail}`
-        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${travelItem ? victorianVisit ? " Victorian in-person work includes A$20 for local Myki, petrol, or Uber travel." : interstateVisit ? " In-person work outside Victoria needs a travel quote based on the actual train or plane ticket." : " Overseas in-person work needs a travel quote based on the actual flight and travel requirements." : ""}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${travelItem ? victorianVisit ? " Victorian in-person work includes A$20 for local Myki, petrol, or Uber travel." : interstateVisit ? " In-person work outside Victoria needs a travel quote based on the actual train or plane ticket." : " Overseas in-person work needs a travel quote based on the actual flight and travel requirements." : ""}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""}${showcaseDiscount ? " A$10 has been deducted for named portfolio showcase permission." : ""} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
