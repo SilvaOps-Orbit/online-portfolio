@@ -20,6 +20,7 @@
   const paymentSelect = document.getElementById("brief-payment");
   const budgetRange = document.getElementById("brief-budget-range");
   const budgetValue = document.getElementById("brief-budget-value");
+  const budgetFit = document.getElementById("brief-budget-fit");
   const newSkillSelect = document.getElementById("brief-new-skill");
   const portfolioStyleSelect = document.getElementById("brief-portfolio-style");
   const estimateTotal = document.getElementById("brief-estimate-total");
@@ -88,6 +89,8 @@
       }
     }
     const selectedBudget = Number(budgetRange?.value || 0);
+    const guideLow = perHour ? Math.max(35, hourly - 10) : lowHours * hourly;
+    const guideHigh = perHour ? hourly + 15 : highHours * hourly;
     if (budgetValue) {
       budgetValue.textContent = perHour
         ? `${currency(selectedBudget)} per hour`
@@ -95,8 +98,22 @@
     }
     if (estimateTotal) {
       estimateTotal.textContent = perHour
-        ? `${currency(Math.max(35, hourly - 10))} to ${currency(hourly + 15)} / hour`
-        : `${currency(lowHours * hourly)} to ${currency(highHours * hourly)}`;
+        ? `${currency(guideLow)} to ${currency(guideHigh)} / hour`
+        : `${currency(guideLow)} to ${currency(guideHigh)}`;
+    }
+    if (budgetFit) {
+      const unit = perHour ? "hourly rate" : "project budget";
+      budgetFit.className = "brief-budget-fit";
+      if (selectedBudget < guideLow) {
+        budgetFit.classList.add("is-below");
+        budgetFit.textContent = `${currency(guideLow - selectedBudget)} below the suggested ${unit}.`;
+      } else if (selectedBudget > guideHigh) {
+        budgetFit.classList.add("is-above");
+        budgetFit.textContent = `${currency(selectedBudget - guideHigh)} above the suggested ${unit}.`;
+      } else {
+        budgetFit.classList.add("is-aligned");
+        budgetFit.textContent = `Matches the suggested ${unit} for this scope.`;
+      }
     }
     if (estimateNote) {
       const learningNote = newSkillSelect?.value === "yes"

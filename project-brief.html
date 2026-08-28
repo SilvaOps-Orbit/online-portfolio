@@ -228,7 +228,10 @@
                 <div class="project-brief-field">
                   <label for="brief-budget-range">Your comfortable budget</label>
                   <input id="brief-budget-range" name="budgetAmount" type="range" min="300" max="6000" step="100" value="1500">
-                  <output class="brief-range-value" id="brief-budget-value" for="brief-budget-range">A$1,500 project budget</output>
+                  <div class="brief-budget-readout">
+                    <output class="brief-range-value" id="brief-budget-value" for="brief-budget-range">A$1,500 project budget</output>
+                    <output class="brief-budget-fit" id="brief-budget-fit" aria-live="polite">Loading project fit...</output>
+                  </div>
                 </div>
                 <div class="project-brief-field">
                   <label for="brief-new-skill">Does the build need a new skill or platform?</label>
