@@ -7,6 +7,14 @@
   const typeSelect = document.getElementById("brief-type");
   const contactSelect = document.getElementById("brief-contact");
   const portfolioOptions = document.getElementById("brief-portfolio-options");
+  const typeOptionPanels = {
+    "Build a web portfolio": portfolioOptions,
+    "Interactive dashboard": document.getElementById("brief-dashboard-options"),
+    "Discord bot or community tool": document.getElementById("brief-bot-options"),
+    "AI automation": document.getElementById("brief-automation-options"),
+    "Security or performance review": document.getElementById("brief-security-options"),
+    "Something else": document.getElementById("brief-other-options")
+  };
   const discordOptions = document.getElementById("brief-discord-options");
   const discordInput = document.getElementById("brief-discord");
   const paymentSelect = document.getElementById("brief-payment");
@@ -20,10 +28,12 @@
   if (!form || !profile.email) return;
 
   const updateConditionalFields = () => {
-    const isPortfolio = typeSelect?.value === "Build a web portfolio";
     const usesDiscord = contactSelect?.value === "Discord";
-    portfolioOptions?.toggleAttribute("hidden", !isPortfolio);
-    portfolioOptions?.setAttribute("aria-hidden", String(!isPortfolio));
+    Object.entries(typeOptionPanels).forEach(([type, panel]) => {
+      const isActive = typeSelect?.value === type;
+      panel?.toggleAttribute("hidden", !isActive);
+      panel?.setAttribute("aria-hidden", String(!isActive));
+    });
     discordOptions?.toggleAttribute("hidden", !usesDiscord);
     discordOptions?.setAttribute("aria-hidden", String(!usesDiscord));
     if (discordInput) discordInput.required = usesDiscord;
@@ -49,7 +59,7 @@
       "Something else": 24
     };
     let hours = baseHours[typeSelect?.value] || 24;
-    const features = form.querySelectorAll('input[name="portfolioFeature"]:checked').length;
+    const features = form.querySelectorAll('.brief-conditional:not([hidden]) input[type="checkbox"]:checked').length;
     const styleHours = {
       "Creative and animated": 9,
       "Developer / cyber security": 5,
@@ -104,7 +114,7 @@
       field.addEventListener("input", estimateBuild);
       field.addEventListener("change", estimateBuild);
     });
-  form.querySelectorAll('input[name="portfolioFeature"]').forEach((field) => field.addEventListener("change", estimateBuild));
+  form.querySelectorAll('.brief-conditional input[type="checkbox"]').forEach((field) => field.addEventListener("change", estimateBuild));
   estimateBuild();
 
   form.addEventListener("submit", (event) => {
@@ -134,6 +144,23 @@
         `Portfolio style: ${value("portfolioStyle")}`,
         `Portfolio features: ${checkedValues("portfolioFeature").join(", ") || "Not provided"}`
       ] : []),
+      ...(value("type") === "Interactive dashboard" ? [
+        `Dashboard audience: ${value("dashboardAudience")}`,
+        `Dashboard needs: ${checkedValues("dashboardFeature").join(", ") || "Not provided"}`
+      ] : []),
+      ...(value("type") === "Discord bot or community tool" ? [
+        `Community size: ${value("communitySize")}`,
+        `Bot jobs: ${checkedValues("botFeature").join(", ") || "Not provided"}`
+      ] : []),
+      ...(value("type") === "AI automation" ? [
+        `Current workflow: ${value("automationWorkflow")}`,
+        `Automation needs: ${checkedValues("automationFeature").join(", ") || "Not provided"}`
+      ] : []),
+      ...(value("type") === "Security or performance review" ? [
+        `Review scope: ${value("securityScope")}`,
+        `Review focus: ${checkedValues("securityFocus").join(", ") || "Not provided"}`
+      ] : []),
+      ...(value("type") === "Something else" ? [`Closest fit: ${value("otherCategory")}`] : []),
       ...(value("contactPreference") === "Discord" ? [`Discord username: ${value("discordUsername")}`] : []),
       "",
       "Goal:",

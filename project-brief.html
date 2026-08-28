@@ -120,6 +120,102 @@
                 </fieldset>
               </div>
             </section>
+            <section class="brief-conditional full" id="brief-dashboard-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Dashboard direction</span><h3>Make the information easy to act on.</h3></div>
+                <p>Choose the audience and the information the dashboard should bring together.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-dashboard-audience">Primary audience</label>
+                  <select id="brief-dashboard-audience" name="dashboardAudience">
+                    <option>Internal team</option><option>Clients or customers</option><option>Community members</option><option>Personal use</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Dashboard needs</legend>
+                  <label><input type="checkbox" name="dashboardFeature" value="Live API data"> Live API data</label>
+                  <label><input type="checkbox" name="dashboardFeature" value="Charts and reporting"> Charts and reporting</label>
+                  <label><input type="checkbox" name="dashboardFeature" value="Logins or roles"> Logins or roles</label>
+                  <label><input type="checkbox" name="dashboardFeature" value="Exports or alerts"> Exports or alerts</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-bot-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Community tool direction</span><h3>Give the community a capable co-pilot.</h3></div>
+                <p>Pick the scale and the jobs the Discord tool should take off people&apos;s hands.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-community-size">Community size</label>
+                  <select id="brief-community-size" name="communitySize">
+                    <option>Under 100 members</option><option>100 to 1,000 members</option><option>1,000 to 10,000 members</option><option>10,000+ members</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Bot jobs</legend>
+                  <label><input type="checkbox" name="botFeature" value="Moderation and safety tools"> Moderation and safety tools</label>
+                  <label><input type="checkbox" name="botFeature" value="Role or verification flow"> Role or verification flow</label>
+                  <label><input type="checkbox" name="botFeature" value="Games or commands"> Games or commands</label>
+                  <label><input type="checkbox" name="botFeature" value="External API integration"> External API integration</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-automation-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Automation direction</span><h3>Find the repetitive part worth removing.</h3></div>
+                <p>Describe the current workflow and where an automation would save the most time.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-automation-workflow">Current workflow</label>
+                  <select id="brief-automation-workflow" name="automationWorkflow">
+                    <option>Manual admin or data entry</option><option>Content or social workflow</option><option>Customer or community support</option><option>Reporting or monitoring</option><option>Something else</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Automation needs</legend>
+                  <label><input type="checkbox" name="automationFeature" value="AI-assisted text or analysis"> AI-assisted text or analysis</label>
+                  <label><input type="checkbox" name="automationFeature" value="Multiple connected services"> Multiple connected services</label>
+                  <label><input type="checkbox" name="automationFeature" value="Human approval step"> Human approval step</label>
+                  <label><input type="checkbox" name="automationFeature" value="Scheduled or event-based runs"> Scheduled or event-based runs</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-security-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Review direction</span><h3>Focus the review where it matters most.</h3></div>
+                <p>This is a scoped review request, not an emergency incident-response channel.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-security-scope">What needs review?</label>
+                  <select id="brief-security-scope" name="securityScope">
+                    <option>Website or web app</option><option>Configuration and deployment</option><option>Performance and accessibility</option><option>Discord or community setup</option><option>General security habits</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Review focus</legend>
+                  <label><input type="checkbox" name="securityFocus" value="Security headers and safe defaults"> Security headers and safe defaults</label>
+                  <label><input type="checkbox" name="securityFocus" value="Dependency and update review"> Dependency and update review</label>
+                  <label><input type="checkbox" name="securityFocus" value="Privacy and data handling"> Privacy and data handling</label>
+                  <label><input type="checkbox" name="securityFocus" value="Performance and accessibility"> Performance and accessibility</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-other-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Open brief</span><h3>Start with the outcome, then we can find the shape.</h3></div>
+                <p>A little context helps turn an early idea into a useful first conversation.</p>
+              </div>
+              <div class="project-brief-field">
+                <label for="brief-other-category">Closest fit</label>
+                <select id="brief-other-category" name="otherCategory">
+                  <option>Creative experiment</option><option>Gaming or community idea</option><option>Website improvement</option><option>Technical advice</option><option>Still figuring it out</option>
+                </select>
+              </div>
+            </section>
             <section class="brief-estimate full" aria-labelledby="brief-estimate-title">
               <div class="brief-estimate-heading">
                 <div>
