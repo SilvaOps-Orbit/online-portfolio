@@ -3893,6 +3893,19 @@
       toggle.title = isOpen ? "Close menu" : "Open menu";
     };
 
+    const navigateToSection = (hash) => {
+      if (!hash || !hash.startsWith("#")) return false;
+      const target = document.querySelector(hash);
+      if (!target) return false;
+
+      const headerOffset = Math.ceil(header?.getBoundingClientRect().height || 0) + 16;
+      const targetTop = Math.max(0, window.scrollY + target.getBoundingClientRect().top - headerOffset);
+      history.pushState(null, "", hash);
+      setActiveNav(hash);
+      window.scrollTo({ top: targetTop, behavior: prefersReducedMotion ? "auto" : "smooth" });
+      return true;
+    };
+
     const measureNavigation = () => {
       if (!header || !menu || !toggle) return;
       cancelAnimationFrame(measureFrame);
@@ -3922,8 +3935,9 @@
       });
 
       qsa("a", nav).forEach((link) => {
-        link.addEventListener("click", () => {
-          setActiveNav(link.getAttribute("href"));
+        link.addEventListener("click", (event) => {
+          const hash = link.getAttribute("href");
+          if (navigateToSection(hash)) event.preventDefault();
           if (link === steamLink) {
             setSteamSubnavOpen(true);
           } else {
@@ -3934,7 +3948,11 @@
       });
 
       qsa("a", steamSubnav).forEach((link) => {
-        link.addEventListener("click", () => setMenuOpen(false));
+        link.addEventListener("click", (event) => {
+          if (navigateToSection(link.getAttribute("href"))) event.preventDefault();
+          setMenuOpen(false);
+          setSteamSubnavOpen(false);
+        });
       });
 
       document.addEventListener("click", (event) => {
