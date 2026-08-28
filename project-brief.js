@@ -28,6 +28,9 @@
   const effortHours = document.getElementById("brief-effort-hours");
   const complexityOutput = document.getElementById("brief-complexity");
   const suggestedRate = document.getElementById("brief-suggested-rate");
+  const cartTotal = document.getElementById("brief-cart-total");
+  const cartLines = document.getElementById("brief-price-lines");
+  const cartNote = document.getElementById("brief-cart-note");
 
   if (!form || !profile.email) return;
 
@@ -165,17 +168,42 @@
     const lowHours = Math.max(8, Math.round(hours * 0.85));
     const highHours = Math.round(hours * 1.2);
     const perHour = paymentSelect?.value === "hour";
+    const discordBase = {
+      "Under 100 members": { low: 150, high: 150, label: "Small Discord bot base" },
+      "100 to 1,000 members": { low: 250, high: 250, label: "Growing Discord bot base" },
+      "1,000 to 10,000 members": { low: 350, high: 350, label: "Large-community Discord bot base" },
+      "10,000+ members": { low: 750, high: 900, label: "High-scale Discord bot base" }
+    };
+    const basePricing = {
+      "Build a web portfolio": { low: 700, high: 900, label: "Portfolio foundation" },
+      "Interactive dashboard": { low: 1300, high: 1700, label: "Dashboard foundation" },
+      "Discord bot or community tool": discordBase[document.getElementById("brief-community-size")?.value] || discordBase["Under 100 members"],
+      "AI automation": { low: 2800, high: 3400, label: "AI automation foundation" },
+      "Security or performance review": { low: 600, high: 800, label: "Scoped review foundation" },
+      "Something else": { low: 700, high: 1000, label: "Custom build foundation" }
+    };
+    const basePrice = basePricing[typeSelect?.value] || basePricing["Something else"];
+    const addOns = selectedFeatures.map((field) => ({
+      label: field.value,
+      price: Math.max(25, Math.min(100, Math.round((Number(field.dataset.effort || 3) * 12.5) / 25) * 25)),
+      hours: Number(field.dataset.effort || 3)
+    }));
+    const addOnPrice = addOns.reduce((total, item) => total + item.price, 0);
+    const learningPrice = newSkillSelect?.value === "yes" ? 500 : newSkillSelect?.value === "unsure" ? 150 : 0;
+    const scopePrice = Math.min(100, Math.floor(scopeWords / 35) * 25);
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice;
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice;
+    const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
+    const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
-      budgetRange.min = perHour ? "35" : "300";
-      budgetRange.max = perHour ? "130" : "6000";
+      budgetRange.min = perHour ? "35" : "150";
+      budgetRange.max = perHour ? "130" : "10000";
       budgetRange.step = perHour ? "5" : "100";
       if (Number(budgetRange.value) < Number(budgetRange.min) || Number(budgetRange.value) > Number(budgetRange.max)) {
-        budgetRange.value = String(perHour ? hourly : Math.round((lowHours + highHours) * hourly / 2 / 100) * 100);
+        budgetRange.value = String(perHour ? hourly : Math.round(((guideLow + guideHigh) / 2) / 50) * 50);
       }
     }
     const selectedBudget = Number(budgetRange?.value || 0);
-    const guideLow = perHour ? Math.max(35, hourly - 10) : lowHours * hourly;
-    const guideHigh = perHour ? hourly + 15 : highHours * hourly;
     if (budgetValue) {
       budgetValue.textContent = perHour
         ? `${currency(selectedBudget)} per hour`
@@ -193,6 +221,38 @@
       complexityOutput.textContent = complexity;
       complexityOutput.className = `is-${complexity.toLowerCase()}`;
     }
+    const cartItems = perHour
+      ? [
+          { label: "Estimated delivery time", value: `${lowHours}-${highHours} hrs`, detail: "The range changes as features and written scope are added." },
+          ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
+          ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
+          ...(newSkillSelect?.value === "unsure" ? [{ label: "Discovery allowance", value: "+5 hrs", detail: "A small allowance while the technical path is confirmed." }] : [])
+        ]
+      : [
+          { label: basePrice.label, value: guideLow === guideHigh ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
+          ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
+          ...(learningPrice ? [{ label: newSkillSelect?.value === "yes" ? "Research and learning" : "Discovery allowance", value: `+${currency(learningPrice)}`, detail: "Allows time to validate a new skill, service, or platform." }] : []),
+          ...(scopePrice ? [{ label: "Detailed written scope", value: `+${currency(scopePrice)}`, detail: "Extra planning allowance for the additional requirements shared." }] : [])
+        ];
+    if (cartTotal) cartTotal.textContent = perHour ? `${currency(guideLow)}-${currency(guideHigh)}/hr` : `${currency(projectLow)}-${currency(projectHigh)}`;
+    if (cartLines) {
+      cartLines.replaceChildren(...cartItems.map((item) => {
+        const line = document.createElement("li");
+        const copy = document.createElement("span");
+        const value = document.createElement("strong");
+        copy.textContent = item.label;
+        value.textContent = item.value;
+        line.append(copy, value);
+        if (item.detail) line.title = item.detail;
+        return line;
+      }));
+    }
+    if (cartNote) {
+      cartNote.textContent = perHour
+        ? "Hourly work stays flexible when the brief is still evolving. The cart shows how choices increase delivery time."
+        : "The project estimate combines a clear starting scope with A$25 to A$100 additions. It is a planning guide, not a binding quote.";
+    }
+    form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
       const unit = perHour ? "hourly rate" : "project budget";
       budgetFit.className = "brief-budget-fit";
@@ -249,6 +309,7 @@
       `Projected effort: ${effortHours?.textContent || "Not provided"}`,
       `Scope complexity: ${complexityOutput?.textContent || "Not provided"}`,
       `Suggested rate: ${suggestedRate?.textContent || "Not provided"}`,
+      `Scope cart: ${form.dataset.scopeCart || "Not provided"}`,
       `Estimate notes: ${estimateNote?.textContent || "Not provided"}`,
       `Target timeline: ${value("timeline")}`,
       `Preferred contact: ${value("contactPreference")}`,
