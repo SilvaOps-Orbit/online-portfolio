@@ -13,6 +13,7 @@
     "Discord bot or community tool": document.getElementById("brief-bot-options"),
     "AI automation": document.getElementById("brief-automation-options"),
     "Security or performance review": document.getElementById("brief-security-options"),
+    "Home or company network setup": document.getElementById("brief-network-options"),
     "Something else": document.getElementById("brief-other-options")
   };
   const discordOptions = document.getElementById("brief-discord-options");
@@ -71,7 +72,14 @@
     "Privacy and data handling": "Reviewing what information is collected, where it goes, and whether it is necessary.",
     "Performance and accessibility": "Checking load speed, readability, keyboard use, and other everyday visitor experience basics.",
     "Deployment configuration check": "Reviewing how the site is published, including public settings and basic protections.",
-    "Prioritised findings report": "A clear list of what was found, why it matters, and the recommended next actions."
+    "Prioritised findings report": "A clear list of what was found, why it matters, and the recommended next actions.",
+    "Wi-Fi coverage and mesh plan": "A practical plan for reliable wireless coverage, including access point or mesh placement.",
+    "Router, modem, and internet setup": "Connecting and configuring the supplied internet equipment and core network settings.",
+    "Wired device and cabling plan": "Planning stable wired connections and cable routes. Any specialist electrical or structural work can be quoted separately if needed.",
+    "Guest network or device separation": "Keeping visitor, smart-home, or work devices separate from the main network where appropriate.",
+    "Smart home or printer connection": "Connecting approved smart devices, printers, and everyday equipment to the network.",
+    "Updates and safe device settings": "Applying sensible update, password, and access settings to supported network equipment.",
+    "Network map and handover notes": "A simple record of the important equipment, Wi-Fi names, and setup choices for future reference."
   };
 
   const closeHelp = () => form.querySelectorAll(".brief-help-button.is-open").forEach((button) => {
@@ -148,6 +156,7 @@
       "Discord bot or community tool": 12,
       "AI automation": 48,
       "Security or performance review": 18,
+      "Home or company network setup": 18,
       "Something else": 24
     };
     let hours = baseHours[typeSelect?.value] || 24;
@@ -177,6 +186,7 @@
       "Discord bot or community tool": { role: "Software developer", marketRate: 51 },
       "AI automation": { role: "AI engineer", marketRate: 71 },
       "Security or performance review": { role: "Cyber security analyst", marketRate: 59 },
+      "Home or company network setup": { role: "Network support technician", marketRate: 48 },
       "Something else": { role: "Software developer", marketRate: 51 }
     };
     const timelinePricing = {
@@ -206,6 +216,7 @@
       "Discord bot or community tool": discordBase[document.getElementById("brief-community-size")?.value] || discordBase["Under 100 members"],
       "AI automation": { low: 2800, high: 3400, label: "High-complexity AI foundation" },
       "Security or performance review": { low: 600, high: 800, label: "Scoped review foundation" },
+      "Home or company network setup": { low: 600, high: 850, label: "Network setup foundation" },
       "Something else": { low: 700, high: 1000, label: "Custom build foundation" }
     };
     const basePrice = basePricing[typeSelect?.value] || basePricing["Something else"];
@@ -257,6 +268,7 @@
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
+          { label: "Your selected rate", value: `${currency(selectedBudget)}/hr`, detail: "The rate preference selected with the budget slider." },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
           ...(newSkillSelect?.value === "unsure" ? [{ label: "Discovery allowance", value: "+5 hrs", detail: "A small allowance while the technical path is confirmed." }] : [])
@@ -264,6 +276,7 @@
       : [
           { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
+          { label: "Your comfortable budget", value: currency(selectedBudget), detail: "The project budget selected with the slider. It does not change the estimate, but shows whether the selected amount fits the scope." },
           ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
           ...(learningPrice ? [{ label: newSkillSelect?.value === "yes" ? "Research and learning" : "Discovery allowance", value: `+${currency(learningPrice)}`, detail: "Allows time to validate a new skill, service, or platform." }] : []),
           ...(scopePrice ? [{ label: "Detailed written scope", value: `+${currency(scopePrice)}`, detail: "Extra planning allowance for the additional requirements shared." }] : [])
@@ -316,13 +329,12 @@
     }
   };
 
-  [typeSelect, paymentSelect, timelineSelect, budgetRange, newSkillSelect, portfolioStyleSelect, document.getElementById("brief-goal"), document.getElementById("brief-notes")]
-    .filter(Boolean)
-    .forEach((field) => {
-      field.addEventListener("input", estimateBuild);
-      field.addEventListener("change", estimateBuild);
-    });
-  form.querySelectorAll('.brief-conditional input[type="checkbox"]').forEach((field) => field.addEventListener("change", estimateBuild));
+  form.addEventListener("input", (event) => {
+    if (event.target.matches("input, select, textarea")) estimateBuild();
+  });
+  form.addEventListener("change", (event) => {
+    if (event.target.matches("input, select, textarea")) estimateBuild();
+  });
   estimateBuild();
 
   form.addEventListener("submit", (event) => {
@@ -372,6 +384,10 @@
       ...(value("type") === "Security or performance review" ? [
         `Review scope: ${value("securityScope")}`,
         `Review focus: ${checkedValues("securityFocus").join(", ") || "Not provided"}`
+      ] : []),
+      ...(value("type") === "Home or company network setup" ? [
+        `Network setting: ${value("networkSetting")}`,
+        `Network needs: ${checkedValues("networkFeature").join(", ") || "Not provided"}`
       ] : []),
       ...(value("type") === "Something else" ? [
         `Closest fit: ${value("otherCategory")}`,

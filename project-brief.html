@@ -62,6 +62,7 @@
                 <option>Discord bot or community tool</option>
                 <option>AI automation</option>
                 <option>Security or performance review</option>
+                <option>Home or company network setup</option>
                 <option>Something else</option>
               </select>
             </div>
@@ -216,6 +217,30 @@
                   <label><input type="checkbox" name="securityFocus" value="Performance and accessibility" data-effort="4"> Performance and accessibility</label>
                   <label><input type="checkbox" name="securityFocus" value="Deployment configuration check" data-effort="4"> Deployment configuration check</label>
                   <label><input type="checkbox" name="securityFocus" value="Prioritised findings report" data-effort="3"> Prioritised findings report</label>
+                </fieldset>
+              </div>
+            </section>
+            <section class="brief-conditional full" id="brief-network-options" hidden aria-hidden="true">
+              <div class="brief-conditional-heading">
+                <div><span class="kicker">Network direction</span><h3>Make the connection reliable and easier to manage.</h3></div>
+                <p>For home and small-business networks: setup, improvement, device connection, and practical safe defaults.</p>
+              </div>
+              <div class="project-brief-grid brief-option-grid">
+                <div class="project-brief-field">
+                  <label for="brief-network-setting" data-help="This describes where the network work will happen. It helps frame equipment, coverage, and support needs.">Network setting</label>
+                  <select id="brief-network-setting" name="networkSetting">
+                    <option>Home network</option><option>Home office or studio</option><option>Small business or shop</option><option>Existing network that needs improvement</option>
+                  </select>
+                </div>
+                <fieldset class="brief-feature-field">
+                  <legend>Network needs</legend>
+                  <label><input type="checkbox" name="networkFeature" value="Wi-Fi coverage and mesh plan" data-effort="5"> Wi-Fi coverage and mesh plan</label>
+                  <label><input type="checkbox" name="networkFeature" value="Router, modem, and internet setup" data-effort="3"> Router, modem, and internet setup</label>
+                  <label><input type="checkbox" name="networkFeature" value="Wired device and cabling plan" data-effort="5"> Wired device and cabling plan</label>
+                  <label><input type="checkbox" name="networkFeature" value="Guest network or device separation" data-effort="5"> Guest network or device separation</label>
+                  <label><input type="checkbox" name="networkFeature" value="Smart home or printer connection" data-effort="4"> Smart home or printer connection</label>
+                  <label><input type="checkbox" name="networkFeature" value="Updates and safe device settings" data-effort="4"> Updates and safe device settings</label>
+                  <label><input type="checkbox" name="networkFeature" value="Network map and handover notes" data-effort="3"> Network map and handover notes</label>
                 </fieldset>
               </div>
             </section>
