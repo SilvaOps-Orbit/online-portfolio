@@ -269,6 +269,23 @@
       : overseasVisit
         ? { label: "International travel", value: "Flight quote required", detail: "Any overseas in-person work is priced from the actual flight and travel requirements before work is confirmed." }
         : null;
+    const travelPolicyItems = wantsInPerson ? [
+      {
+        label: victorianVisit ? "Victoria travel (selected)" : "Victoria travel",
+        value: victorianVisit ? `+${currency(20)}` : currency(20),
+        detail: "Victorian in-person work uses a flat local-travel allowance for Myki tickets, petrol, or an Uber."
+      },
+      {
+        label: interstateVisit ? "Elsewhere in Australia (selected)" : "Elsewhere in Australia",
+        value: interstateVisit ? "Train or plane quote required" : "Train or plane ticket",
+        detail: "In-person work outside Victoria is quoted from the actual train or plane ticket."
+      },
+      {
+        label: overseasVisit ? "Outside Australia (selected)" : "Outside Australia",
+        value: overseasVisit ? "Flight quote required" : "Flight-based quote",
+        detail: "Overseas in-person work is quoted from the actual flight and travel requirements."
+      }
+    ] : [];
     if (supportPriceOutput) {
       supportPriceOutput.textContent = maintenancePlan.monthly
         ? `${currency(maintenancePlan.monthly)}/month or ${currency(maintenancePlan.upfront)} upfront (${currency(maintenancePlan.upfront / 2)} deposit + ${currency(maintenancePlan.upfront / 2)} final payment).`
@@ -314,7 +331,7 @@
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
-          ...(travelItem ? [travelItem] : []),
+          ...travelPolicyItems,
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           ...(showcaseDiscountItem ? [{ ...showcaseDiscountItem, value: `${showcaseDiscountItem.value} first invoice` }] : []),
           { label: "Your selected rate", value: `${currency(selectedBudget)}/hr`, detail: "The rate preference selected with the budget slider." },
@@ -325,7 +342,7 @@
       : [
           { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
-          ...(travelItem ? [travelItem] : []),
+          ...travelPolicyItems,
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           ...(showcaseDiscountItem ? [showcaseDiscountItem] : []),
           { label: "Your comfortable budget", value: currency(selectedBudget), detail: "The project budget selected with the slider. It does not change the estimate, but shows whether the selected amount fits the scope." },
