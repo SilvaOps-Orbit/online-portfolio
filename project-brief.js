@@ -249,14 +249,15 @@
     const location = document.getElementById("brief-location")?.value || "";
     const supportPreference = document.getElementById("brief-on-site")?.value || "";
     const networkSetup = typeSelect?.value === "Home or company network setup";
-    const overseasVisit = supportPreference === "In-person support outside Australia" || (networkSetup && location === "Outside Australia");
-    const australianVisit = !overseasVisit && (
-      supportPreference === "In-person support in Australia" ||
-      (networkSetup && location !== "Outside Australia" && location !== "Remote only")
-    );
-    const travelPrice = australianVisit ? 20 : 0;
-    const travelItem = australianVisit
+    const wantsInPerson = supportPreference === "In-person support in Australia" || supportPreference === "In-person support outside Australia" || networkSetup;
+    const overseasVisit = wantsInPerson && (supportPreference === "In-person support outside Australia" || location === "Outside Australia");
+    const interstateVisit = wantsInPerson && !overseasVisit && location === "Elsewhere in Australia";
+    const victorianVisit = wantsInPerson && !overseasVisit && !interstateVisit && location === "Melbourne / Victoria";
+    const travelPrice = victorianVisit ? 20 : 0;
+    const travelItem = victorianVisit
       ? { label: "Australian in-person travel", value: `+${currency(travelPrice)}`, detail: "Flat local-travel allowance for Myki tickets, petrol, or an Uber." }
+      : interstateVisit
+        ? { label: "Interstate travel", value: "Train or plane quote required", detail: "In-person work outside Victoria is priced from the actual train or plane ticket before work is confirmed." }
       : overseasVisit
         ? { label: "International travel", value: "Flight quote required", detail: "Any overseas in-person work is priced from the actual flight and travel requirements before work is confirmed." }
         : null;
@@ -326,7 +327,7 @@
       const maintenanceTotal = maintenancePlan.monthly
         ? maintenanceIsMonthly ? ` + ${currency(maintenancePrice)}/mo` : ` + ${currency(maintenancePrice)} support`
         : "";
-      const travelTotal = australianVisit ? ` + ${currency(travelPrice)} travel` : overseasVisit ? " + travel quote" : "";
+      const travelTotal = victorianVisit ? ` + ${currency(travelPrice)} travel` : interstateVisit || overseasVisit ? " + travel quote" : "";
       cartTotal.textContent = perHour
         ? `${currency(guideLow)}-${currency(guideHigh)}/hr${travelTotal}${maintenanceTotal}`
         : maintenancePlan.monthly && maintenanceIsMonthly
@@ -353,7 +354,7 @@
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
         ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} solo-delivery allowance, because one person carries the planning, build, testing, communication, and delivery work that a team would normally share. ${timelinePrice.detail}`
-        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${travelItem ? australianVisit ? " Australian in-person work includes A$20 for local Myki, petrol, or Uber travel." : " Overseas in-person work needs a travel quote based on the actual flight and travel requirements." : ""}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${travelItem ? victorianVisit ? " Victorian in-person work includes A$20 for local Myki, petrol, or Uber travel." : interstateVisit ? " In-person work outside Victoria needs a travel quote based on the actual train or plane ticket." : " Overseas in-person work needs a travel quote based on the actual flight and travel requirements." : ""}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
