@@ -304,7 +304,7 @@ function withLastValues(output, previous) {
   const result = { ...output };
   const previousTrack = lastUsefulTrack(previous);
 
-  if (!result.current && previousTrack) {
+  if (!isUsefulTrack(result.current) && previousTrack) {
     result.current = previousTrack;
     result.lastTrack = previousTrack;
     result.stale = true;
@@ -357,7 +357,7 @@ function withLastValues(output, previous) {
       .map(withoutExcludedPlaylistContext);
   }
 
-  if (result.source === "spotify-web-api") {
+  if (result.source === "spotify-web-api" && !result.stale) {
     result.lastGoodAt = result.generatedAt;
     result.stale = false;
   } else if (previous.lastGoodAt || previous.generatedAt) {
@@ -1055,9 +1055,15 @@ async function main() {
       }
     };
   const hasLiveSignals = Boolean(profile || playlists.length || tasteResult.ready || recentlyPlayed.length || activeTrack);
+  await enrichArchiveArtwork(token);
   const archive = await readArchiveData();
-  const source = hasLiveSignals || lastUsefulTrack(previous)
-    ? liveOutput
+  const archiveOutput = archiveFallbackData(
+    "spotify-archive-fallback",
+    "Spotify returned limited account data, so the approved listening archive is filling the missing sections.",
+    archive
+  );
+  const source = hasLiveSignals
+    ? withLastValues(liveOutput, archiveOutput)
     : archiveFallbackData(
         "spotify-api-error",
         "Spotify did not return account data. Renew the Spotify approval to restore live updates.",
@@ -1067,7 +1073,6 @@ async function main() {
 
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
-  await enrichArchiveArtwork(token);
   console.log(`Wrote Spotify data to ${outputPath.pathname}`);
 }
 
