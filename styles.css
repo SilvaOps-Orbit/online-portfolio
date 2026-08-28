@@ -8819,7 +8819,7 @@ html.user-reduced-motion *::after {
 }
 
 .brief-feature-field legend { padding: 0 4px; color: var(--text); font-size: 0.83rem; font-weight: 850; }
-.brief-feature-field label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.88rem; }
+.brief-feature-field label { position: relative; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.88rem; }
 .brief-feature-field input { accent-color: var(--accent); }
 
 .brief-estimate {
@@ -8878,10 +8878,58 @@ html.user-reduced-motion *::after {
 }
 
 .project-brief-field label {
+  position: relative;
   color: var(--text);
   font-size: 0.83rem;
   font-weight: 850;
 }
+
+.brief-help-button {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 72%, var(--line));
+  border-radius: 50%;
+  background: transparent;
+  color: var(--accent-2);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  cursor: help;
+}
+
+.brief-help-button:hover,
+.brief-help-button:focus-visible,
+.brief-help-button.is-open { background: var(--accent-2); color: var(--bg); outline: none; }
+
+.brief-help-popover {
+  position: absolute;
+  z-index: 20;
+  inset: calc(100% + 8px) auto auto 0;
+  width: min(286px, calc(100vw - 64px));
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--panel-strong) 97%, var(--bg));
+  box-shadow: var(--shadow);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 650;
+  line-height: 1.45;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.brief-help-button:hover + .brief-help-popover,
+.brief-help-button:focus-visible + .brief-help-popover,
+.brief-help-button.is-open + .brief-help-popover,
+.brief-help-popover:hover { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
 .project-brief-field input,
 .project-brief-field select,

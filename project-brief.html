@@ -55,7 +55,7 @@
           <h2>The build</h2>
           <div class="project-brief-grid">
             <div class="project-brief-field">
-              <label for="brief-type">What are we building?</label>
+              <label for="brief-type" data-help="This chooses the kind of work and shows only the follow-up questions that apply to it.">What are we building?</label>
               <select id="brief-type" name="type">
                 <option>Build a web portfolio</option>
                 <option>Interactive dashboard</option>
@@ -66,14 +66,14 @@
               </select>
             </div>
             <div class="project-brief-field">
-              <label for="brief-payment">How would you like to pay?</label>
+              <label for="brief-payment" data-help="Per project is one agreed amount for the finished scope. Per hour is useful when the scope may change as we work.">How would you like to pay?</label>
               <select id="brief-payment" name="paymentModel">
                 <option value="project">Per project</option>
                 <option value="hour">Per hour</option>
               </select>
             </div>
             <div class="project-brief-field">
-              <label for="brief-timeline">Target timeline</label>
+              <label for="brief-timeline" data-help="This is the ideal delivery window, not a promise. It helps set a realistic order of work.">Target timeline</label>
               <select id="brief-timeline" name="timeline">
                 <option>Flexible</option>
                 <option>Within 2 weeks</option>
@@ -83,7 +83,7 @@
               </select>
             </div>
             <div class="project-brief-field">
-              <label for="brief-contact">Best contact method</label>
+              <label for="brief-contact" data-help="Choose where it is easiest to discuss the project after you send the brief.">Best contact method</label>
               <select id="brief-contact" name="contactPreference">
                 <option>Email</option>
                 <option>Discord</option>
@@ -100,7 +100,7 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-portfolio-style">Portfolio style</label>
+                  <label for="brief-portfolio-style" data-help="This sets the visual direction: for example polished and professional, expressive and animated, or developer-focused.">Portfolio style</label>
                   <select id="brief-portfolio-style" name="portfolioStyle">
                     <option>Developer / cyber security</option>
                     <option>Creative and animated</option>
@@ -131,7 +131,7 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-dashboard-audience">Primary audience</label>
+                  <label for="brief-dashboard-audience" data-help="Who will use the dashboard most often? This affects the layout, language, and access needs.">Primary audience</label>
                   <select id="brief-dashboard-audience" name="dashboardAudience">
                     <option>Internal team</option><option>Clients or customers</option><option>Community members</option><option>Personal use</option>
                   </select>
@@ -155,7 +155,7 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-community-size">Community size</label>
+                  <label for="brief-community-size" data-help="The member count helps estimate moderation needs, hosting, and how much the bot has to handle.">Community size</label>
                   <select id="brief-community-size" name="communitySize">
                     <option>Under 100 members</option><option>100 to 1,000 members</option><option>1,000 to 10,000 members</option><option>10,000+ members</option>
                   </select>
@@ -179,7 +179,7 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-automation-workflow">Current workflow</label>
+                  <label for="brief-automation-workflow" data-help="Pick the repetitive job you want to make easier. The exact steps can go in the notes below.">Current workflow</label>
                   <select id="brief-automation-workflow" name="automationWorkflow">
                     <option>Manual admin or data entry</option><option>Content or social workflow</option><option>Customer or community support</option><option>Reporting or monitoring</option><option>Something else</option>
                   </select>
@@ -203,7 +203,7 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-security-scope">What needs review?</label>
+                  <label for="brief-security-scope" data-help="This is a practical configuration, safety, performance, and accessibility review. It is not a penetration test or emergency response service.">What needs review?</label>
                   <select id="brief-security-scope" name="securityScope">
                     <option>Website or web app</option><option>Configuration and deployment</option><option>Performance and accessibility</option><option>Discord or community setup</option><option>General security habits</option>
                   </select>
@@ -226,13 +226,13 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
               <div class="project-brief-field">
-                <label for="brief-other-category">Closest fit</label>
+                <label for="brief-other-category" data-help="Choose the closest match. It is only there to help frame an early idea, not lock it into one category.">Closest fit</label>
                 <select id="brief-other-category" name="otherCategory">
                   <option>Creative experiment</option><option>Gaming or community idea</option><option>Website improvement</option><option>Technical advice</option><option>Still figuring it out</option>
                 </select>
               </div>
               <div class="project-brief-field">
-                <label for="brief-other-stage">How formed is the idea?</label>
+                <label for="brief-other-stage" data-help="This tells me whether we are starting from a spark, a plan, or an existing project that needs improving.">How formed is the idea?</label>
                 <select id="brief-other-stage" name="otherStage">
                   <option>Just an idea</option><option>I have a rough plan</option><option>I have content or assets ready</option><option>I need help improving something existing</option>
                 </select>
@@ -254,7 +254,7 @@
               </div>
               <div class="project-brief-grid brief-estimate-grid">
                 <div class="project-brief-field">
-                  <label for="brief-budget-range">Your comfortable budget</label>
+                  <label for="brief-budget-range" data-help="Move the slider to show a comfortable ceiling. It compares your amount with the suggested scope, but it is never a final quote.">Your comfortable budget</label>
                   <input id="brief-budget-range" name="budgetAmount" type="range" min="300" max="6000" step="100" value="1500">
                   <div class="brief-budget-readout">
                     <output class="brief-range-value" id="brief-budget-value" for="brief-budget-range">A$1,500 project budget</output>
@@ -262,7 +262,7 @@
                   </div>
                 </div>
                 <div class="project-brief-field">
-                  <label for="brief-new-skill">Does the build need a new skill or platform?</label>
+                  <label for="brief-new-skill" data-help="Choose yes if the request needs a technology, service, or platform that is not already part of the usual project workflow.">Does the build need a new skill or platform?</label>
                   <select id="brief-new-skill" name="newSkill">
                     <option value="no">No, use established tools</option>
                     <option value="unsure">Not sure yet</option>
@@ -281,7 +281,7 @@
                 <p>Your Discord username is only added to the email brief when you submit it.</p>
               </div>
               <div class="project-brief-field">
-                <label for="brief-discord">Discord username</label>
+                <label for="brief-discord" data-help="This is only used in the email brief so EchoOps knows where to contact you. It is not stored by the website.">Discord username</label>
                 <input id="brief-discord" name="discordUsername" autocomplete="off" placeholder="username or @username">
               </div>
             </section>

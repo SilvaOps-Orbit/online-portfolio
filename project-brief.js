@@ -31,6 +31,84 @@
 
   if (!form || !profile.email) return;
 
+  const optionHelp = {
+    "Project showcase": "A section that presents completed work, what it does, and the thinking behind it.",
+    "Animations and interaction": "Subtle movement, hover states, and interactive details that make the site feel more alive.",
+    "Dark mode": "A switch that lets visitors use a darker colour theme when they prefer it.",
+    "Contact form": "A simple way for visitors to send a project enquiry without hunting for an email address.",
+    "Social or live data integrations": "Safely display selected information from services such as GitHub, Steam, Spotify, or YouTube.",
+    "Mobile-first refinement": "Extra attention to small screens so the site is comfortable to use on phones first.",
+    "Accessibility pass": "Checks for keyboard use, readable contrast, sensible labels, and reduced-motion support.",
+    "SEO foundations": "Search-engine basics such as page titles, descriptions, structured content, and a sitemap.",
+    "GitHub Pages deployment": "Publishing the finished static site through GitHub Pages with a public web address.",
+    "Live API data": "Information that is retrieved from another service and refreshed automatically, such as prices or activity.",
+    "Charts and reporting": "Visual summaries that make changes, comparisons, or trends easier to understand.",
+    "Logins or roles": "Different access levels for different people. This may need a separate secure backend service.",
+    "Exports or alerts": "Downloads, email notices, or notifications when information reaches a condition you set.",
+    "Mobile dashboard view": "A layout designed to keep important dashboard information usable on a phone.",
+    "Filters and saved views": "Controls that let people narrow information and return to a preferred setup.",
+    "Manual data upload": "A controlled way to add information from a file, rather than connecting to a live service.",
+    "Moderation and safety tools": "Commands and checks that help moderators manage a community more consistently.",
+    "Role or verification flow": "A guided process for giving members the right access or confirming they have completed a step.",
+    "Games or commands": "Fun community commands, mini experiences, or utility commands people can use in Discord.",
+    "External API integration": "Connecting the bot to another service so it can display or act on selected data.",
+    "Welcome and onboarding flow": "A helpful first path for new members, including rules, roles, and useful channel directions.",
+    "Persistent settings or database": "Saving selected bot settings or community data so it remains available after a restart.",
+    "Deployment and uptime setup": "Getting the bot hosted and setting up basic checks so it can keep running reliably.",
+    "AI-assisted text or analysis": "Using an AI service to help classify, summarise, draft, or analyse information with human oversight.",
+    "Multiple connected services": "Moving approved information between more than one service, such as a form, spreadsheet, and Discord.",
+    "Human approval step": "Keeping a person in control before an automation sends, publishes, or changes something important.",
+    "Scheduled or event-based runs": "Running the automation on a timetable or when something specific happens.",
+    "Email or Discord notifications": "Sending a concise message when the automation completes or needs attention.",
+    "Simple admin controls": "A small control surface for changing allowed settings without editing code.",
+    "Usage logging": "A lightweight record of when an automation ran and whether it completed successfully.",
+    "Security headers and safe defaults": "Browser and deployment settings that reduce common web risks by default.",
+    "Dependency and update review": "Checking third-party packages and updates for known issues or avoidable risk.",
+    "Privacy and data handling": "Reviewing what information is collected, where it goes, and whether it is necessary.",
+    "Performance and accessibility": "Checking load speed, readability, keyboard use, and other everyday visitor experience basics.",
+    "Deployment configuration check": "Reviewing how the site is published, including public settings and basic protections.",
+    "Prioritised findings report": "A clear list of what was found, why it matters, and the recommended next actions."
+  };
+
+  const closeHelp = () => form.querySelectorAll(".brief-help-button.is-open").forEach((button) => {
+    button.classList.remove("is-open");
+    button.setAttribute("aria-expanded", "false");
+  });
+
+  const addHelp = (label, message) => {
+    if (!label || !message || label.querySelector(".brief-help-button")) return;
+    const button = document.createElement("button");
+    const popover = document.createElement("span");
+    button.type = "button";
+    button.className = "brief-help-button";
+    button.textContent = "?";
+    button.setAttribute("aria-label", `Explain ${label.textContent.trim()}`);
+    button.setAttribute("aria-expanded", "false");
+    popover.className = "brief-help-popover";
+    popover.setAttribute("role", "tooltip");
+    popover.textContent = message;
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const isOpen = button.classList.contains("is-open");
+      closeHelp();
+      if (!isOpen) {
+        button.classList.add("is-open");
+        button.setAttribute("aria-expanded", "true");
+      }
+    });
+    label.append(button, popover);
+  };
+
+  form.querySelectorAll("label[data-help]").forEach((label) => addHelp(label, label.dataset.help));
+  form.querySelectorAll(".brief-feature-field label").forEach((label) => {
+    const option = label.textContent.trim();
+    addHelp(label, optionHelp[option] || "Choose this if it is important to the finished project.");
+  });
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest(".brief-help-button, .brief-help-popover")) closeHelp();
+  });
+
   const updateConditionalFields = () => {
     const usesDiscord = contactSelect?.value === "Discord";
     Object.entries(typeOptionPanels).forEach(([type, panel]) => {
