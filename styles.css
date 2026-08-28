@@ -8880,6 +8880,14 @@ html.user-reduced-motion *::after {
 .brief-price-lines li { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.88rem; }
 .brief-price-lines strong { flex: 0 0 auto; color: var(--text); font-size: 0.88rem; }
 .brief-price-cart p { margin: 0; color: var(--muted); font-size: 0.8rem; line-height: 1.5; }
+.brief-not-included {
+  display: grid;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid var(--line);
+}
+.brief-not-included h5 { margin: 0; color: var(--accent-2); font-size: 0.82rem; }
+.brief-not-included ul { display: grid; gap: 5px; margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.8rem; line-height: 1.45; }
 .brief-estimate-grid { align-items: end; }
 .brief-budget-readout { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
 .brief-range-value { color: var(--accent-2); font-size: 1.04rem; font-weight: 900; }
@@ -8980,6 +8988,49 @@ html.user-reduced-motion *::after {
   line-height: 1.4;
 }
 
+.brief-file-summary {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.brief-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.brief-choice-grid label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.brief-choice-grid input { width: 16px; height: 16px; accent-color: var(--accent); }
+
+.brief-phase-tracker {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--panel) 86%, transparent);
+}
+
+.brief-phase-tracker .kicker { margin: 0; }
+.brief-phase-tracker h3 { margin: 6px 0 0; font-size: 1.02rem; }
+.brief-phase-tracker ol { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.brief-phase-tracker li { display: grid; gap: 4px; min-height: 82px; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: color-mix(in srgb, var(--bg) 75%, transparent); }
+.brief-phase-tracker strong { color: var(--accent-2); font-size: 0.82rem; }
+.brief-phase-tracker span { color: var(--muted); font-size: 0.75rem; line-height: 1.35; }
+
 .project-brief-field input:focus,
 .project-brief-field select:focus,
 .project-brief-field textarea:focus {
@@ -9041,6 +9092,8 @@ html.user-reduced-motion *::after {
   .brief-price-cart-heading { align-items: start; flex-direction: column; gap: 8px; }
   .brief-price-cart-heading output { text-align: left; }
   .brief-feature-field { grid-template-columns: 1fr; }
+  .brief-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .brief-phase-tracker ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .site-footer {

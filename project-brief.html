@@ -309,6 +309,24 @@
                     <option>Remote support is fine</option><option>In-person support in Australia</option><option>In-person support outside Australia</option><option>Either works</option><option>Not sure yet</option>
                   </select>
                 </div>
+                <div class="project-brief-field">
+                  <label for="brief-urgency" data-help="Urgent work can only be accepted when there is room in the schedule. Faster response windows add a visible priority charge to the planning estimate.">Is this urgent?</label>
+                  <select id="brief-urgency" name="urgency">
+                    <option value="standard">No, standard planning is fine</option>
+                    <option value="priority">Priority: response within 3 business days</option>
+                    <option value="urgent">Urgent: response within 1 business day</option>
+                    <option value="critical">Critical: same-day assessment, subject to availability</option>
+                  </select>
+                </div>
+                <div class="project-brief-field full">
+                  <label data-help="Select the days and times that are normally easiest for a call or, where relevant, an on-site visit.">Availability for calls or visits</label>
+                  <div class="brief-choice-grid" id="brief-availability-options">
+                    <label><input type="checkbox" name="availability" value="Weekday daytime">Weekday daytime</label>
+                    <label><input type="checkbox" name="availability" value="Weekday evenings">Weekday evenings</label>
+                    <label><input type="checkbox" name="availability" value="Weekends">Weekends</label>
+                    <label><input type="checkbox" name="availability" value="Flexible">Flexible</label>
+                  </div>
+                </div>
                 <div class="project-brief-field full">
                   <label for="brief-existing-setup" data-help="List any useful current tools or equipment, such as a web host, router model, Discord server, current website, or software already in use.">Existing setup, tools, or equipment</label>
                   <textarea id="brief-existing-setup" name="existingSetup" placeholder="For example: current website link, hosting provider, router model, Discord server, software, or anything already built."></textarea>
@@ -339,6 +357,35 @@
                     <option>Ask me before sharing anything</option><option>Yes, share the work with my company or project name</option><option>Yes, share the work but keep my name private</option><option>No, please keep this project confidential</option>
                   </select>
                 </div>
+                <div class="project-brief-field full">
+                  <label for="brief-testimonial" data-help="This is separate from showcasing the project. A testimonial is only used after the work is complete and with the permission selected here.">May EchoOps request a short testimonial after delivery?</label>
+                  <select id="brief-testimonial" name="testimonialPermission">
+                    <option>Ask me after delivery</option><option>Yes, with my name or company</option><option>Yes, but keep me anonymous</option><option>No testimonial request please</option>
+                  </select>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-invoice-type" data-help="Choose personal for an individual invoice, or business when the invoice needs company information and an ABN.">Invoice type</label>
+                  <select id="brief-invoice-type" name="invoiceType">
+                    <option value="personal">Personal</option><option value="business">Business</option>
+                  </select>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-invoice-email" data-help="Use a different email here only if invoices should go somewhere other than the project contact email.">Invoice email</label>
+                  <input id="brief-invoice-email" name="invoiceEmail" type="email" placeholder="Same as project email if blank">
+                </div>
+                <div class="project-brief-field full" id="brief-business-invoice-field" hidden>
+                  <label for="brief-business-details" data-help="Add the business name and ABN exactly as they should appear on an invoice.">Business name and ABN</label>
+                  <input id="brief-business-details" name="businessInvoiceDetails" placeholder="Business legal name, ABN">
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-files" data-help="Choose reference files such as a logo, screenshots, a brand guide, router photos, or a rough sketch. Files stay on the device: attach them manually after the email opens.">Reference files</label>
+                  <input id="brief-files" name="referenceFiles" type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt">
+                  <output class="brief-file-summary" id="brief-file-summary">No files selected. Attach files manually to the email after it opens.</output>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-needs" data-help="Share any visitor, accessibility, privacy, or data-handling needs early so they can shape the plan from the start.">Accessibility, privacy, or data-handling needs</label>
+                  <textarea class="brief-short-textarea" id="brief-needs" name="accessibilityPrivacyNeeds" placeholder="For example: captions, high contrast, keyboard-first controls, sensitive client data, no third-party tracking, or accessibility standards to meet."></textarea>
+                </div>
               </div>
             </section>
             <section class="brief-estimate full" aria-labelledby="brief-estimate-title">
@@ -364,6 +411,10 @@
                 </div>
                 <ul class="brief-price-lines" id="brief-price-lines" aria-live="polite"></ul>
                 <p id="brief-cart-note">Choose options to see a transparent scope breakdown.</p>
+                <section class="brief-not-included" aria-labelledby="brief-not-included-title">
+                  <h5 id="brief-not-included-title">May need a separate quote</h5>
+                  <ul id="brief-not-included-list"></ul>
+                </section>
               </section>
               <div class="project-brief-grid brief-estimate-grid">
                 <div class="project-brief-field">
@@ -384,6 +435,20 @@
                 </div>
               </div>
               <p class="brief-estimate-note" id="brief-estimate-note">A planning guide based on the scope selected. Final pricing is confirmed after a proper conversation.</p>
+            </section>
+            <section class="brief-phase-tracker full" aria-labelledby="brief-phase-title">
+              <div>
+                <span class="kicker">What happens next</span>
+                <h3 id="brief-phase-title">A simple project path.</h3>
+              </div>
+              <ol>
+                <li><strong>Enquiry</strong><span>Brief received and reviewed.</span></li>
+                <li><strong>Planning</strong><span>Scope, timing, and final quote confirmed.</span></li>
+                <li><strong>Deposit</strong><span>Work is booked once the deposit is received.</span></li>
+                <li><strong>Build</strong><span>Development, testing, and progress updates.</span></li>
+                <li><strong>Review</strong><span>Feedback and final refinements.</span></li>
+                <li><strong>Live</strong><span>Launch, handover, and optional support.</span></li>
+              </ol>
             </section>
             <section class="brief-conditional full" id="brief-discord-options" hidden aria-hidden="true">
               <div class="brief-conditional-heading">

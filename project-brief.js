@@ -39,6 +39,12 @@
   const maintenancePaymentField = document.getElementById("brief-maintenance-payment-field");
   const supportPriceOutput = document.getElementById("brief-support-price");
   const locationField = document.getElementById("brief-location-field");
+  const urgencySelect = document.getElementById("brief-urgency");
+  const invoiceTypeSelect = document.getElementById("brief-invoice-type");
+  const businessInvoiceField = document.getElementById("brief-business-invoice-field");
+  const fileInput = document.getElementById("brief-files");
+  const fileSummary = document.getElementById("brief-file-summary");
+  const notIncludedList = document.getElementById("brief-not-included-list");
 
   if (!form || !profile.email) return;
 
@@ -143,6 +149,9 @@
     const wantsInPerson = typeSelect?.value === "Home or company network setup" || document.getElementById("brief-on-site")?.value?.startsWith("In-person support");
     locationField?.toggleAttribute("hidden", !wantsInPerson);
     locationField?.setAttribute("aria-hidden", String(!wantsInPerson));
+    const businessInvoice = invoiceTypeSelect?.value === "business";
+    businessInvoiceField?.toggleAttribute("hidden", !businessInvoice);
+    businessInvoiceField?.setAttribute("aria-hidden", String(!businessInvoice));
   };
 
   typeSelect?.addEventListener("change", updateConditionalFields);
@@ -154,6 +163,16 @@
     currency: "AUD",
     maximumFractionDigits: 0
   }).format(amount);
+
+  const updateFileSummary = () => {
+    if (!fileSummary) return;
+    const names = [...(fileInput?.files || [])].map((file) => file.name);
+    fileSummary.textContent = names.length
+      ? `${names.length} selected: ${names.join(", ")}. Attach these manually after your email opens.`
+      : "No files selected. Attach files manually to the email after it opens.";
+  };
+
+  fileInput?.addEventListener("change", updateFileSummary);
 
   const estimateBuild = ({ syncBudget = false } = {}) => {
     updateConditionalFields();
@@ -262,6 +281,13 @@
     const interstateVisit = wantsInPerson && !overseasVisit && location === "Elsewhere in Australia";
     const victorianVisit = wantsInPerson && !overseasVisit && !interstateVisit && location === "Melbourne / Victoria";
     const travelPrice = victorianVisit ? 20 : 0;
+    const urgencyPricing = {
+      standard: { label: "Standard planning", price: 0, detail: "Work is scheduled around the normal available build window." },
+      priority: { label: "Priority response", price: 100, detail: "A response within three business days, subject to availability." },
+      urgent: { label: "Urgent response", price: 250, detail: "A response within one business day, subject to availability." },
+      critical: { label: "Critical assessment", price: 400, detail: "Same-day assessment where availability allows; a final scope is confirmed before work starts." }
+    };
+    const urgency = urgencyPricing[urgencySelect?.value] || urgencyPricing.standard;
     const travelItem = victorianVisit
       ? { label: "Australian in-person travel", value: `+${currency(travelPrice)}`, detail: "Flat local-travel allowance for Myki tickets, petrol, or an Uber." }
       : interstateVisit
@@ -291,8 +317,8 @@
         ? `${currency(maintenancePlan.monthly)}/month or ${currency(maintenancePlan.upfront)} upfront (${currency(maintenancePlan.upfront / 2)} deposit + ${currency(maintenancePlan.upfront / 2)} final payment).`
         : "No extra support cost selected.";
     }
-    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice - showcaseDiscount;
-    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice - showcaseDiscount;
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice + urgency.price - showcaseDiscount;
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice + urgency.price - showcaseDiscount;
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
     const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
@@ -331,6 +357,7 @@
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
+          ...(urgency.price ? [{ label: urgency.label, value: `+${currency(urgency.price)} first invoice`, detail: urgency.detail }] : []),
           ...travelPolicyItems,
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           ...(showcaseDiscountItem ? [{ ...showcaseDiscountItem, value: `${showcaseDiscountItem.value} first invoice` }] : []),
@@ -342,6 +369,7 @@
       : [
           { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
+          ...(urgency.price ? [{ label: urgency.label, value: `+${currency(urgency.price)}`, detail: urgency.detail }] : []),
           ...travelPolicyItems,
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           ...(showcaseDiscountItem ? [showcaseDiscountItem] : []),
@@ -355,8 +383,9 @@
         ? maintenanceIsMonthly ? ` + ${currency(maintenancePrice)}/mo` : ` + ${currency(maintenancePrice)} support`
         : "";
       const travelTotal = victorianVisit ? ` + ${currency(travelPrice)} travel` : interstateVisit || overseasVisit ? " + travel quote" : "";
+      const urgencyTotal = urgency.price ? ` + ${currency(urgency.price)} priority` : "";
       cartTotal.textContent = perHour
-        ? `${currency(guideLow)}-${currency(guideHigh)}/hr${travelTotal}${maintenanceTotal}`
+        ? `${currency(guideLow)}-${currency(guideHigh)}/hr${urgencyTotal}${travelTotal}${maintenanceTotal}`
         : maintenancePlan.monthly && maintenanceIsMonthly
           ? `${currency(projectLow)}-${currency(projectHigh)} + ${currency(maintenancePrice)}/mo`
           : `${currency(projectLow)}-${currency(projectHigh)}`;
@@ -370,6 +399,19 @@
         value.textContent = item.value;
         line.append(copy, value);
         if (item.detail) line.title = item.detail;
+        return line;
+      }));
+    }
+    if (notIncludedList) {
+      const exclusions = ["Major additions or changes outside the agreed scope"];
+      if (["Build a web portfolio", "Interactive dashboard", "Something else"].includes(typeSelect?.value)) exclusions.push("Domain, hosting, and any paid third-party service fees");
+      if ([...form.querySelectorAll('input[type="checkbox"]:checked')].some((field) => /API|live data|database|hosting/i.test(field.value))) exclusions.push("Paid API, hosting, database, or platform subscriptions");
+      if (networkSetup) exclusions.push("Hardware, cabling, internet-provider fees, and specialist electrical work");
+      if (interstateVisit) exclusions.push("Interstate train or plane ticket costs");
+      if (overseasVisit) exclusions.push("International flights, accommodation, visas, and travel requirements");
+      notIncludedList.replaceChildren(...[...new Set(exclusions)].map((item) => {
+        const line = document.createElement("li");
+        line.textContent = item;
         return line;
       }));
     }
@@ -463,6 +505,7 @@
     if (timelineSelect?.value === "Long-term") details.set("paymentModel", "hour");
     const value = (name) => String(details.get(name) || "Not provided").trim();
     const checkedValues = (name) => details.getAll(name).map((item) => String(item).trim()).filter(Boolean);
+    const selectedFiles = [...(fileInput?.files || [])].map((file) => file.name);
     const subject = `Project brief from ${value("name")}`;
     const body = [
       "Hi Alvis,",
@@ -488,6 +531,12 @@
       `Ongoing support: ${value("maintenancePreference")}`,
       `Support payment: ${value("maintenancePayment") === "upfront" ? "Upfront, 50% deposit and 50% final payment" : value("maintenancePayment") === "monthly" ? "Monthly" : "Not selected"}`,
       `Support preference: ${value("supportPreference")}`,
+      `Urgency: ${value("urgency")}`,
+      `Availability: ${checkedValues("availability").join(", ") || "Not provided"}`,
+      `Invoice type: ${value("invoiceType")}`,
+      `Invoice email: ${value("invoiceEmail")}`,
+      `Business invoice details: ${value("businessInvoiceDetails")}`,
+      `Testimonial permission: ${value("testimonialPermission")}`,
       `Found EchoOps via: ${value("referralSource")}`,
       `Showcase permission: ${value("showcasePermission")}`,
       `Planning estimate acknowledged: ${details.has("estimateAcknowledgement") ? "Yes" : "No"}`,
@@ -538,6 +587,12 @@
       "",
       "Design references or examples:",
       value("designReferences"),
+      "",
+      "Accessibility, privacy, or data-handling needs:",
+      value("accessibilityPrivacyNeeds"),
+      "",
+      "Reference files selected (attach manually):",
+      selectedFiles.join(", ") || "None",
       "",
       "Sent from the EchoOps project brief."
     ].join("\n");
