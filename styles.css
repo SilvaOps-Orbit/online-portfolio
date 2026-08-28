@@ -8859,6 +8859,7 @@ html.user-reduced-motion *::after {
 .brief-estimate-metrics span { color: var(--muted); font-size: 0.74rem; font-weight: 800; text-transform: uppercase; }
 .brief-estimate-metrics output { color: var(--text); font-size: 1.02rem; font-weight: 900; }
 .brief-estimate-metrics output.is-focused { color: var(--accent); }
+.brief-estimate-metrics output.is-easy { color: #72e59c; }
 .brief-estimate-metrics output.is-balanced { color: var(--accent-2); }
 .brief-estimate-metrics output.is-detailed { color: #ffb84d; }
 .brief-estimate-metrics output.is-high { color: #ff6565; }

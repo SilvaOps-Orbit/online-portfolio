@@ -138,8 +138,8 @@
     const baseHours = {
       "Build a web portfolio": 20,
       "Interactive dashboard": 30,
-      "Discord bot or community tool": 32,
-      "AI automation": 36,
+      "Discord bot or community tool": 12,
+      "AI automation": 48,
       "Security or performance review": 18,
       "Something else": 24
     };
@@ -164,21 +164,29 @@
     if (newSkillSelect?.value === "unsure") hours += 5;
     if (newSkillSelect?.value === "yes") hours = Math.ceil(hours * 1.3 + 8);
 
-    const hourly = 55 + (newSkillSelect?.value === "yes" ? 10 : 0);
+    const typeRateAdjustments = {
+      "Build a web portfolio": 0,
+      "Interactive dashboard": 10,
+      "Discord bot or community tool": -10,
+      "AI automation": 25,
+      "Security or performance review": 5,
+      "Something else": 0
+    };
+    const hourly = 55 + (typeRateAdjustments[typeSelect?.value] || 0) + (newSkillSelect?.value === "yes" ? 10 : 0);
     const lowHours = Math.max(8, Math.round(hours * 0.85));
     const highHours = Math.round(hours * 1.2);
     const perHour = paymentSelect?.value === "hour";
     const discordBase = {
-      "Under 100 members": { low: 150, high: 150, label: "Small Discord bot base" },
-      "100 to 1,000 members": { low: 250, high: 250, label: "Growing Discord bot base" },
-      "1,000 to 10,000 members": { low: 350, high: 350, label: "Large-community Discord bot base" },
-      "10,000+ members": { low: 750, high: 900, label: "High-scale Discord bot base" }
+      "Under 100 members": { low: 150, high: 150, label: "Easy Discord bot base" },
+      "100 to 1,000 members": { low: 250, high: 250, label: "Easy Discord bot base" },
+      "1,000 to 10,000 members": { low: 350, high: 350, label: "Easy Discord bot base" },
+      "10,000+ members": { low: 750, high: 900, label: "Easy Discord bot base" }
     };
     const basePricing = {
       "Build a web portfolio": { low: 700, high: 900, label: "Portfolio foundation" },
       "Interactive dashboard": { low: 1300, high: 1700, label: "Dashboard foundation" },
       "Discord bot or community tool": discordBase[document.getElementById("brief-community-size")?.value] || discordBase["Under 100 members"],
-      "AI automation": { low: 2800, high: 3400, label: "AI automation foundation" },
+      "AI automation": { low: 2800, high: 3400, label: "High-complexity AI foundation" },
       "Security or performance review": { low: 600, high: 800, label: "Scoped review foundation" },
       "Something else": { low: 700, high: 1000, label: "Custom build foundation" }
     };
@@ -217,7 +225,11 @@
     if (effortHours) effortHours.textContent = `${lowHours}-${highHours} hrs`;
     if (suggestedRate) suggestedRate.textContent = `${currency(hourly)}/hr`;
     if (complexityOutput) {
-      const complexity = hours >= 70 ? "High" : hours >= 42 ? "Detailed" : hours >= 28 ? "Balanced" : "Focused";
+      const complexity = typeSelect?.value === "AI automation"
+        ? "High"
+        : typeSelect?.value === "Discord bot or community tool"
+          ? "Easy"
+          : hours >= 70 ? "High" : hours >= 42 ? "Detailed" : hours >= 28 ? "Balanced" : "Focused";
       complexityOutput.textContent = complexity;
       complexityOutput.className = `is-${complexity.toLowerCase()}`;
     }
@@ -248,9 +260,14 @@
       }));
     }
     if (cartNote) {
+      const complexityNote = typeSelect?.value === "AI automation"
+        ? "AI automation is the highest-complexity service because it needs extra design, testing, and safe integration work."
+        : typeSelect?.value === "Discord bot or community tool"
+          ? "Discord bots start as an easy service; cost increases only with community scale and the features selected."
+          : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
-        ? "Hourly work stays flexible when the brief is still evolving. The cart shows how choices increase delivery time."
-        : "The project estimate combines a clear starting scope with A$25 to A$100 additions. It is a planning guide, not a binding quote.";
+        ? `${complexityNote} Hourly work stays flexible when the brief is still evolving.`
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
