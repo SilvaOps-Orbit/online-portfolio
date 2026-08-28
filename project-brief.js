@@ -144,7 +144,7 @@
     maximumFractionDigits: 0
   }).format(amount);
 
-  const estimateBuild = () => {
+  const estimateBuild = ({ syncBudget = false } = {}) => {
     const isLongTerm = timelineSelect?.value === "Long-term";
     if (paymentSelect) {
       if (isLongTerm) paymentSelect.value = "hour";
@@ -237,7 +237,7 @@
       budgetRange.min = perHour ? "35" : "150";
       budgetRange.max = perHour ? "130" : "10000";
       budgetRange.step = perHour ? "5" : "100";
-      if (Number(budgetRange.value) < Number(budgetRange.min) || Number(budgetRange.value) > Number(budgetRange.max)) {
+      if (syncBudget || Number(budgetRange.value) < Number(budgetRange.min) || Number(budgetRange.value) > Number(budgetRange.max)) {
         budgetRange.value = String(perHour ? hourly : Math.round(((guideLow + guideHigh) / 2) / 50) * 50);
       }
     }
@@ -355,6 +355,18 @@
       estimateBuild();
       updateReadiness();
     }
+  });
+  timelineSelect?.addEventListener("change", () => {
+    estimateBuild({ syncBudget: true });
+    updateReadiness();
+  });
+  paymentSelect?.addEventListener("change", () => {
+    estimateBuild({ syncBudget: true });
+    updateReadiness();
+  });
+  budgetRange?.addEventListener("input", () => {
+    estimateBuild();
+    updateReadiness();
   });
   form.addEventListener("change", (event) => {
     if (event.target.matches("input, select, textarea")) {
