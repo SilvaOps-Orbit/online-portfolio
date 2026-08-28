@@ -442,6 +442,9 @@ body:not(.is-booting) .boot-screen {
   transform: translateX(-50%);
 }
 
+/* The browser's hidden attribute must win over the layout declaration above. */
+.steam-subnav[hidden] { display: none; }
+
 .steam-subnav.is-open { animation: steam-subnav-arrive 180ms ease-out both; }
 
 .steam-subnav a {

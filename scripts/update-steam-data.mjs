@@ -555,7 +555,10 @@ async function loadAchievementCollections(ownedGames) {
           title: details.displayName || achievement.name || key || "Unlocked achievement",
           meta: game.name || "Steam achievement",
           note: unlocktime ? `Unlocked ${formatDate(unlocktime)}` : "Unlocked",
-          image: details.icon || headerImage(game.appid),
+          // Keep the game cover as the card art. Achievement icons are often tiny and
+          // sometimes unavailable from regional Steam CDNs, so they are metadata only.
+          image: headerImage(game.appid),
+          achievementIcon: details.icon || "",
           url: gameUrl(game.appid),
           achievementPercent: globalByName.get(key),
           unlocktime

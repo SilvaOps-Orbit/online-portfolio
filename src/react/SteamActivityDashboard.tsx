@@ -417,6 +417,17 @@ function swapSteamArtworkHost(value: string, expectedHost: string, replacementHo
 // Host failover is applied only after an exact HTTPS hostname match.
 function artworkCandidates(item: SteamItem): string[] {
   const candidates: string[] = [];
+  if (item.appid) {
+    const appid = item.appid;
+    candidates.push(
+      `https://cdn.akamai.steamstatic.com/steam/apps/${appid}/header.jpg`,
+      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+      `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
+      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
+      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_616x353.jpg`
+    );
+  }
   const primary = String(item.image || "").trim().replace(/^http:\/\//i, "https://");
   if (primary) {
     const fastlyPrimary = swapSteamArtworkHost(
@@ -431,16 +442,6 @@ function artworkCandidates(item: SteamItem): string[] {
       "shared.akamai.steamstatic.com"
     );
     if (akamaiFallback !== primary) candidates.push(akamaiFallback);
-  }
-  if (item.appid) {
-    const appid = item.appid;
-    candidates.push(
-      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
-      `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appid}/header.jpg`,
-      `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appid}/capsule_616x353.jpg`,
-      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`,
-      `https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/capsule_616x353.jpg`
-    );
   }
   return [...new Set(candidates)];
 }
