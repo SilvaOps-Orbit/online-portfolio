@@ -8822,6 +8822,31 @@ html.user-reduced-motion *::after {
 .brief-feature-field label { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.88rem; }
 .brief-feature-field input { accent-color: var(--accent); }
 
+.brief-estimate {
+  display: grid;
+  gap: 16px;
+  grid-column: 1 / -1;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--line));
+  border-radius: 8px;
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent-2) 10%, transparent), transparent 54%), var(--panel);
+}
+
+.brief-estimate-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.brief-estimate-heading .kicker { margin: 0; }
+.brief-estimate-heading h3 { margin: 6px 0 0; font-size: 1.02rem; }
+.brief-estimate-total { color: var(--accent-2); font-size: 1.15rem; font-weight: 900; text-align: right; }
+.brief-estimate-grid { align-items: end; }
+.brief-range-value { color: var(--accent-2); font-size: 0.92rem; font-weight: 850; }
+.brief-estimate input[type="range"] { min-height: auto; padding: 4px 0; accent-color: var(--accent-2); }
+.brief-estimate-note { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.55; }
+
 @keyframes brief-panel-in {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -8878,6 +8903,8 @@ html.user-reduced-motion *::after {
   .project-brief-header { width: min(100% - 28px, 1180px); }
   .project-brief-main { width: min(100% - 28px, 1060px); }
   .brief-conditional-heading { align-items: start; flex-direction: column; gap: 8px; }
+  .brief-estimate-heading { align-items: start; flex-direction: column; gap: 8px; }
+  .brief-estimate-total { text-align: left; }
   .brief-feature-field { grid-template-columns: 1fr; }
 }
 

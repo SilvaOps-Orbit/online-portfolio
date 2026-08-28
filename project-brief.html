@@ -66,13 +66,10 @@
               </select>
             </div>
             <div class="project-brief-field">
-              <label for="brief-budget">Budget range</label>
-              <select id="brief-budget" name="budget">
-                <option>Still working it out</option>
-                <option>Under A$500</option>
-                <option>A$500 to A$1,500</option>
-                <option>A$1,500 to A$3,000</option>
-                <option>A$3,000+</option>
+              <label for="brief-payment">How would you like to pay?</label>
+              <select id="brief-payment" name="paymentModel">
+                <option value="project">Per project</option>
+                <option value="hour">Per hour</option>
               </select>
             </div>
             <div class="project-brief-field">
@@ -122,6 +119,31 @@
                   <label><input type="checkbox" name="portfolioFeature" value="Social or live data integrations"> Social or live data integrations</label>
                 </fieldset>
               </div>
+            </section>
+            <section class="brief-estimate full" aria-labelledby="brief-estimate-title">
+              <div class="brief-estimate-heading">
+                <div>
+                  <span class="kicker">Planning guide</span>
+                  <h3 id="brief-estimate-title">Shape the budget around the build.</h3>
+                </div>
+                <output class="brief-estimate-total" id="brief-estimate-total" aria-live="polite">A$1,200 to A$1,800</output>
+              </div>
+              <div class="project-brief-grid brief-estimate-grid">
+                <div class="project-brief-field">
+                  <label for="brief-budget-range">Your comfortable budget</label>
+                  <input id="brief-budget-range" name="budgetAmount" type="range" min="300" max="6000" step="100" value="1500">
+                  <output class="brief-range-value" id="brief-budget-value" for="brief-budget-range">A$1,500 project budget</output>
+                </div>
+                <div class="project-brief-field">
+                  <label for="brief-new-skill">Does the build need a new skill or platform?</label>
+                  <select id="brief-new-skill" name="newSkill">
+                    <option value="no">No, use established tools</option>
+                    <option value="unsure">Not sure yet</option>
+                    <option value="yes">Yes, research and learning may be needed</option>
+                  </select>
+                </div>
+              </div>
+              <p class="brief-estimate-note" id="brief-estimate-note">Estimated scope: about 24 to 32 hours. This is a planning guide, not a final quote.</p>
             </section>
             <section class="brief-conditional full" id="brief-discord-options" hidden aria-hidden="true">
               <div class="brief-conditional-heading">
