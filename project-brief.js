@@ -37,6 +37,7 @@
   const maintenanceSelect = document.getElementById("brief-maintenance");
   const maintenancePaymentSelect = document.getElementById("brief-maintenance-payment");
   const maintenancePaymentField = document.getElementById("brief-maintenance-payment-field");
+  const supportPriceOutput = document.getElementById("brief-support-price");
 
   if (!form || !profile.email) return;
 
@@ -245,6 +246,11 @@
     const maintenancePlan = maintenancePlans[maintenanceSelect?.value] || maintenancePlans.none;
     const maintenanceIsMonthly = maintenancePaymentSelect?.value === "monthly";
     const maintenancePrice = maintenanceIsMonthly ? maintenancePlan.monthly : maintenancePlan.upfront;
+    if (supportPriceOutput) {
+      supportPriceOutput.textContent = maintenancePlan.monthly
+        ? `${currency(maintenancePlan.monthly)}/month or ${currency(maintenancePlan.upfront)} upfront (${currency(maintenancePlan.upfront / 2)} deposit + ${currency(maintenancePlan.upfront / 2)} final payment).`
+        : "No extra support cost selected.";
+    }
     const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
     const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;

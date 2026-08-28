@@ -294,6 +294,7 @@
                     <option value="six-months">Six months of care and small updates</option>
                     <option value="one-year">One year of bug fixes and upkeep</option>
                   </select>
+                  <output class="brief-support-price" id="brief-support-price" aria-live="polite">No extra support cost selected.</output>
                 </div>
                 <div class="project-brief-field" id="brief-maintenance-payment-field" hidden>
                   <label for="brief-maintenance-payment" data-help="Monthly support is paid each month. Upfront support is split into a 50% deposit before work begins and a 50% final payment when the agreed support period starts.">How would you like to pay for support?</label>
@@ -311,6 +312,14 @@
                 <div class="project-brief-field full">
                   <label for="brief-existing-setup" data-help="List any useful current tools or equipment, such as a web host, router model, Discord server, current website, or software already in use.">Existing setup, tools, or equipment</label>
                   <textarea id="brief-existing-setup" name="existingSetup" placeholder="For example: current website link, hosting provider, router model, Discord server, software, or anything already built."></textarea>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-goal">What should this project achieve?</label>
+                  <textarea id="brief-goal" name="goal" required placeholder="The outcome, the people it is for, and what would make the project a win."></textarea>
+                </div>
+                <div class="project-brief-field full">
+                  <label for="brief-notes">Useful details, links, or must-haves</label>
+                  <textarea id="brief-notes" name="notes" placeholder="Existing site links, features you have in mind, examples you like, content you already have, and anything that should be avoided."></textarea>
                 </div>
                 <div class="project-brief-field">
                   <label for="brief-must-haves" data-help="Must-haves are the pieces that make the project successful. They are protected first when balancing scope and budget.">Must-haves</label>
@@ -389,14 +398,6 @@
                 <input id="brief-discord" name="discordUsername" autocomplete="off" placeholder="username or @username">
               </div>
             </section>
-            <div class="project-brief-field full">
-              <label for="brief-goal">What should this project achieve?</label>
-              <textarea id="brief-goal" name="goal" required placeholder="The outcome, the people it is for, and what would make the project a win."></textarea>
-            </div>
-            <div class="project-brief-field full">
-              <label for="brief-notes">Useful details, links, or must-haves</label>
-              <textarea id="brief-notes" name="notes" placeholder="Existing site links, features you have in mind, examples you like, content you already have, and anything that should be avoided."></textarea>
-            </div>
             <label class="brief-consent">
               <input id="brief-estimate-acknowledgement" name="estimateAcknowledgement" type="checkbox" required>
               <span>I understand this is a planning estimate, not a final quote or guaranteed delivery date.</span>

@@ -8971,6 +8971,15 @@ html.user-reduced-motion *::after {
   min-height: 78px;
 }
 
+.brief-support-price {
+  display: block;
+  margin-top: 8px;
+  color: var(--accent-2);
+  font-size: 0.84rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
 .project-brief-field input:focus,
 .project-brief-field select:focus,
 .project-brief-field textarea:focus {
