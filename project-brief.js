@@ -164,15 +164,17 @@
     if (newSkillSelect?.value === "unsure") hours += 5;
     if (newSkillSelect?.value === "yes") hours = Math.ceil(hours * 1.3 + 8);
 
-    const typeRateAdjustments = {
-      "Build a web portfolio": 0,
-      "Interactive dashboard": 10,
-      "Discord bot or community tool": -10,
-      "AI automation": 25,
-      "Security or performance review": 5,
-      "Something else": 0
+    const roleRateBenchmarks = {
+      "Build a web portfolio": { role: "Web developer", marketRate: 51 },
+      "Interactive dashboard": { role: "Data analyst / dashboard developer", marketRate: 66 },
+      "Discord bot or community tool": { role: "Software developer", marketRate: 51 },
+      "AI automation": { role: "AI engineer", marketRate: 71 },
+      "Security or performance review": { role: "Cyber security analyst", marketRate: 59 },
+      "Something else": { role: "Software developer", marketRate: 51 }
     };
-    const hourly = 55 + (typeRateAdjustments[typeSelect?.value] || 0) + (newSkillSelect?.value === "yes" ? 10 : 0);
+    const roleRate = roleRateBenchmarks[typeSelect?.value] || roleRateBenchmarks["Something else"];
+    const rateBuffer = 8;
+    const hourly = roleRate.marketRate + rateBuffer + (newSkillSelect?.value === "yes" ? 10 : 0);
     const lowHours = Math.max(8, Math.round(hours * 0.85));
     const highHours = Math.round(hours * 1.2);
     const perHour = paymentSelect?.value === "hour";
@@ -236,6 +238,8 @@
     const cartItems = perHour
       ? [
           { label: "Estimated delivery time", value: `${lowHours}-${highHours} hrs`, detail: "The range changes as features and written scope are added." },
+          { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
+          { label: "Independent builder allowance", value: `+${currency(rateBuffer)}/hr`, detail: "A small A$8 uplift above the role benchmark for independent project work." },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
           ...(newSkillSelect?.value === "unsure" ? [{ label: "Discovery allowance", value: "+5 hrs", detail: "A small allowance while the technical path is confirmed." }] : [])
@@ -266,7 +270,7 @@
           ? "Discord bots start as an easy service; cost increases only with community scale and the features selected."
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
-        ? `${complexityNote} Hourly work stays flexible when the brief is still evolving.`
+        ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} independent-work allowance.`
         : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
