@@ -28,7 +28,8 @@ window.PORTFOLIO_CONFIG = {
     youtubeUrl: "https://www.youtube.com/@SilvaDevelops",
     contentHubUrl: "",
     linkedinUrl: "",
-    resumeUrl: "assets/alvis-leslie-gordon-resume.txt"
+    resumeUrl: "assets/alvis-leslie-gordon-resume.txt",
+    projectBriefUrl: "project-brief.html"
   },
   highlights: [
     { value: "3+", label: "Featured projects" },
