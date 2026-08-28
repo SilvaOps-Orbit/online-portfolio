@@ -248,7 +248,7 @@
       ? [
           { label: "Estimated delivery time", value: `${lowHours}-${highHours} hrs`, detail: "The range changes as features and written scope are added." },
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
-          { label: "Independent builder allowance", value: `+${currency(rateBuffer)}/hr`, detail: "A small A$8 uplift above the role benchmark for independent project work." },
+          { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$8 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
@@ -281,7 +281,7 @@
           ? "Discord bots start as an easy service; cost increases only with community scale and the features selected."
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
-        ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} independent-work allowance. ${timelinePrice.detail}`
+        ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} solo-delivery allowance, because one person carries the planning, build, testing, communication, and delivery work that a team would normally share. ${timelinePrice.detail}`
         : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
