@@ -246,13 +246,27 @@
     const maintenancePlan = maintenancePlans[maintenanceSelect?.value] || maintenancePlans.none;
     const maintenanceIsMonthly = maintenancePaymentSelect?.value === "monthly";
     const maintenancePrice = maintenanceIsMonthly ? maintenancePlan.monthly : maintenancePlan.upfront;
+    const location = document.getElementById("brief-location")?.value || "";
+    const supportPreference = document.getElementById("brief-on-site")?.value || "";
+    const networkSetup = typeSelect?.value === "Home or company network setup";
+    const overseasVisit = supportPreference === "In-person support outside Australia" || (networkSetup && location === "Outside Australia");
+    const australianVisit = !overseasVisit && (
+      supportPreference === "In-person support in Australia" ||
+      (networkSetup && location !== "Outside Australia" && location !== "Remote only")
+    );
+    const travelPrice = australianVisit ? 20 : 0;
+    const travelItem = australianVisit
+      ? { label: "Australian in-person travel", value: `+${currency(travelPrice)}`, detail: "Flat local-travel allowance for Myki tickets, petrol, or an Uber." }
+      : overseasVisit
+        ? { label: "International travel", value: "Flight quote required", detail: "Any overseas in-person work is priced from the actual flight and travel requirements before work is confirmed." }
+        : null;
     if (supportPriceOutput) {
       supportPriceOutput.textContent = maintenancePlan.monthly
         ? `${currency(maintenancePlan.monthly)}/month or ${currency(maintenancePlan.upfront)} upfront (${currency(maintenancePlan.upfront / 2)} deposit + ${currency(maintenancePlan.upfront / 2)} final payment).`
         : "No extra support cost selected.";
     }
-    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
-    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice;
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice) + travelPrice;
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
     const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
@@ -291,6 +305,7 @@
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
+          ...(travelItem ? [travelItem] : []),
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           { label: "Your selected rate", value: `${currency(selectedBudget)}/hr`, detail: "The rate preference selected with the budget slider." },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
@@ -300,6 +315,7 @@
       : [
           { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
+          ...(travelItem ? [travelItem] : []),
           ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           { label: "Your comfortable budget", value: currency(selectedBudget), detail: "The project budget selected with the slider. It does not change the estimate, but shows whether the selected amount fits the scope." },
           ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
@@ -310,8 +326,9 @@
       const maintenanceTotal = maintenancePlan.monthly
         ? maintenanceIsMonthly ? ` + ${currency(maintenancePrice)}/mo` : ` + ${currency(maintenancePrice)} support`
         : "";
+      const travelTotal = australianVisit ? ` + ${currency(travelPrice)} travel` : overseasVisit ? " + travel quote" : "";
       cartTotal.textContent = perHour
-        ? `${currency(guideLow)}-${currency(guideHigh)}/hr${maintenanceTotal}`
+        ? `${currency(guideLow)}-${currency(guideHigh)}/hr${travelTotal}${maintenanceTotal}`
         : maintenancePlan.monthly && maintenanceIsMonthly
           ? `${currency(projectLow)}-${currency(projectHigh)} + ${currency(maintenancePrice)}/mo`
           : `${currency(projectLow)}-${currency(projectHigh)}`;
@@ -336,7 +353,7 @@
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
         ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} solo-delivery allowance, because one person carries the planning, build, testing, communication, and delivery work that a team would normally share. ${timelinePrice.detail}`
-        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${travelItem ? australianVisit ? " Australian in-person work includes A$20 for local Myki, petrol, or Uber travel." : " Overseas in-person work needs a travel quote based on the actual flight and travel requirements." : ""}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
