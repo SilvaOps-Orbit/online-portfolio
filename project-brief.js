@@ -38,6 +38,7 @@
   const maintenancePaymentSelect = document.getElementById("brief-maintenance-payment");
   const maintenancePaymentField = document.getElementById("brief-maintenance-payment-field");
   const supportPriceOutput = document.getElementById("brief-support-price");
+  const locationField = document.getElementById("brief-location-field");
 
   if (!form || !profile.email) return;
 
@@ -139,6 +140,9 @@
     const hasMaintenance = maintenanceSelect?.value && maintenanceSelect.value !== "none";
     maintenancePaymentField?.toggleAttribute("hidden", !hasMaintenance);
     maintenancePaymentField?.setAttribute("aria-hidden", String(!hasMaintenance));
+    const wantsInPerson = typeSelect?.value === "Home or company network setup" || document.getElementById("brief-on-site")?.value?.startsWith("In-person support");
+    locationField?.toggleAttribute("hidden", !wantsInPerson);
+    locationField?.setAttribute("aria-hidden", String(!wantsInPerson));
   };
 
   typeSelect?.addEventListener("change", updateConditionalFields);
@@ -462,7 +466,7 @@
       `Estimate notes: ${estimateNote?.textContent || "Not provided"}`,
       `Target timeline: ${value("timeline")}`,
       `Preferred contact: ${value("contactPreference")}`,
-      `Location: ${value("location")}`,
+      `Location: ${locationField?.hidden ? "Not needed for remote work" : value("location")}`,
       `Preferred start date: ${value("preferredStartDate")}`,
       `Ongoing support: ${value("maintenancePreference")}`,
       `Support payment: ${value("maintenancePayment") === "upfront" ? "Upfront, 50% deposit and 50% final payment" : value("maintenancePayment") === "monthly" ? "Monthly" : "Not selected"}`,
