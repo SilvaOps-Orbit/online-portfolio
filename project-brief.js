@@ -34,6 +34,9 @@
   const cartLines = document.getElementById("brief-price-lines");
   const cartNote = document.getElementById("brief-cart-note");
   const readiness = document.getElementById("brief-readiness");
+  const maintenanceSelect = document.getElementById("brief-maintenance");
+  const maintenancePaymentSelect = document.getElementById("brief-maintenance-payment");
+  const maintenancePaymentField = document.getElementById("brief-maintenance-payment-field");
 
   if (!form || !profile.email) return;
 
@@ -132,6 +135,9 @@
     discordOptions?.toggleAttribute("hidden", !usesDiscord);
     discordOptions?.setAttribute("aria-hidden", String(!usesDiscord));
     if (discordInput) discordInput.required = usesDiscord;
+    const hasMaintenance = maintenanceSelect?.value && maintenanceSelect.value !== "none";
+    maintenancePaymentField?.toggleAttribute("hidden", !hasMaintenance);
+    maintenancePaymentField?.setAttribute("aria-hidden", String(!hasMaintenance));
   };
 
   typeSelect?.addEventListener("change", updateConditionalFields);
@@ -145,6 +151,7 @@
   }).format(amount);
 
   const estimateBuild = ({ syncBudget = false } = {}) => {
+    updateConditionalFields();
     const isLongTerm = timelineSelect?.value === "Long-term";
     if (paymentSelect) {
       if (isLongTerm) paymentSelect.value = "hour";
@@ -229,8 +236,17 @@
     const addOnPrice = addOns.reduce((total, item) => total + item.price, 0);
     const learningPrice = newSkillSelect?.value === "yes" ? 500 : newSkillSelect?.value === "unsure" ? 150 : 0;
     const scopePrice = Math.min(100, Math.floor(scopeWords / 35) * 25);
-    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project;
-    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project;
+    const maintenancePlans = {
+      none: { label: "No ongoing support", monthly: 0, upfront: 0, detail: "Post-launch help can still be requested and scoped when needed." },
+      short: { label: "90-day bug-fix cover", monthly: 25, upfront: 70, detail: "Covers verified bugs from the original build for three months, plus small configuration corrections." },
+      "six-months": { label: "Six months of care and small updates", monthly: 35, upfront: 180, detail: "Includes bug fixes, routine upkeep, and a small allowance for content or configuration updates." },
+      "one-year": { label: "One year of bug fixes and upkeep", monthly: 45, upfront: 450, detail: "Includes verified bug fixes, routine upkeep, and small agreed updates across the first year." }
+    };
+    const maintenancePlan = maintenancePlans[maintenanceSelect?.value] || maintenancePlans.none;
+    const maintenanceIsMonthly = maintenancePaymentSelect?.value === "monthly";
+    const maintenancePrice = maintenanceIsMonthly ? maintenancePlan.monthly : maintenancePlan.upfront;
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project + (maintenanceIsMonthly ? 0 : maintenancePrice);
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
     const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
@@ -269,6 +285,7 @@
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
+          ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           { label: "Your selected rate", value: `${currency(selectedBudget)}/hr`, detail: "The rate preference selected with the budget slider." },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
@@ -277,12 +294,22 @@
       : [
           { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
           { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
+          ...(maintenancePlan.monthly ? [{ label: maintenancePlan.label, value: maintenanceIsMonthly ? `${currency(maintenancePrice)}/month` : `${currency(maintenancePrice)} upfront`, detail: maintenanceIsMonthly ? `${maintenancePlan.detail} Charged monthly.` : `${maintenancePlan.detail} Paid as a 50% deposit (${currency(maintenancePrice / 2)}) and 50% final payment (${currency(maintenancePrice / 2)}).` }] : []),
           { label: "Your comfortable budget", value: currency(selectedBudget), detail: "The project budget selected with the slider. It does not change the estimate, but shows whether the selected amount fits the scope." },
           ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
           ...(learningPrice ? [{ label: newSkillSelect?.value === "yes" ? "Research and learning" : "Discovery allowance", value: `+${currency(learningPrice)}`, detail: "Allows time to validate a new skill, service, or platform." }] : []),
           ...(scopePrice ? [{ label: "Detailed written scope", value: `+${currency(scopePrice)}`, detail: "Extra planning allowance for the additional requirements shared." }] : [])
         ];
-    if (cartTotal) cartTotal.textContent = perHour ? `${currency(guideLow)}-${currency(guideHigh)}/hr` : `${currency(projectLow)}-${currency(projectHigh)}`;
+    if (cartTotal) {
+      const maintenanceTotal = maintenancePlan.monthly
+        ? maintenanceIsMonthly ? ` + ${currency(maintenancePrice)}/mo` : ` + ${currency(maintenancePrice)} support`
+        : "";
+      cartTotal.textContent = perHour
+        ? `${currency(guideLow)}-${currency(guideHigh)}/hr${maintenanceTotal}`
+        : maintenancePlan.monthly && maintenanceIsMonthly
+          ? `${currency(projectLow)}-${currency(projectHigh)} + ${currency(maintenancePrice)}/mo`
+          : `${currency(projectLow)}-${currency(projectHigh)}`;
+    }
     if (cartLines) {
       cartLines.replaceChildren(...cartItems.map((item) => {
         const line = document.createElement("li");
@@ -303,7 +330,7 @@
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
         ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} solo-delivery allowance, because one person carries the planning, build, testing, communication, and delivery work that a team would normally share. ${timelinePrice.detail}`
-        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail} It is a planning guide, not a binding quote.`;
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail}${maintenancePlan.monthly ? maintenanceIsMonthly ? ` Support is ${currency(maintenancePrice)} per month.` : ` Upfront support is split into a ${currency(maintenancePrice / 2)} deposit and ${currency(maintenancePrice / 2)} final payment.` : ""} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
@@ -408,6 +435,7 @@
       `Location: ${value("location")}`,
       `Preferred start date: ${value("preferredStartDate")}`,
       `Ongoing support: ${value("maintenancePreference")}`,
+      `Support payment: ${value("maintenancePayment") === "upfront" ? "Upfront, 50% deposit and 50% final payment" : value("maintenancePayment") === "monthly" ? "Monthly" : "Not selected"}`,
       `Support preference: ${value("supportPreference")}`,
       `Found EchoOps via: ${value("referralSource")}`,
       `Showcase permission: ${value("showcasePermission")}`,

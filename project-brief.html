@@ -287,9 +287,19 @@
               </div>
               <div class="project-brief-grid brief-option-grid">
                 <div class="project-brief-field">
-                  <label for="brief-maintenance" data-help="Choose whether the project needs support after launch, such as updates, small changes, or monitoring.">Ongoing support after launch</label>
+                  <label for="brief-maintenance" data-help="Choose a post-launch support plan. Plans cover the stated bug fixes and small upkeep tasks; larger features are scoped separately.">Ongoing support after launch</label>
                   <select id="brief-maintenance" name="maintenancePreference">
-                    <option>No ongoing support planned</option><option>Occasional help when needed</option><option>Monthly upkeep and small improvements</option><option>Not sure yet</option>
+                    <option value="none">No ongoing support plan</option>
+                    <option value="short">90-day bug-fix cover</option>
+                    <option value="six-months">Six months of care and small updates</option>
+                    <option value="one-year">One year of bug fixes and upkeep</option>
+                  </select>
+                </div>
+                <div class="project-brief-field" id="brief-maintenance-payment-field" hidden>
+                  <label for="brief-maintenance-payment" data-help="Monthly support is paid each month. Upfront support is split into a 50% deposit before work begins and a 50% final payment when the agreed support period starts.">How would you like to pay for support?</label>
+                  <select id="brief-maintenance-payment" name="maintenancePayment">
+                    <option value="monthly">Monthly</option>
+                    <option value="upfront">Pay upfront, split 50/50</option>
                   </select>
                 </div>
                 <div class="project-brief-field">
