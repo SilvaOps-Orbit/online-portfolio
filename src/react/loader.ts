@@ -35,6 +35,11 @@ const islands: IslandDefinition[] = [
     load: async () => (await import("./SecuritySnapshot")).mountSecuritySnapshot
   },
   {
+    id: "react-accessibility-panel-root",
+    label: "Accessibility controls",
+    load: async () => (await import("./AccessibilityPanel")).mountAccessibilityPanel
+  },
+  {
     id: "react-api-status-root",
     label: "Integration status",
     load: async () => (await import("./ApiStatusWidget")).mountApiStatusWidget

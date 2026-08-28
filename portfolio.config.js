@@ -1371,6 +1371,10 @@ window.PORTFOLIO_CONFIG = {
       "A quick security scorecard for the portfolio itself: static-first, no browser secrets, DOM-safe rendering, a credential-isolated translation gateway, explicit public-counter trust boundaries, and ongoing GitHub security automation.",
     posture: "Strong static-site posture"
   },
+  accessibility: {
+    label: "Accessibility controls",
+    summary: "Keyboard-first navigation, responsive layouts, contrast-aware themes, and visitor-controlled motion keep the experience usable without taking away its personality."
+  },
   security: [
     {
       title: "No Client-Side Secrets",

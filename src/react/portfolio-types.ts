@@ -385,6 +385,7 @@ export interface PortfolioConfig {
   spotify?: SpotifyData;
   security?: SecurityItem[];
   securitySnapshot?: { label?: string; posture?: string; summary?: string };
+  accessibility?: { label?: string; summary?: string };
   githubRepoTechnologies?: Record<string, string[]>;
   analytics?: {
     endpoint?: string;
