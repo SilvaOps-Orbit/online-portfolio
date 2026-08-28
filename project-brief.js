@@ -182,7 +182,7 @@
     const timeline = document.getElementById("brief-timeline")?.value || "Flexible";
     const timelinePrice = timelinePricing[timeline] || timelinePricing.Flexible;
     const roleRate = roleRateBenchmarks[typeSelect?.value] || roleRateBenchmarks["Something else"];
-    const rateBuffer = 8;
+    const rateBuffer = 10;
     const hourly = roleRate.marketRate + rateBuffer + timelinePrice.hourly + (newSkillSelect?.value === "yes" ? 10 : 0);
     const lowHours = Math.max(8, Math.round(hours * 0.85));
     const highHours = Math.round(hours * 1.2);
@@ -248,7 +248,7 @@
       ? [
           { label: "Estimated delivery time", value: `${lowHours}-${highHours} hrs`, detail: "The range changes as features and written scope are added." },
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
-          { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$8 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
+          { label: "Solo delivery allowance", value: `+${currency(rateBuffer)}/hr`, detail: "Most comparable roles sit inside a developer team. This A$10 allowance reflects one person carrying the planning, build, testing, communication, and delivery workload." },
           { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
