@@ -18,6 +18,7 @@
   const discordOptions = document.getElementById("brief-discord-options");
   const discordInput = document.getElementById("brief-discord");
   const paymentSelect = document.getElementById("brief-payment");
+  const timelineSelect = document.getElementById("brief-timeline");
   const budgetRange = document.getElementById("brief-budget-range");
   const budgetValue = document.getElementById("brief-budget-value");
   const budgetFit = document.getElementById("brief-budget-fit");
@@ -135,6 +136,12 @@
   }).format(amount);
 
   const estimateBuild = () => {
+    const isLongTerm = timelineSelect?.value === "Long-term";
+    if (paymentSelect) {
+      if (isLongTerm) paymentSelect.value = "hour";
+      paymentSelect.disabled = isLongTerm;
+      paymentSelect.title = isLongTerm ? "Long-term work is billed per hour." : "";
+    }
     const baseHours = {
       "Build a web portfolio": 20,
       "Interactive dashboard": 30,
@@ -179,7 +186,7 @@
       "Within 2 weeks": { project: 500, hourly: 10, label: "Rush schedule", detail: "A short turnaround needs protected build time and faster feedback." },
       "Long-term": { project: 75, hourly: 1, label: "Long-term reservation", detail: "A small allowance for holding space and maintaining a longer delivery plan." }
     };
-    const timeline = document.getElementById("brief-timeline")?.value || "Flexible";
+    const timeline = timelineSelect?.value || "Flexible";
     const timelinePrice = timelinePricing[timeline] || timelinePricing.Flexible;
     const roleRate = roleRateBenchmarks[typeSelect?.value] || roleRateBenchmarks["Something else"];
     const rateBuffer = 10;
@@ -309,7 +316,7 @@
     }
   };
 
-  [typeSelect, paymentSelect, budgetRange, newSkillSelect, portfolioStyleSelect, document.getElementById("brief-goal"), document.getElementById("brief-notes")]
+  [typeSelect, paymentSelect, timelineSelect, budgetRange, newSkillSelect, portfolioStyleSelect, document.getElementById("brief-goal"), document.getElementById("brief-notes")]
     .filter(Boolean)
     .forEach((field) => {
       field.addEventListener("input", estimateBuild);
@@ -323,6 +330,7 @@
     if (!form.reportValidity()) return;
 
     const details = new FormData(form);
+    if (timelineSelect?.value === "Long-term") details.set("paymentModel", "hour");
     const value = (name) => String(details.get(name) || "Not provided").trim();
     const checkedValues = (name) => details.getAll(name).map((item) => String(item).trim()).filter(Boolean);
     const subject = `Project brief from ${value("name")}`;
