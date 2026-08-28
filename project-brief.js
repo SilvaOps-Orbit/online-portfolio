@@ -172,9 +172,18 @@
       "Security or performance review": { role: "Cyber security analyst", marketRate: 59 },
       "Something else": { role: "Software developer", marketRate: 51 }
     };
+    const timelinePricing = {
+      Flexible: { project: 0, hourly: 0, label: "Flexible schedule", detail: "The lowest-cost option because work can be planned around the available build schedule." },
+      "Within 2 to 3 months": { project: 100, hourly: 2, label: "Planned schedule", detail: "A light allowance for reserving a delivery window in advance." },
+      "Within a month": { project: 250, hourly: 5, label: "Priority schedule", detail: "Extra priority is needed to complete the work within a month." },
+      "Within 2 weeks": { project: 500, hourly: 10, label: "Rush schedule", detail: "A short turnaround needs protected build time and faster feedback." },
+      "Long-term": { project: 75, hourly: 1, label: "Long-term reservation", detail: "A small allowance for holding space and maintaining a longer delivery plan." }
+    };
+    const timeline = document.getElementById("brief-timeline")?.value || "Flexible";
+    const timelinePrice = timelinePricing[timeline] || timelinePricing.Flexible;
     const roleRate = roleRateBenchmarks[typeSelect?.value] || roleRateBenchmarks["Something else"];
     const rateBuffer = 8;
-    const hourly = roleRate.marketRate + rateBuffer + (newSkillSelect?.value === "yes" ? 10 : 0);
+    const hourly = roleRate.marketRate + rateBuffer + timelinePrice.hourly + (newSkillSelect?.value === "yes" ? 10 : 0);
     const lowHours = Math.max(8, Math.round(hours * 0.85));
     const highHours = Math.round(hours * 1.2);
     const perHour = paymentSelect?.value === "hour";
@@ -201,8 +210,8 @@
     const addOnPrice = addOns.reduce((total, item) => total + item.price, 0);
     const learningPrice = newSkillSelect?.value === "yes" ? 500 : newSkillSelect?.value === "unsure" ? 150 : 0;
     const scopePrice = Math.min(100, Math.floor(scopeWords / 35) * 25);
-    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice;
-    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice;
+    const projectLow = basePrice.low + addOnPrice + learningPrice + scopePrice + timelinePrice.project;
+    const projectHigh = basePrice.high + addOnPrice + learningPrice + scopePrice + timelinePrice.project;
     const guideLow = perHour ? Math.max(35, hourly - 10) : projectLow;
     const guideHigh = perHour ? hourly + 15 : projectHigh;
     if (budgetRange) {
@@ -240,12 +249,14 @@
           { label: "Estimated delivery time", value: `${lowHours}-${highHours} hrs`, detail: "The range changes as features and written scope are added." },
           { label: `${roleRate.role} market rate`, value: `${currency(roleRate.marketRate)}/hr`, detail: "A current Australian employee-style hourly equivalent for this kind of work." },
           { label: "Independent builder allowance", value: `+${currency(rateBuffer)}/hr`, detail: "A small A$8 uplift above the role benchmark for independent project work." },
+          { label: timelinePrice.label, value: timelinePrice.hourly ? `+${currency(timelinePrice.hourly)}/hr` : "Included", detail: timelinePrice.detail },
           ...addOns.map((item) => ({ label: item.label, value: `+${item.hours} hrs`, detail: "Selected scope addition." })),
           ...(newSkillSelect?.value === "yes" ? [{ label: "Research and learning", value: "+8 hrs", detail: "Time to learn and validate a new platform or skill." }] : []),
           ...(newSkillSelect?.value === "unsure" ? [{ label: "Discovery allowance", value: "+5 hrs", detail: "A small allowance while the technical path is confirmed." }] : [])
         ]
       : [
-          { label: basePrice.label, value: guideLow === guideHigh ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
+          { label: basePrice.label, value: basePrice.low === basePrice.high ? currency(basePrice.low) : `${currency(basePrice.low)}-${currency(basePrice.high)}`, detail: typeSelect?.value === "Discord bot or community tool" ? "Scaled from community size before extras are added." : "The base work needed to make this type of project useful." },
+          { label: timelinePrice.label, value: timelinePrice.project ? `+${currency(timelinePrice.project)}` : "Included", detail: timelinePrice.detail },
           ...addOns.map((item) => ({ label: item.label, value: `+${currency(item.price)}`, detail: "A selected scope addition." })),
           ...(learningPrice ? [{ label: newSkillSelect?.value === "yes" ? "Research and learning" : "Discovery allowance", value: `+${currency(learningPrice)}`, detail: "Allows time to validate a new skill, service, or platform." }] : []),
           ...(scopePrice ? [{ label: "Detailed written scope", value: `+${currency(scopePrice)}`, detail: "Extra planning allowance for the additional requirements shared." }] : [])
@@ -270,8 +281,8 @@
           ? "Discord bots start as an easy service; cost increases only with community scale and the features selected."
           : "Complexity rises with the chosen features, written scope, and any new skills or services needed.";
       cartNote.textContent = perHour
-        ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} independent-work allowance.`
-        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. It is a planning guide, not a binding quote.`;
+        ? `${complexityNote} The hourly figure is the ${roleRate.role.toLowerCase()} market equivalent plus an A$${rateBuffer} independent-work allowance. ${timelinePrice.detail}`
+        : `${complexityNote} The project estimate combines a clear starting scope with A$25 to A$100 additions. ${timelinePrice.detail} It is a planning guide, not a binding quote.`;
     }
     form.dataset.scopeCart = cartItems.map((item) => `${item.label}: ${item.value}`).join("; ");
     if (budgetFit) {
