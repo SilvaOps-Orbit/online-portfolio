@@ -92,17 +92,30 @@
           <a href="#steam-wishlist">Wishlist</a>
         </nav>
         <div class="header-actions">
-          <label class="language-control" for="language-select" title="Preferred site language">
-            <span class="language-control-label" aria-hidden="true">Lang</span>
-            <select id="language-select" aria-label="Preferred site language">
-              <option value="en">EN</option>
-            </select>
-            <span class="language-state" id="language-state" role="status" aria-live="polite"></span>
-          </label>
-          <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Turn off dark mode" title="Toggle dark mode">
-            <span class="theme-toggle-text" id="theme-toggle-text">Dark</span>
-            <span class="theme-toggle-track" aria-hidden="true"><span></span></span>
+          <button class="icon-button settings-toggle" id="settings-toggle" type="button" aria-expanded="false" aria-controls="settings-panel" aria-label="Open site settings" title="Settings">
+            <span class="settings-toggle-icon" aria-hidden="true">&#9881;</span>
           </button>
+          <section class="settings-panel" id="settings-panel" aria-label="Site settings" hidden>
+            <div class="settings-panel-heading">
+              <span>Site settings</span>
+              <small>Display, language, and access</small>
+            </div>
+            <label class="language-control" for="language-select" title="Preferred site language">
+              <span class="language-control-label">Language</span>
+              <select id="language-select" aria-label="Preferred site language">
+                <option value="en">EN</option>
+              </select>
+              <span class="language-state" id="language-state" role="status" aria-live="polite"></span>
+            </label>
+            <button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="true" aria-label="Turn off dark mode" title="Toggle dark mode">
+              <span class="theme-toggle-text" id="theme-toggle-text">Dark</span>
+              <span class="theme-toggle-track" aria-hidden="true"><span></span></span>
+            </button>
+            <button class="settings-motion-toggle" id="settings-motion-toggle" type="button" aria-pressed="false">
+              <span>Reduce motion</span>
+              <small id="settings-motion-state">Effects follow your device</small>
+            </button>
+          </section>
         </div>
       </div>
       <button class="icon-button nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="header-menu" aria-label="Open menu" title="Open menu">

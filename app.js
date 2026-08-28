@@ -1,9 +1,11 @@
 (function () {
   "use strict";
 
-  const config = window.PORTFOLIO_CONFIG || {};
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const root = document.documentElement;
+  const config = window.PORTFOLIO_CONFIG || {};
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    || localStorage.getItem("portfolio-reduced-motion") === "true";
+  root.classList.toggle("user-reduced-motion", prefersReducedMotion);
   const cycleTimers = new Map();
   const cycleSwapTimers = new Map();
   const dataRefreshMs = 60000;
@@ -4058,6 +4060,59 @@
     }
   }
 
+  function bindSettings() {
+    const actions = document.querySelector(".header-actions");
+    const toggle = document.getElementById("settings-toggle");
+    const panel = document.getElementById("settings-panel");
+    const motionToggle = document.getElementById("settings-motion-toggle");
+    const motionState = document.getElementById("settings-motion-state");
+    if (!actions || !toggle || !panel) return;
+
+    const setOpen = (open, { focusToggle = false } = {}) => {
+      panel.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close site settings" : "Open site settings");
+      toggle.title = open ? "Close settings" : "Settings";
+      if (focusToggle) toggle.focus();
+    };
+
+    const syncMotion = (reducedMotion) => {
+      root.classList.toggle("user-reduced-motion", reducedMotion);
+      if (motionToggle) motionToggle.setAttribute("aria-pressed", String(reducedMotion));
+      if (motionState) motionState.textContent = reducedMotion ? "Animated effects are paused" : "Effects follow your device";
+    };
+
+    const updateMotionPreference = (reducedMotion) => {
+      localStorage.setItem("portfolio-reduced-motion", String(reducedMotion));
+      syncMotion(reducedMotion);
+      window.dispatchEvent(new CustomEvent("echoops:motion-preference", { detail: { reducedMotion } }));
+    };
+
+    syncMotion(localStorage.getItem("portfolio-reduced-motion") === "true");
+
+    toggle.addEventListener("click", () => {
+      setOpen(toggle.getAttribute("aria-expanded") !== "true");
+    });
+
+    motionToggle?.addEventListener("click", () => {
+      updateMotionPreference(motionToggle.getAttribute("aria-pressed") !== "true");
+    });
+
+    window.addEventListener("echoops:motion-preference", (event) => {
+      syncMotion(Boolean(event.detail?.reducedMotion));
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!actions.contains(event.target)) setOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && toggle.getAttribute("aria-expanded") === "true") {
+        setOpen(false, { focusToggle: true });
+      }
+    });
+  }
+
   function startSignalCanvas() {
     const canvas = document.getElementById("signal-canvas");
     if (!canvas || prefersReducedMotion) return;
@@ -4190,6 +4245,7 @@
 
   async function init() {
     bindTheme();
+    bindSettings();
     bindBootQuotes();
     bindBootSteps();
     const fallbackData = fallbackDynamicData();

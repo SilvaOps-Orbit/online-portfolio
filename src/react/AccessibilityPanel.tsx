@@ -17,7 +17,17 @@ function AccessibilityPanel() {
   useEffect(() => {
     document.documentElement.classList.toggle("user-reduced-motion", reducedMotion);
     localStorage.setItem(preferenceKey, String(reducedMotion));
+    window.dispatchEvent(new CustomEvent("echoops:motion-preference", { detail: { reducedMotion } }));
   }, [reducedMotion]);
+
+  useEffect(() => {
+    const syncMotionPreference = (event: Event) => {
+      const detail = (event as CustomEvent<{ reducedMotion?: boolean }>).detail;
+      setReducedMotion(Boolean(detail?.reducedMotion));
+    };
+    window.addEventListener("echoops:motion-preference", syncMotionPreference);
+    return () => window.removeEventListener("echoops:motion-preference", syncMotionPreference);
+  }, []);
 
   const items = [
     ["Keyboard", "Skip link, visible focus, and menu controls"],

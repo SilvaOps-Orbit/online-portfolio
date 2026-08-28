@@ -523,10 +523,127 @@ body:not(.is-booting) .boot-screen {
 }
 
 .header-actions {
+  position: relative;
   display: flex;
   align-items: center;
   justify-self: end;
   gap: 8px;
+}
+
+.settings-toggle {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.settings-toggle-icon {
+  display: block;
+  transition: transform 220ms ease;
+}
+
+.settings-toggle[aria-expanded="true"] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, var(--panel));
+}
+
+.settings-toggle[aria-expanded="true"] .settings-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.settings-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 65;
+  display: grid;
+  gap: 10px;
+  width: min(330px, calc(100vw - 36px));
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 58%, var(--line));
+  border-radius: var(--radius);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
+    color-mix(in srgb, var(--panel-strong) 96%, transparent);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(18px);
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-panel:not([hidden]) {
+  animation: settings-panel-arrive 180ms ease-out both;
+}
+
+.settings-panel-heading {
+  display: grid;
+  gap: 2px;
+  padding: 2px 3px 5px;
+}
+
+.settings-panel-heading span {
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.settings-panel-heading small,
+.settings-motion-toggle small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.settings-panel .language-control,
+.settings-panel .theme-toggle,
+.settings-motion-toggle {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.settings-panel .language-control {
+  padding-inline: 12px;
+}
+
+.settings-panel .language-control select {
+  margin-left: auto;
+  text-align: right;
+}
+
+.settings-motion-toggle {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  min-height: 54px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.settings-motion-toggle small {
+  max-width: 145px;
+  text-align: right;
+}
+
+.settings-motion-toggle:hover,
+.settings-motion-toggle:focus-visible,
+.settings-motion-toggle[aria-pressed="true"] {
+  border-color: var(--accent-2);
+  background: color-mix(in srgb, var(--accent-2) 10%, var(--panel));
+  transform: translateY(-1px);
+}
+
+@keyframes settings-panel-arrive {
+  from { opacity: 0; transform: translateY(-7px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .language-control {
@@ -848,18 +965,16 @@ body:not(.is-booting) .boot-screen {
 .site-header.is-compact-menu .steam-subnav a { text-align: center; }
 
 .site-header.is-compact-menu .header-actions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  justify-content: flex-end;
   justify-self: stretch;
   width: 100%;
   padding-top: 10px;
   border-top: 1px solid var(--line);
 }
 
-.site-header.is-compact-menu .language-control,
-.site-header.is-compact-menu .theme-toggle {
-  justify-content: space-between;
-  width: 100%;
+.site-header.is-compact-menu .settings-panel {
+  right: 0;
 }
 
 .site-header.is-compact-menu .nav-toggle {
