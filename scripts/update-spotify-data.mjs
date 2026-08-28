@@ -141,6 +141,90 @@ function fallbackData(reason, refreshError = "") {
   };
 }
 
+function archiveTrack(track) {
+  if (!track?.title) return null;
+  const artists = Array.isArray(track.artists) ? track.artists.filter(Boolean) : [];
+  return {
+    id: track.id || "",
+    title: cleanText(track.title, 180),
+    meta: cleanText(track.meta || artists.join(", ") || "Spotify listening archive", 180),
+    note: "Saved Spotify listening history",
+    artists,
+    image: cleanText(track.image || "", 500),
+    url: cleanText(track.url || "", 500),
+    playedAt: track.playedAt || "",
+    durationMs: Number(track.durationMs || 0),
+    contextType: cleanText(track.contextType || "Archive replay", 80),
+    contextTitle: cleanText(track.contextTitle || "Spotify listening history", 160),
+    isPlaying: false,
+    source: "spotify-archive"
+  };
+}
+
+function archiveTasteArtists(artists) {
+  return (Array.isArray(artists) ? artists : []).slice(0, 10).map((artist) => ({
+    id: artist.id || "",
+    title: cleanText(artist.title || "", 160),
+    meta: cleanText(artist.meta || "Spotify listening archive", 180),
+    image: cleanText(artist.image || "", 500),
+    count: Number(artist.count || 0)
+  })).filter((artist) => artist.title);
+}
+
+function archiveTasteTracks(tracks) {
+  return (Array.isArray(tracks) ? tracks : []).slice(0, 10).map(archiveTrack).filter(Boolean);
+}
+
+function archiveFallbackData(reason, refreshError, archiveSnapshot) {
+  const fallback = fallbackData(reason, refreshError);
+  const archive = archiveSnapshot?.archive;
+  const recent = (Array.isArray(archive?.recentlyPlayed) ? archive.recentlyPlayed : []).map(archiveTrack).filter(Boolean);
+  const topArtists = archiveTasteArtists(archive?.taste?.topArtists);
+  const topTracks = archiveTasteTracks(archive?.taste?.topTracks);
+  const playlistCount = Number(archive?.playlists?.count || 0);
+  const trackCount = Number(archive?.playlists?.tracks || 0);
+
+  if (!recent.length && !topArtists.length && !topTracks.length) return fallback;
+
+  const lastTrack = recent[0] || topTracks[0] || null;
+  return {
+    ...fallback,
+    source: "spotify-archive-fallback",
+    profile: {
+      displayName: "EchoOps Spotify archive",
+      url: ""
+    },
+    current: lastTrack ? { ...lastTrack, note: "Last saved listening from the approved archive" } : undefined,
+    lastTrack,
+    playlists: playlistCount
+      ? [{
+          title: "Curated playlist archive",
+          meta: `${playlistCount} playlists / ${trackCount.toLocaleString("en-AU")} tracks`,
+          note: "Saved public summary while Spotify reconnects.",
+          image: "",
+          url: ""
+        }]
+      : [],
+    insights: {
+      taste: {
+        shortTerm: { artists: topArtists, tracks: topTracks },
+        mediumTerm: { artists: topArtists, tracks: topTracks },
+        longTerm: { artists: topArtists, tracks: topTracks }
+      },
+      recentlyPlayed: recent,
+      playlistAnalytics: {
+        sampledTracks: trackCount,
+        estimatedHours: 0,
+        recurringArtists: topArtists,
+        decades: []
+      },
+      discovery: [],
+      scopesReady: false
+    },
+    stale: true
+  };
+}
+
 function isUsefulTrack(track) {
   if (!track || typeof track !== "object") {
     return false;
@@ -906,7 +990,12 @@ async function main() {
   const previous = await readExistingData();
 
   if (!clientId || !clientSecret || !refreshToken) {
-    const output = withLastValues(fallbackData("spotify-missing-secrets"), previous);
+    const archive = await readArchiveData();
+    const hasPreviousValues = Boolean(lastUsefulTrack(previous) || previous?.insights?.recentlyPlayed?.length || previous?.insights?.taste?.shortTerm?.artists?.length);
+    const source = hasPreviousValues
+      ? fallbackData("spotify-missing-secrets")
+      : archiveFallbackData("spotify-missing-secrets", "Spotify secrets are not available to this refresh.", archive);
+    const output = withLastValues(source, previous);
     await mkdir(new URL("../data/", import.meta.url), { recursive: true });
     await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
     return;
@@ -914,7 +1003,10 @@ async function main() {
 
   const token = await getAccessToken();
   const [profile, currentlyPlaying, playbackState] = await Promise.all([
-    spotifyGet("me", token),
+    spotifyGet("me", token).catch((error) => {
+      console.warn(`Spotify profile unavailable: ${error.message}`);
+      return null;
+    }),
     spotifyGet("me/player/currently-playing", token, { additional_types: "track,episode" }).catch(() => null),
     spotifyGet("me/player", token, { additional_types: "track,episode" }).catch(() => null)
   ]);
@@ -940,8 +1032,7 @@ async function main() {
       ? "Spotify refreshed. No active playback was reported, so the most recently played track is shown."
       : "Spotify refreshed. No active playback was reported; private sessions, ads, local files, or paused devices may not expose a current track.";
 
-  const output = withLastValues(
-    {
+  const liveOutput = {
       generatedAt,
       source: "spotify-web-api",
       status,
@@ -962,9 +1053,17 @@ async function main() {
         discovery,
         scopesReady: tasteResult.ready && recentlyPlayed.length > 0
       }
-    },
-    previous
-  );
+    };
+  const hasLiveSignals = Boolean(profile || playlists.length || tasteResult.ready || recentlyPlayed.length || activeTrack);
+  const archive = await readArchiveData();
+  const source = hasLiveSignals || lastUsefulTrack(previous)
+    ? liveOutput
+    : archiveFallbackData(
+        "spotify-api-error",
+        "Spotify did not return account data. Renew the Spotify approval to restore live updates.",
+        archive
+      );
+  const output = withLastValues(source, previous);
 
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
@@ -976,7 +1075,12 @@ main().catch(async (error) => {
   const refreshError = safeRefreshError(error);
   console.error(`Spotify refresh failed: ${refreshError}`);
   const previous = await readExistingData();
-  const output = withLastValues(fallbackData("spotify-api-error", refreshError), previous);
+  const archive = await readArchiveData();
+  const hasPreviousValues = Boolean(lastUsefulTrack(previous) || previous?.insights?.recentlyPlayed?.length || previous?.insights?.taste?.shortTerm?.artists?.length);
+  const source = hasPreviousValues
+    ? fallbackData("spotify-api-error", refreshError)
+    : archiveFallbackData("spotify-api-error", refreshError, archive);
+  const output = withLastValues(source, previous);
   await mkdir(new URL("../data/", import.meta.url), { recursive: true });
   await writeFile(outputPath, `${JSON.stringify(output, null, 2)}\n`, "utf8");
 });
