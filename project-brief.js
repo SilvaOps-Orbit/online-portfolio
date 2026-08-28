@@ -103,7 +103,7 @@
     label.append(button, popover);
   };
 
-  form.querySelectorAll("label[data-help]").forEach((label) => addHelp(label, label.dataset.help));
+  form.querySelectorAll("[data-help]").forEach((label) => addHelp(label, label.dataset.help));
   form.querySelectorAll(".brief-feature-field label").forEach((label) => {
     const option = label.textContent.trim();
     addHelp(label, optionHelp[option] || "Choose this if it is important to the finished project.");
